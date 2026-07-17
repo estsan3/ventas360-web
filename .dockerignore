@@ -1,0 +1,11 @@
+node_modules
+dist
+.angular
+.storybook
+coverage
+.git
+.husky
+*.md
+e2e
+playwright-report
+test-results

@@ -11,6 +11,10 @@ const TITULOS: Record<string, string> = {
   productos: 'Productos',
   ventas: 'Ventas',
   'cuenta-corriente': 'Cuenta corriente',
+  proveedores: 'Proveedores',
+  compras: 'Compras',
+  caja: 'Caja',
+  bancos: 'Bancos',
   configuracion: 'Configuración',
 };
 
@@ -20,6 +24,10 @@ const NAV_ITEMS: SidebarItem[] = [
   { id: 'productos', icon: 'package', label: 'Productos' },
   { id: 'ventas', icon: 'dollar', label: 'Ventas' },
   { id: 'cuenta-corriente', icon: 'file-text', label: 'Cuenta corriente' },
+  { id: 'proveedores', icon: 'truck', label: 'Proveedores' },
+  { id: 'compras', icon: 'package', label: 'Compras' },
+  { id: 'caja', icon: 'dollar', label: 'Caja' },
+  { id: 'bancos', icon: 'ticket', label: 'Bancos' },
   { id: 'configuracion', icon: 'settings', label: 'Configuración', section: 'bottom' },
 ];
 

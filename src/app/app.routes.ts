@@ -41,6 +41,24 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'proveedores',
+        loadChildren: () =>
+          import('./features/proveedores/proveedores.routes').then((m) => m.PROVEEDORES_ROUTES),
+      },
+      {
+        path: 'compras',
+        loadChildren: () =>
+          import('./features/compras/compras.routes').then((m) => m.COMPRAS_ROUTES),
+      },
+      {
+        path: 'caja',
+        loadChildren: () => import('./features/caja/caja.routes').then((m) => m.CAJA_ROUTES),
+      },
+      {
+        path: 'bancos',
+        loadChildren: () => import('./features/bancos/bancos.routes').then((m) => m.BANCOS_ROUTES),
+      },
+      {
         path: 'configuracion',
         loadChildren: () =>
           import('./features/configuracion/configuracion.routes').then(

@@ -1,0 +1,64 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <h1>Proveedores</h1>
+      <p class="page__subtitle">Maestro de proveedores (Fase B1)</p>
+    </div>
+    <app-button variant="primary" size="md" (clicked)="abrirAlta()">
+      <app-icon name="plus" />
+      Nuevo proveedor
+    </app-button>
+  </header>
+
+  <app-catalog-toolbar
+    [busqueda]="busqueda()"
+    filtro="todos"
+    [filtroOptions]="[{ value: 'todos', label: 'Todos' }]"
+    placeholderBusqueda="Nombre, CUIT o email…"
+    (busquedaChange)="busqueda.set($event)"
+  />
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filas().length === 0"
+    emptyMessage="No hay proveedores. Creá el primero o ejecutá el seed."
+  >
+    <div class="tabla-scroll">
+      <app-table [columns]="columnas" [rows]="filas()" headerVariant="soft" [striped]="true">
+        <ng-template appTableCell="estado" let-row>
+          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+            {{ $any(row)['estado'] }}
+          </app-badge>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+
+  <app-side-drawer
+    [abierto]="drawerAbierto()"
+    titulo="Nuevo proveedor"
+    (cerrar)="drawerAbierto.set(false)"
+  >
+    <form class="form-drawer" [formGroup]="form">
+      <app-text-input label="Nombre" formControlName="nombre" />
+      <app-text-input label="CUIT" formControlName="cuit" />
+      <app-text-input label="Email" formControlName="email" />
+      <app-text-input label="Teléfono" formControlName="telefono" />
+      <app-select-input
+        label="Condición IVA"
+        [options]="condicionOptions"
+        formControlName="condicionIva"
+      />
+      <app-text-input label="Observaciones" formControlName="observaciones" />
+    </form>
+    <div class="form-drawer__actions">
+      <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
+        Cancelar
+      </app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
+        Guardar
+      </app-button>
+    </div>
+  </app-side-drawer>
+</section>

@@ -1,0 +1,60 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-lg;
+  padding: t.$space-lg;
+  font-family: ty.$font-family-base;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: t.$space-md;
+
+    h1 {
+      margin: 0;
+      font-size: ty.$font-size-2xl;
+      font-weight: ty.$font-weight-bold;
+    }
+  }
+
+  &__subtitle {
+    margin: t.$space-xs 0 0;
+    color: t.$color-text-muted;
+  }
+
+  &__toolbar {
+    max-width: 220px;
+  }
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: t.$space-md;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.form-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-md;
+  padding: t.$space-md t.$space-lg;
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$space-sm;
+    padding: t.$space-md t.$space-lg t.$space-lg;
+  }
+}

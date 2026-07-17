@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, catchError, finalize, firstValueFrom, map, of, tap } from 'rxjs';
 import { User } from '../models/user';
 import { AuthService, LoginCredentials } from '../services/auth.service';
 
@@ -11,7 +11,7 @@ export class AuthStore {
   private readonly api = inject(AuthService);
 
   private readonly _user = signal<User | null>(null);
-  private readonly _restoring = signal(false);
+  private readonly _restoring = signal(true);
 
   readonly user = this._user.asReadonly();
   readonly isAuthenticated = computed(() => this._user() !== null);
@@ -26,17 +26,18 @@ export class AuthStore {
   }
 
   /** Reconstruye la sesión desde la cookie httpOnly al recargar. */
-  restoreSession(): void {
+  restoreSession(): Promise<void> {
     this._restoring.set(true);
-    this.api.me().subscribe({
-      next: (user) => {
-        this._user.set(user);
-        this._restoring.set(false);
-      },
-      error: () => {
-        this._user.set(null);
-        this._restoring.set(false);
-      },
-    });
+    return firstValueFrom(
+      this.api.me().pipe(
+        tap((user) => this._user.set(user)),
+        map(() => undefined),
+        catchError(() => {
+          this._user.set(null);
+          return of(undefined);
+        }),
+        finalize(() => this._restoring.set(false)),
+      ),
+    );
   }
 }

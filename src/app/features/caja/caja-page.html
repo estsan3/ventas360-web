@@ -1,0 +1,73 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <h1>Caja</h1>
+      <p class="page__subtitle">Movimientos del día y medios de cobro (efectivo / tarjeta)</p>
+    </div>
+    <app-button variant="primary" size="md" (clicked)="abrir()">
+      <app-icon name="plus" />
+      Movimiento
+    </app-button>
+  </header>
+
+  <div class="page__toolbar">
+    <app-text-input
+      label="Fecha"
+      type="date"
+      [ngModel]="fecha()"
+      (ngModelChange)="onFecha($event)"
+    />
+  </div>
+
+  @if (saldo(); as s) {
+    <div class="kpis">
+      <app-kpi-card tone="green" label="Ingresos" [value]="fmt(s.ingresos)" trendTone="neutral">
+        <app-icon name="dollar" />
+      </app-kpi-card>
+      <app-kpi-card tone="orange" label="Egresos" [value]="fmt(s.egresos)" trendTone="neutral">
+        <app-icon name="dollar" />
+      </app-kpi-card>
+      <app-kpi-card tone="brand" label="Saldo caja" [value]="fmt(s.saldo)" trendTone="neutral">
+        <app-icon name="dollar" />
+      </app-kpi-card>
+    </div>
+  }
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filas().length === 0"
+    emptyMessage="Sin movimientos de caja para esta fecha."
+  >
+    <div class="tabla-scroll">
+      <app-table [columns]="columnas" [rows]="filas()" headerVariant="soft" [striped]="true">
+        <ng-template appTableCell="tipo" let-row>
+          <app-badge [variant]="$any(row)['esIngreso'] ? 'success' : 'warning'">
+            {{ $any(row)['tipo'] }}
+          </app-badge>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+
+  <app-side-drawer
+    [abierto]="drawerAbierto()"
+    titulo="Movimiento de caja"
+    (cerrar)="drawerAbierto.set(false)"
+  >
+    <form class="form-drawer" [formGroup]="form">
+      <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
+      <app-select-input label="Medio" [options]="medioOptions" formControlName="medio" />
+      <app-text-input label="Monto" type="number" formControlName="monto" />
+      <app-text-input label="Concepto" formControlName="concepto" />
+    </form>
+    <div class="form-drawer__actions">
+      <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
+        Cancelar
+      </app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
+        Guardar
+      </app-button>
+    </div>
+  </app-side-drawer>
+</section>

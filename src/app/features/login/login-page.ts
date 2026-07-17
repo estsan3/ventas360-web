@@ -57,7 +57,10 @@ export class LoginPage {
 
     this.loading.set(true);
     this.authStore.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: () => {
+        this.loading.set(false);
+        void this.router.navigateByUrl('/dashboard');
+      },
       error: (error: Error) => {
         this.loading.set(false);
         this.loginError.set(error.message);

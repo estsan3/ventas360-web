@@ -1,4 +1,11 @@
-<section class="config">
+<section class="config page">
+  <header class="page__header">
+    <div>
+      <h1>Configuración</h1>
+      <p class="page__subtitle">Negocio, sucursal, condiciones de pago y talonarios</p>
+    </div>
+  </header>
+
   @if (authStore.user(); as user) {
     <div class="config__card">
       <div class="config__avatar"><app-icon name="user" /></div>
@@ -26,6 +33,9 @@
 
     <section class="config__panel">
       <h3>Sucursal y condiciones de pago</h3>
+      <p class="config__hint">
+        Sucursal default única (Fase A). Las condiciones se usan al operar ventas/cobranzas.
+      </p>
       <form class="config__form" [formGroup]="formOperativos">
         <app-text-input label="Código sucursal" formControlName="sucursalCodigo" />
         <app-text-input label="Nombre sucursal" formControlName="sucursalNombre" />
@@ -45,21 +55,79 @@
     </section>
 
     <section class="config__panel">
-      <h3>Talonarios</h3>
+      <div class="config__panel-head">
+        <div>
+          <h3>Talonarios</h3>
+          <p class="config__hint">Numeradores por tipo de comprobante (pedido, remito, factura).</p>
+        </div>
+        <app-button variant="outline" size="sm" (clicked)="nuevoTalonario()">
+          <app-icon name="plus" />
+          Nuevo / editar
+        </app-button>
+      </div>
+
       @if (talonarios().length === 0) {
-        <p class="config__hint">No hay talonarios. Se crean con el seed o al guardar uno nuevo.</p>
+        <p class="config__hint">No hay talonarios. Creá uno o ejecutá el seed de demo.</p>
       } @else {
-        <ul class="config__talonarios">
-          @for (t of talonarios(); track t.id) {
-            <li>
-              <strong>{{ t.tipoComprobante }}</strong>
-              · prefijo {{ t.prefijo || '—' }} · próximo {{ t.proximoNumero }} ·
-              {{ t.activo ? 'activo' : 'inactivo' }}
-            </li>
-          }
-        </ul>
+        <div class="tabla-scroll">
+          <app-table
+            [columns]="columnasTalonarios"
+            [rows]="filasTalonarios()"
+            headerVariant="soft"
+            [striped]="true"
+            [compact]="true"
+          >
+            <ng-template appTableCell="tipo" let-row>
+              {{ $any(row)['tipoLabel'] }}
+            </ng-template>
+            <ng-template appTableCell="estado" let-row>
+              <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+                {{ $any(row)['estado'] }}
+              </app-badge>
+            </ng-template>
+            <ng-template appTableCell="acciones" let-row>
+              <button
+                type="button"
+                class="config__icon-btn"
+                title="Editar talonario"
+                aria-label="Editar talonario"
+                (click)="editarTalonario($any(row)['tipoComprobante'])"
+              >
+                <app-icon name="settings" />
+              </button>
+            </ng-template>
+          </app-table>
+        </div>
+      }
+
+      @if (editandoTipo(); as tipo) {
+        <form class="config__form config__form--talonario" [formGroup]="formTalonario">
+          <app-select-input
+            label="Tipo"
+            [options]="tipoTalonarioOptions"
+            formControlName="tipoComprobante"
+          />
+          <app-text-input label="Prefijo" formControlName="prefijo" />
+          <app-text-input label="Próximo número" type="number" formControlName="proximoNumero" />
+          <app-select-input label="Estado" [options]="activoOptions" formControlName="activo" />
+        </form>
+        <div class="config__acciones">
+          <app-button variant="outline" size="md" (clicked)="cancelarTalonario()"
+            >Cancelar</app-button
+          >
+          <app-button
+            variant="primary"
+            size="md"
+            [disabled]="guardando()"
+            (clicked)="guardarTalonario()"
+          >
+            Guardar talonario {{ etiquetaTipo(tipo) }}
+          </app-button>
+        </div>
       }
     </section>
+  } @else {
+    <p class="config__hint">Solo un administrador puede editar parámetros de negocio.</p>
   }
 
   <app-button variant="outline" size="md" (clicked)="cerrarSesion()">

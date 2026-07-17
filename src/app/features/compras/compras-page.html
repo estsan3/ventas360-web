@@ -1,0 +1,77 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <h1>Compras</h1>
+      <p class="page__subtitle">Remitos y facturas de compra → ingreso de stock y CxP</p>
+    </div>
+    <app-button variant="primary" size="md" (clicked)="abrirAlta()">
+      <app-icon name="plus" />
+      Nueva compra
+    </app-button>
+  </header>
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filas().length === 0"
+    emptyMessage="No hay compras. Creá un remito o factura de compra."
+  >
+    <div class="tabla-scroll">
+      <app-table [columns]="columnas" [rows]="filas()" headerVariant="soft" [striped]="true">
+        <ng-template appTableCell="estado" let-row>
+          <app-badge
+            [variant]="
+              $any(row)['estado'] === 'confirmado'
+                ? 'success'
+                : $any(row)['estado'] === 'facturado'
+                  ? 'info'
+                  : 'warning'
+            "
+          >
+            {{ $any(row)['estado'] }}
+          </app-badge>
+        </ng-template>
+        <ng-template appTableCell="acciones" let-row>
+          <div class="fila-acciones">
+            @if ($any(row)['puedeConfirmar']) {
+              <app-button variant="outline" size="sm" (clicked)="confirmar($any(row)['id'])">
+                Confirmar
+              </app-button>
+            }
+            @if ($any(row)['puedeFacturar']) {
+              <app-button variant="primary" size="sm" (clicked)="facturar($any(row)['id'])">
+                Facturar
+              </app-button>
+            }
+          </div>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+
+  <app-side-drawer
+    [abierto]="drawerAbierto()"
+    titulo="Nueva compra"
+    (cerrar)="drawerAbierto.set(false)"
+  >
+    <form class="form-drawer" [formGroup]="form">
+      <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
+      <app-select-input
+        label="Proveedor"
+        [options]="proveedoresOpts()"
+        formControlName="proveedorId"
+      />
+      <app-select-input label="Depósito" [options]="depositosOpts()" formControlName="depositoId" />
+      <app-select-input label="Producto" [options]="productosOpts()" formControlName="productoId" />
+      <app-text-input label="Cantidad" type="number" formControlName="cantidad" />
+    </form>
+    <div class="form-drawer__actions">
+      <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
+        Cancelar
+      </app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
+        Crear borrador
+      </app-button>
+    </div>
+  </app-side-drawer>
+</section>

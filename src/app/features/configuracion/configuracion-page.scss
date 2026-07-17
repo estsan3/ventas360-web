@@ -71,21 +71,69 @@
     }
   }
 
+  &__panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: t.$space-md;
+  }
+
   &__form {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: t.$space-md;
+
+    &--talonario {
+      padding-top: t.$space-sm;
+      border-top: 1px solid t.$color-border;
+    }
   }
 
   &__hint {
     margin: 0;
     color: t.$color-text-muted;
+    font-size: ty.$font-size-sm;
   }
 
-  &__talonarios {
-    margin: 0;
-    padding-left: 1.25rem;
-    color: t.$color-text;
-    line-height: 1.7;
+  &__acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$space-sm;
   }
+
+  &__icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-md;
+    background: t.$color-surface;
+    color: t.$color-text-muted;
+    cursor: pointer;
+
+    &:hover {
+      color: t.$color-primary-dark;
+      border-color: t.$color-primary;
+    }
+  }
+}
+
+.page__header {
+  h1 {
+    margin: 0;
+    font-size: ty.$font-size-2xl;
+    font-weight: ty.$font-weight-bold;
+    color: t.$color-text;
+  }
+}
+
+.page__subtitle {
+  margin: t.$space-xs 0 0;
+  color: t.$color-text-muted;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
 }

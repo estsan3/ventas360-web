@@ -1,0 +1,85 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <h1>Bancos</h1>
+      <p class="page__subtitle">Cuentas bancarias y valores (cheques) en cartera</p>
+    </div>
+    <app-button variant="primary" size="md" (clicked)="abrirValor()">
+      <app-icon name="plus" />
+      Nuevo valor
+    </app-button>
+  </header>
+
+  <section class="panel">
+    <h3>Cuentas</h3>
+    <div class="tabla-scroll">
+      <app-table
+        [columns]="columnasCuentas"
+        [rows]="filasCuentas()"
+        headerVariant="soft"
+        [striped]="true"
+      >
+        <ng-template appTableCell="flags" let-row>
+          @if ($any(row)['default']) {
+            <app-badge variant="info">Default</app-badge>
+          }
+        </ng-template>
+      </app-table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Valores</h3>
+    <app-state-wrapper
+      [status]="estadoValores().status"
+      [error]="estadoValores().error ?? ''"
+      [empty]="filasValores().length === 0"
+      emptyMessage="No hay valores en cartera."
+    >
+      <div class="tabla-scroll">
+        <app-table
+          [columns]="columnasValores"
+          [rows]="filasValores()"
+          headerVariant="soft"
+          [striped]="true"
+        >
+          <ng-template appTableCell="estado" let-row>
+            <app-badge [variant]="$any(row)['enCartera'] ? 'warning' : 'success'">
+              {{ $any(row)['estado'] }}
+            </app-badge>
+          </ng-template>
+          <ng-template appTableCell="acciones" let-row>
+            @if ($any(row)['enCartera']) {
+              <app-button variant="outline" size="sm" (clicked)="depositar($any(row)['id'])">
+                Depositar
+              </app-button>
+            }
+          </ng-template>
+        </app-table>
+      </div>
+    </app-state-wrapper>
+  </section>
+
+  <app-side-drawer
+    [abierto]="drawerAbierto()"
+    titulo="Nuevo valor"
+    (cerrar)="drawerAbierto.set(false)"
+  >
+    <form class="form-drawer" [formGroup]="form">
+      <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
+      <app-text-input label="Monto" type="number" formControlName="monto" />
+      <app-text-input label="Número" formControlName="numero" />
+      <app-text-input label="Librador" formControlName="librador" />
+      <app-text-input label="Banco emisor" formControlName="bancoEmisor" />
+      <app-text-input label="Observación" formControlName="observacion" />
+    </form>
+    <div class="form-drawer__actions">
+      <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
+        Cancelar
+      </app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarValor()">
+        Guardar
+      </app-button>
+    </div>
+  </app-side-drawer>
+</section>
