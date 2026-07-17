@@ -1,24 +1,30 @@
 <section class="page">
   <header class="page__header">
-    <p class="page__subtitle">Pedidos, líneas y ciclo de vida hasta la entrega</p>
+    <p class="page__subtitle">Pedidos, remitos y facturas con ciclo de vida y stock</p>
     <app-button variant="primary" size="md" (clicked)="abrirCrear()">
       <app-icon name="plus" />
-      Nuevo pedido
+      Nuevo comprobante
     </app-button>
   </header>
 
   <div class="toolbar card">
     <app-text-input
       label="Buscar"
-      placeholder="Cliente, estado o ID…"
+      placeholder="Cliente, tipo, estado o ID…"
       [ngModel]="busqueda()"
       (ngModelChange)="busqueda.set($event)"
+    />
+    <app-select-input
+      label="Tipo"
+      [options]="filtroTipoOptions"
+      [ngModel]="filtroTipo()"
+      (ngModelChange)="filtroTipo.set($any($event))"
     />
     <app-select-input
       label="Estado"
       [options]="filtroOptions"
       [ngModel]="filtro()"
-      (ngModelChange)="filtro.set($event)"
+      (ngModelChange)="filtro.set($any($event))"
     />
   </div>
 
@@ -26,7 +32,7 @@
     [status]="estado().status"
     [error]="estado().error ?? ''"
     [empty]="filas().length === 0"
-    emptyMessage="No hay pedidos para mostrar"
+    emptyMessage="No hay comprobantes para mostrar"
     [skeletonRows]="4"
   >
     <div class="tabla-scroll">
@@ -47,8 +53,8 @@
             <button
               type="button"
               class="fila-acciones__btn fila-acciones__btn--config"
-              title="Configurar pedido"
-              aria-label="Configurar pedido"
+              title="Configurar comprobante"
+              aria-label="Configurar comprobante"
               (click)="abrirConfig($any(row))"
             >
               <app-icon name="settings" />
@@ -62,7 +68,7 @@
 
 <app-side-drawer
   [abierto]="drawerCrear()"
-  titulo="Nuevo pedido"
+  titulo="Nuevo comprobante"
   ancho="640px"
   (cerrar)="cerrarCrear()"
 >
@@ -73,11 +79,19 @@
           <h4>Cabecera</h4>
         </header>
         <div class="form-section__body">
+          <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
           <app-select-input
             label="Cliente"
             [options]="clienteOptions()"
             formControlName="clienteId"
           />
+          @if (esRemito()) {
+            <app-select-input
+              label="Depósito"
+              [options]="depositoOptions()"
+              formControlName="depositoId"
+            />
+          }
           <app-text-input label="Fecha" type="date" formControlName="fecha" />
         </div>
       </section>
@@ -86,7 +100,7 @@
         <header class="form-section__head">
           <div>
             <h4>Líneas</h4>
-            <p>Productos y cantidades del pedido</p>
+            <p>Artículos y cantidades (precio resuelto por API)</p>
           </div>
           <app-button variant="outline" size="sm" (clicked)="agregarLinea()">
             <app-icon name="plus" />
@@ -120,7 +134,7 @@
     <footer class="form-drawer__footer">
       <app-button variant="outline" size="md" (clicked)="cerrarCrear()">Cancelar</app-button>
       <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarPedido()">
-        Crear pedido
+        Crear
       </app-button>
     </footer>
   </div>
@@ -136,7 +150,7 @@
     <div class="config-modal">
       <section class="config-modal__master">
         <div class="config-modal__head config-modal__head--master">
-          <h3>Datos del pedido</h3>
+          <h3>{{ etiquetaTipo(pedido.tipo) }}</h3>
           <app-badge [variant]="badgeDe(pedido.estado)">
             {{ etiquetaEstado(pedido.estado) }}
           </app-badge>
@@ -149,6 +163,14 @@
           <div>
             <dt>Fecha</dt>
             <dd>{{ pedido.fecha }}</dd>
+          </div>
+          <div>
+            <dt>Neto</dt>
+            <dd>{{ formatearTotal(pedido.neto) }}</dd>
+          </div>
+          <div>
+            <dt>IVA ({{ pedido.ivaPorcentaje }}%)</dt>
+            <dd>{{ formatearTotal(pedido.iva) }}</dd>
           </div>
           <div>
             <dt>Total</dt>
@@ -166,7 +188,7 @@
           <h3>Opciones de estado</h3>
         </div>
         @if (transicionesDisponibles().length === 0) {
-          <p class="config-modal__hint">Este pedido ya está en un estado final.</p>
+          <p class="config-modal__hint">Este comprobante ya está en un estado final.</p>
         } @else {
           <div class="pedido-detalle__acciones">
             @for (t of transicionesDisponibles(); track t.estado) {
@@ -176,7 +198,7 @@
                 [disabled]="cambiandoEstado()"
                 (clicked)="cambiarEstado(t.estado)"
               >
-                Pasar a {{ t.label }}
+                {{ t.label }}
               </app-button>
             }
           </div>

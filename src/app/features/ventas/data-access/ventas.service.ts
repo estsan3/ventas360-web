@@ -1,15 +1,29 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { ClienteRefDto, PedidoDto, ProductoRefDto } from './pedido.dto';
+import {
+  ClienteRefDto,
+  DepositoRefDto,
+  PaginaItemsDto,
+  PedidoDto,
+  ProductoRefDto,
+} from './pedido.dto';
 import {
   clienteRefToModel,
   crearPedidoToDto,
+  depositoRefToModel,
   pedidoToModel,
   productoRefToModel,
 } from './pedido.mapper';
-import { ClienteRef, CrearPedido, EstadoPedido, Pedido, ProductoRef } from './pedido.model';
+import {
+  ClienteRef,
+  CrearPedido,
+  DepositoRef,
+  EstadoPedido,
+  Pedido,
+  ProductoRef,
+} from './pedido.model';
 
 @Injectable({ providedIn: 'root' })
 export class VentasService {
@@ -35,16 +49,35 @@ export class VentasService {
       .pipe(map(pedidoToModel));
   }
 
-  /** Lookups para formularios de este feature (sin importar otros features). */
+  confirmarRemito(id: string): Observable<Pedido> {
+    return this.http
+      .post<PedidoDto>(`${this.base}/${id}/confirmar-remito`, {})
+      .pipe(map(pedidoToModel));
+  }
+
+  facturarRemito(id: string): Observable<Pedido> {
+    return this.http.post<PedidoDto>(`${this.base}/${id}/facturar`, {}).pipe(map(pedidoToModel));
+  }
+
   listarClientesRef(): Observable<ClienteRef[]> {
     return this.http
-      .get<ClienteRefDto[]>(`${this.api}/clientes`)
-      .pipe(map((items) => items.map(clienteRefToModel)));
+      .get<PaginaItemsDto<ClienteRefDto>>(`${this.api}/clientes`, {
+        params: new HttpParams().set('page_size', '200').set('activo', 'true'),
+      })
+      .pipe(map((pagina) => pagina.items.map(clienteRefToModel)));
   }
 
   listarProductosRef(): Observable<ProductoRef[]> {
     return this.http
-      .get<ProductoRefDto[]>(`${this.api}/productos`)
-      .pipe(map((items) => items.map(productoRefToModel)));
+      .get<PaginaItemsDto<ProductoRefDto>>(`${this.api}/productos`, {
+        params: new HttpParams().set('page_size', '200').set('activo', 'true'),
+      })
+      .pipe(map((pagina) => pagina.items.map(productoRefToModel)));
+  }
+
+  listarDepositosRef(): Observable<DepositoRef[]> {
+    return this.http
+      .get<DepositoRefDto[]>(`${this.api}/stock/depositos`)
+      .pipe(map((items) => items.map(depositoRefToModel)));
   }
 }
