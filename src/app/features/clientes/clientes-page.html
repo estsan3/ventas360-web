@@ -13,7 +13,7 @@
     [busqueda]="busqueda()"
     [filtro]="filtro()"
     [filtroOptions]="filtroOptions"
-    placeholderBusqueda="Nombre, email o teléfono…"
+    placeholderBusqueda="Nombre, email, teléfono o CUIT…"
     (busquedaChange)="busqueda.set($event)"
     (filtroChange)="filtro.set($any($event))"
   />
@@ -95,6 +95,24 @@
             formControlName="telefono"
             [error]="errorCampo('telefono')"
           />
+          <app-text-input label="CUIT" formControlName="cuit" [error]="errorCampo('cuit')" />
+          <app-select-input
+            label="Condición IVA"
+            formControlName="condicionIva"
+            [options]="condicionIvaOptions"
+            [error]="errorCampo('condicionIva')"
+          />
+          <app-text-input
+            label="Límite de crédito"
+            type="number"
+            formControlName="limiteCredito"
+            [error]="errorCampo('limiteCredito')"
+          />
+          <app-text-input
+            label="Observaciones"
+            formControlName="observaciones"
+            [error]="errorCampo('observaciones')"
+          />
         </form>
       </section>
 
@@ -109,7 +127,7 @@
           }
         </div>
         <p class="config-modal__hint">
-          Desde acá podés editar los datos de contacto y gestionar el estado del cliente.
+          Datos fiscales, crédito y contacto. Total en listado: {{ total() }} clientes.
         </p>
       </section>
 
@@ -170,6 +188,19 @@
             label="Teléfono"
             formControlName="telefono"
             [error]="errorCampo('telefono')"
+          />
+          <app-text-input label="CUIT" formControlName="cuit" [error]="errorCampo('cuit')" />
+          <app-select-input
+            label="Condición IVA"
+            formControlName="condicionIva"
+            [options]="condicionIvaOptions"
+            [error]="errorCampo('condicionIva')"
+          />
+          <app-text-input
+            label="Límite de crédito"
+            type="number"
+            formControlName="limiteCredito"
+            [error]="errorCampo('limiteCredito')"
           />
         </div>
       </section>

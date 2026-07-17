@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { AuthStore } from '../../core/state/auth.store';
@@ -9,12 +16,12 @@ import { Icon } from '../../shared/ui/icon/icon';
 import { CatalogToolbar } from '../../shared/ui/catalog-toolbar/catalog-toolbar';
 import { TextInput } from '../../shared/ui/input/text-input';
 import { Modal } from '../../shared/ui/modal/modal';
-import { SelectOption } from '../../shared/ui/select/select-input';
+import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
 import { TableCellDef } from '../../shared/ui/table/table-cell-def';
-import { Cliente, FiltroActivo } from './data-access/cliente.model';
+import { Cliente, CondicionIva, FiltroActivo } from './data-access/cliente.model';
 import { ClientesStore } from './data-access/clientes.store';
 
 const ETIQUETAS_ESTADO: Record<string, string> = {
@@ -24,10 +31,18 @@ const ETIQUETAS_ESTADO: Record<string, string> = {
   cancelado: 'Cancelado',
 };
 
+const ETIQUETAS_IVA: Record<CondicionIva, string> = {
+  responsable_inscripto: 'RI',
+  monotributo: 'Monotributo',
+  exento: 'Exento',
+  consumidor_final: 'CF',
+};
+
 const COLUMNAS: TableColumn[] = [
   { key: 'nombre', label: 'Nombre' },
-  { key: 'email', label: 'Email' },
-  { key: 'telefono', label: 'Teléfono' },
+  { key: 'cuit', label: 'CUIT', width: '120px' },
+  { key: 'condicionLabel', label: 'IVA', width: '110px' },
+  { key: 'telefono', label: 'Teléfono', width: '140px' },
   { key: 'estado', label: 'Estado', width: '100px' },
   { key: 'acciones', label: 'Acciones', align: 'right', width: '96px' },
 ];
@@ -57,6 +72,7 @@ function formatearPrecio(valor: number): string {
     Icon,
     CatalogToolbar,
     TextInput,
+    SelectInput,
     Modal,
     SideDrawer,
     StateWrapper,
@@ -77,6 +93,7 @@ export class ClientesPage {
   protected readonly columnas = COLUMNAS;
   protected readonly pedidosColumns = PEDIDOS_COLUMNS;
   protected readonly estado = this.store.clientes;
+  protected readonly total = this.store.total;
   protected readonly busqueda = signal('');
   protected readonly filtro = signal<FiltroActivo>('activos');
   protected readonly drawerAbierto = signal(false);
@@ -94,36 +111,33 @@ export class ClientesPage {
     { value: 'todos', label: 'Todos' },
   ];
 
+  protected readonly condicionIvaOptions: SelectOption[] = [
+    { value: 'consumidor_final', label: 'Consumidor final' },
+    { value: 'responsable_inscripto', label: 'Responsable inscripto' },
+    { value: 'monotributo', label: 'Monotributo' },
+    { value: 'exento', label: 'Exento' },
+  ];
+
   protected readonly form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(120)]],
     email: ['', [Validators.required, Validators.email]],
     telefono: ['', Validators.maxLength(40)],
+    cuit: ['', Validators.maxLength(13)],
+    condicionIva: ['consumidor_final' as CondicionIva, Validators.required],
+    limiteCredito: ['0'],
+    observaciones: ['', Validators.maxLength(2000)],
   });
 
-  protected readonly filas = computed(() => {
-    let items = this.estado().data ?? [];
-    if (this.filtro() === 'activos') {
-      items = items.filter((c) => c.activo);
-    } else if (this.filtro() === 'inactivos') {
-      items = items.filter((c) => !c.activo);
-    }
-    const q = this.busqueda().trim().toLowerCase();
-    if (q) {
-      items = items.filter(
-        (c) =>
-          c.nombre.toLowerCase().includes(q) ||
-          c.email.toLowerCase().includes(q) ||
-          c.telefono.toLowerCase().includes(q),
-      );
-    }
-    return items.map(
+  protected readonly filas = computed(() =>
+    (this.estado().data ?? []).map(
       (c) =>
         ({
           ...c,
-          estado: c.activo ? 'Activo' : 'Inactivo',
+          condicionLabel: ETIQUETAS_IVA[c.condicionIva] ?? c.condicionIva,
+          estado: c.bloqueado ? 'Bloqueado' : c.activo ? 'Activo' : 'Inactivo',
         }) as Record<string, unknown>,
-    );
-  });
+    ),
+  );
 
   protected readonly detalle = computed(() => {
     const id = this.seleccionadoId();
@@ -151,7 +165,11 @@ export class ClientesPage {
   );
 
   constructor() {
-    this.store.cargar();
+    effect(() => {
+      const q = this.busqueda();
+      const filtro = this.filtro();
+      this.store.cargar({ q, filtro, page: 1 });
+    });
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {
         this.masterDirty.set(true);
@@ -163,7 +181,15 @@ export class ClientesPage {
 
   protected abrirCrear(): void {
     this.form.enable();
-    this.form.reset({ nombre: '', email: '', telefono: '' });
+    this.form.reset({
+      nombre: '',
+      email: '',
+      telefono: '',
+      cuit: '',
+      condicionIva: 'consumidor_final',
+      limiteCredito: '0',
+      observaciones: '',
+    });
     this.formDirty.set(false);
     this.drawerAbierto.set(true);
   }
@@ -179,6 +205,10 @@ export class ClientesPage {
       nombre: cliente.nombre,
       email: cliente.email,
       telefono: cliente.telefono,
+      cuit: cliente.cuit,
+      condicionIva: cliente.condicionIva,
+      limiteCredito: String(cliente.limiteCredito),
+      observaciones: cliente.observaciones,
     });
     if (!this.esAdmin()) {
       this.form.disable();
@@ -201,6 +231,32 @@ export class ClientesPage {
     this.form.enable();
   }
 
+  protected payloadDesdeForm(): {
+    nombre: string;
+    email: string;
+    telefono: string;
+    cuit: string;
+    condicionIva: CondicionIva;
+    limiteCredito: number;
+    observaciones: string;
+  } | null {
+    const raw = this.form.getRawValue();
+    const limite = Number(raw.limiteCredito);
+    if (!Number.isFinite(limite) || limite < 0) {
+      this.notifications.error('Límite inválido', 'Debe ser un número ≥ 0');
+      return null;
+    }
+    return {
+      nombre: raw.nombre,
+      email: raw.email,
+      telefono: raw.telefono,
+      cuit: raw.cuit,
+      condicionIva: raw.condicionIva,
+      limiteCredito: limite,
+      observaciones: raw.observaciones,
+    };
+  }
+
   protected guardarMaster(): void {
     const id = this.seleccionadoId();
     if (!id || !this.masterDirty() || !this.esAdmin()) {
@@ -210,8 +266,12 @@ export class ClientesPage {
       this.form.markAllAsTouched();
       return;
     }
+    const body = this.payloadDesdeForm();
+    if (!body) {
+      return;
+    }
     this.guardando.set(true);
-    this.store.actualizar(id, this.form.getRawValue()).subscribe({
+    this.store.actualizar(id, body).subscribe({
       next: (cliente) => {
         this.notifications.success('Cliente actualizado', cliente.nombre);
         this.guardando.set(false);
@@ -239,8 +299,12 @@ export class ClientesPage {
       this.form.markAllAsTouched();
       return;
     }
+    const body = this.payloadDesdeForm();
+    if (!body) {
+      return;
+    }
     this.guardando.set(true);
-    this.store.crear(this.form.getRawValue()).subscribe({
+    this.store.crear(body).subscribe({
       next: (cliente) => {
         this.notifications.success('Cliente creado', cliente.nombre);
         this.guardando.set(false);
@@ -270,7 +334,10 @@ export class ClientesPage {
     });
   }
 
-  protected errorCampo(campo: 'nombre' | 'email' | 'telefono'): string {
+  protected errorCampo(
+    campo:
+      'nombre' | 'email' | 'telefono' | 'cuit' | 'condicionIva' | 'limiteCredito' | 'observaciones',
+  ): string {
     const control = this.form.controls[campo];
     if (!control.touched || !control.errors) {
       return '';

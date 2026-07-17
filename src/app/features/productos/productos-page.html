@@ -13,7 +13,7 @@
     [busqueda]="busqueda()"
     [filtro]="filtro()"
     [filtroOptions]="filtroOptions"
-    placeholderBusqueda="SKU o nombre…"
+    placeholderBusqueda="SKU, nombre, marca o código de barras…"
     (busquedaChange)="busqueda.set($event)"
     (filtroChange)="filtro.set($any($event))"
   />
@@ -86,8 +86,21 @@
         <form class="config-modal__form config-modal__form--master" [formGroup]="form">
           <app-text-input label="SKU" formControlName="sku" [error]="errorCampo('sku')" />
           <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
+          <app-text-input label="Marca" formControlName="marca" [error]="errorCampo('marca')" />
+          <app-text-input label="Rubro" formControlName="rubro" [error]="errorCampo('rubro')" />
           <app-text-input
-            label="Precio"
+            label="Código de barras"
+            formControlName="codigoBarras"
+            [error]="errorCampo('codigoBarras')"
+          />
+          <app-text-input
+            label="Costo"
+            type="number"
+            formControlName="costo"
+            [error]="errorCampo('costo')"
+          />
+          <app-text-input
+            label="Precio de lista"
             type="number"
             formControlName="precio"
             [error]="errorCampo('precio')"
@@ -116,7 +129,7 @@
           }
         </div>
         <p class="config-modal__hint">
-          Editá SKU, precio y stock. El estado controla si el producto puede usarse en pedidos.
+          Catálogo enriquecido Fase A. Total: {{ total() }} artículos (página server-side).
         </p>
       </section>
 
@@ -176,8 +189,21 @@
             />
           </div>
           <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
+          <app-text-input label="Marca" formControlName="marca" [error]="errorCampo('marca')" />
+          <app-text-input label="Rubro" formControlName="rubro" [error]="errorCampo('rubro')" />
           <app-text-input
-            label="Precio"
+            label="Código de barras"
+            formControlName="codigoBarras"
+            [error]="errorCampo('codigoBarras')"
+          />
+          <app-text-input
+            label="Costo"
+            type="number"
+            formControlName="costo"
+            [error]="errorCampo('costo')"
+          />
+          <app-text-input
+            label="Precio de lista"
             type="number"
             formControlName="precio"
             [error]="errorCampo('precio')"

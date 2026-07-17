@@ -7,7 +7,7 @@ import {
   asyncLoading,
   asyncSuccess,
 } from '../../../core/models/async-state';
-import { ActualizarProducto, CrearProducto, Producto } from './producto.model';
+import { ActualizarProducto, CrearProducto, FiltroActivo, Producto } from './producto.model';
 import { PedidoProductoResumen, ProductosService } from './productos.service';
 
 @Injectable({ providedIn: 'root' })
@@ -15,19 +15,28 @@ export class ProductosStore {
   private readonly api = inject(ProductosService);
 
   private readonly _productos = signal<AsyncState<Producto[]>>(asyncIdle());
+  private readonly _total = signal(0);
+  private readonly _page = signal(1);
   private readonly _pedidosProducto = signal<PedidoProductoResumen[]>([]);
 
   readonly productos = this._productos.asReadonly();
+  readonly total = this._total.asReadonly();
+  readonly page = this._page.asReadonly();
   readonly pedidosProducto = this._pedidosProducto.asReadonly();
 
-  cargar(): void {
+  cargar(opts: { q?: string; filtro?: FiltroActivo; page?: number } = {}): void {
     if (this._productos().status === 'loading') {
       return;
     }
+    const page = opts.page ?? this._page();
     const prev = this._productos().data;
     this._productos.set({ ...asyncLoading(), data: prev });
-    this.api.listar().subscribe({
-      next: (items) => this._productos.set(asyncSuccess(items)),
+    this.api.listar({ q: opts.q, filtro: opts.filtro, page, pageSize: 50 }).subscribe({
+      next: (pagina) => {
+        this._page.set(pagina.page);
+        this._total.set(pagina.total);
+        this._productos.set(asyncSuccess(pagina.items));
+      },
       error: (error: Error) => this._productos.set({ ...asyncError(error.message), data: prev }),
     });
   }
@@ -37,7 +46,8 @@ export class ProductosStore {
       tap((nuevo) => {
         const actual = this._productos();
         if (actual.status === 'success') {
-          this._productos.set(asyncSuccess([...(actual.data ?? []), nuevo]));
+          this._productos.set(asyncSuccess([nuevo, ...(actual.data ?? [])]));
+          this._total.update((t) => t + 1);
         }
       }),
     );

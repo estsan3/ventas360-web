@@ -1,13 +1,31 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { ClienteDto } from './cliente.dto';
-import { actualizarClienteToDto, clienteToModel, crearClienteToDto } from './cliente.mapper';
-import { ActualizarCliente, Cliente, CrearCliente } from './cliente.model';
+import { ClienteDto, ClientesPaginaDto } from './cliente.dto';
+import {
+  actualizarClienteToDto,
+  clienteToModel,
+  clientesPaginaToModel,
+  crearClienteToDto,
+} from './cliente.mapper';
+import {
+  ActualizarCliente,
+  Cliente,
+  ClientesPagina,
+  CrearCliente,
+  FiltroActivo,
+} from './cliente.model';
 import { PedidoResumenDto } from './pedido-resumen.dto';
 import { pedidoResumenToModel } from './pedido-resumen.mapper';
 import { PedidoResumen } from './pedido-resumen.model';
+
+export interface ListarClientesParams {
+  q?: string;
+  filtro?: FiltroActivo;
+  page?: number;
+  pageSize?: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ClientesService {
@@ -15,8 +33,21 @@ export class ClientesService {
   private readonly base = `${environment.apiBaseUrl}/clientes`;
   private readonly api = environment.apiBaseUrl;
 
-  listar(): Observable<Cliente[]> {
-    return this.http.get<ClienteDto[]>(this.base).pipe(map((items) => items.map(clienteToModel)));
+  listar(params: ListarClientesParams = {}): Observable<ClientesPagina> {
+    let httpParams = new HttpParams()
+      .set('page', String(params.page ?? 1))
+      .set('page_size', String(params.pageSize ?? 50));
+    if (params.q?.trim()) {
+      httpParams = httpParams.set('q', params.q.trim());
+    }
+    if (params.filtro === 'activos') {
+      httpParams = httpParams.set('activo', 'true');
+    } else if (params.filtro === 'inactivos') {
+      httpParams = httpParams.set('activo', 'false');
+    }
+    return this.http
+      .get<ClientesPaginaDto>(this.base, { params: httpParams })
+      .pipe(map(clientesPaginaToModel));
   }
 
   obtener(id: string): Observable<Cliente> {

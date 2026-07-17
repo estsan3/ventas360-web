@@ -1,10 +1,21 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { actualizarProductoToDto, crearProductoToDto, productoToModel } from './producto.mapper';
-import { ActualizarProducto, CrearProducto, Producto } from './producto.model';
-import { ProductoDto } from './producto.dto';
+import { ProductoDto, ProductosPaginaDto } from './producto.dto';
+import {
+  actualizarProductoToDto,
+  crearProductoToDto,
+  productoToModel,
+  productosPaginaToModel,
+} from './producto.mapper';
+import {
+  ActualizarProducto,
+  CrearProducto,
+  FiltroActivo,
+  Producto,
+  ProductosPagina,
+} from './producto.model';
 
 export interface PedidoProductoResumen {
   id: string;
@@ -12,6 +23,13 @@ export interface PedidoProductoResumen {
   cliente: string;
   estadoLabel: string;
   cantidad: number;
+}
+
+export interface ListarProductosParams {
+  q?: string;
+  filtro?: FiltroActivo;
+  page?: number;
+  pageSize?: number;
 }
 
 interface PedidoApiDto {
@@ -22,9 +40,9 @@ interface PedidoApiDto {
   lineas: { id: string; producto_id: string; cantidad: number }[];
 }
 
-interface ClienteApiDto {
-  id: string;
-  nombre: string;
+/** Shape mínimo del listado paginado de clientes (sin importar el feature). */
+interface ClientesPaginaApiDto {
+  items: { id: string; nombre: string }[];
 }
 
 const ETIQUETAS: Record<string, string> = {
@@ -40,8 +58,21 @@ export class ProductosService {
   private readonly base = `${environment.apiBaseUrl}/productos`;
   private readonly api = environment.apiBaseUrl;
 
-  listar(): Observable<Producto[]> {
-    return this.http.get<ProductoDto[]>(this.base).pipe(map((items) => items.map(productoToModel)));
+  listar(params: ListarProductosParams = {}): Observable<ProductosPagina> {
+    let httpParams = new HttpParams()
+      .set('page', String(params.page ?? 1))
+      .set('page_size', String(params.pageSize ?? 50));
+    if (params.q?.trim()) {
+      httpParams = httpParams.set('q', params.q.trim());
+    }
+    if (params.filtro === 'activos') {
+      httpParams = httpParams.set('activo', 'true');
+    } else if (params.filtro === 'inactivos') {
+      httpParams = httpParams.set('activo', 'false');
+    }
+    return this.http
+      .get<ProductosPaginaDto>(this.base, { params: httpParams })
+      .pipe(map(productosPaginaToModel));
   }
 
   obtener(id: string): Observable<Producto> {
@@ -64,10 +95,12 @@ export class ProductosService {
   listarPedidosDelProducto(productoId: string): Observable<PedidoProductoResumen[]> {
     return forkJoin({
       pedidos: this.http.get<PedidoApiDto[]>(`${this.api}/ventas/pedidos`),
-      clientes: this.http.get<ClienteApiDto[]>(`${this.api}/clientes`),
+      clientes: this.http.get<ClientesPaginaApiDto>(`${this.api}/clientes`, {
+        params: new HttpParams().set('page_size', '200'),
+      }),
     }).pipe(
       map(({ pedidos, clientes }) => {
-        const nombres = new Map(clientes.map((c) => [c.id, c.nombre]));
+        const nombres = new Map(clientes.items.map((c) => [c.id, c.nombre]));
         return pedidos.flatMap((p) =>
           p.lineas
             .filter((l) => l.producto_id === productoId)

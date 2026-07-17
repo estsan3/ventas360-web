@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { AuthStore } from '../../core/state/auth.store';
@@ -20,6 +27,8 @@ import { ProductosStore } from './data-access/productos.store';
 const COLUMNAS: TableColumn[] = [
   { key: 'sku', label: 'SKU', width: '100px' },
   { key: 'nombre', label: 'Nombre' },
+  { key: 'marca', label: 'Marca', width: '110px' },
+  { key: 'rubro', label: 'Rubro', width: '110px' },
   { key: 'precioFmt', label: 'Precio', align: 'right', width: '120px' },
   { key: 'stock', label: 'Stock', align: 'right', width: '80px' },
   { key: 'estado', label: 'Estado', width: '100px' },
@@ -71,6 +80,7 @@ export class ProductosPage {
   protected readonly columnas = COLUMNAS;
   protected readonly pedidosColumns = PEDIDOS_COLUMNS;
   protected readonly estado = this.store.productos;
+  protected readonly total = this.store.total;
   protected readonly busqueda = signal('');
   protected readonly filtro = signal<FiltroActivo>('activos');
   protected readonly drawerAbierto = signal(false);
@@ -91,32 +101,24 @@ export class ProductosPage {
   protected readonly form = this.fb.nonNullable.group({
     sku: ['', [Validators.required, Validators.maxLength(40)]],
     nombre: ['', [Validators.required, Validators.maxLength(120)]],
+    marca: ['', Validators.maxLength(80)],
+    rubro: ['', Validators.maxLength(80)],
+    codigoBarras: ['', Validators.maxLength(40)],
+    costo: ['0'],
     precio: ['', [Validators.required]],
     stock: ['0', [Validators.required]],
   });
 
-  protected readonly filas = computed(() => {
-    let items = this.estado().data ?? [];
-    if (this.filtro() === 'activos') {
-      items = items.filter((p) => p.activo);
-    } else if (this.filtro() === 'inactivos') {
-      items = items.filter((p) => !p.activo);
-    }
-    const q = this.busqueda().trim().toLowerCase();
-    if (q) {
-      items = items.filter(
-        (p) => p.nombre.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q),
-      );
-    }
-    return items.map(
+  protected readonly filas = computed(() =>
+    (this.estado().data ?? []).map(
       (p) =>
         ({
           ...p,
           precioFmt: formatearPrecio(p.precio),
           estado: p.activo ? 'Activo' : 'Inactivo',
         }) as Record<string, unknown>,
-    );
-  });
+    ),
+  );
 
   protected readonly detalle = computed(() => {
     const id = this.seleccionadoId();
@@ -136,7 +138,11 @@ export class ProductosPage {
   );
 
   constructor() {
-    this.store.cargar();
+    effect(() => {
+      const q = this.busqueda();
+      const filtro = this.filtro();
+      this.store.cargar({ q, filtro, page: 1 });
+    });
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {
         this.masterDirty.set(true);
@@ -148,7 +154,16 @@ export class ProductosPage {
 
   protected abrirCrear(): void {
     this.form.enable();
-    this.form.reset({ sku: '', nombre: '', precio: '', stock: '0' });
+    this.form.reset({
+      sku: '',
+      nombre: '',
+      marca: '',
+      rubro: '',
+      codigoBarras: '',
+      costo: '0',
+      precio: '',
+      stock: '0',
+    });
     this.formDirty.set(false);
     this.drawerAbierto.set(true);
   }
@@ -163,6 +178,10 @@ export class ProductosPage {
     this.form.reset({
       sku: producto.sku,
       nombre: producto.nombre,
+      marca: producto.marca,
+      rubro: producto.rubro,
+      codigoBarras: producto.codigoBarras,
+      costo: String(producto.costo),
       precio: String(producto.precio),
       stock: String(producto.stock),
     });
@@ -187,6 +206,35 @@ export class ProductosPage {
     this.form.enable();
   }
 
+  protected payloadDesdeForm(): CrearProducto | null {
+    const raw = this.form.getRawValue();
+    const precio = Number(raw.precio);
+    const stock = Number(raw.stock);
+    const costo = Number(raw.costo);
+    if (!(precio > 0) || !Number.isFinite(precio)) {
+      this.notifications.error('Precio inválido', 'Debe ser mayor a cero');
+      return null;
+    }
+    if (!Number.isFinite(costo) || costo < 0) {
+      this.notifications.error('Costo inválido', 'Debe ser ≥ 0');
+      return null;
+    }
+    if (!Number.isInteger(stock) || stock < 0) {
+      this.notifications.error('Stock inválido', 'Debe ser un entero ≥ 0');
+      return null;
+    }
+    return {
+      sku: raw.sku,
+      nombre: raw.nombre,
+      marca: raw.marca,
+      rubro: raw.rubro,
+      codigoBarras: raw.codigoBarras,
+      costo,
+      precio,
+      stock,
+    };
+  }
+
   protected guardarMaster(): void {
     const id = this.seleccionadoId();
     if (!id || !this.masterDirty() || !this.esAdmin()) {
@@ -196,19 +244,12 @@ export class ProductosPage {
       this.form.markAllAsTouched();
       return;
     }
-    const raw = this.form.getRawValue();
-    const precio = Number(raw.precio);
-    const stock = Number(raw.stock);
-    if (!(precio > 0) || !Number.isFinite(precio)) {
-      this.notifications.error('Precio inválido', 'Debe ser mayor a cero');
-      return;
-    }
-    if (!Number.isInteger(stock) || stock < 0) {
-      this.notifications.error('Stock inválido', 'Debe ser un entero ≥ 0');
+    const body = this.payloadDesdeForm();
+    if (!body) {
       return;
     }
     this.guardando.set(true);
-    this.store.actualizar(id, { sku: raw.sku, nombre: raw.nombre, precio, stock }).subscribe({
+    this.store.actualizar(id, body).subscribe({
       next: (producto) => {
         this.notifications.success('Producto actualizado', producto.nombre);
         this.guardando.set(false);
@@ -236,19 +277,12 @@ export class ProductosPage {
       this.form.markAllAsTouched();
       return;
     }
-    const raw = this.form.getRawValue();
-    const precio = Number(raw.precio);
-    const stock = Number(raw.stock);
-    if (!(precio > 0) || !Number.isFinite(precio)) {
-      this.notifications.error('Precio inválido', 'Debe ser mayor a cero');
-      return;
-    }
-    if (!Number.isInteger(stock) || stock < 0) {
-      this.notifications.error('Stock inválido', 'Debe ser un entero ≥ 0');
+    const body = this.payloadDesdeForm();
+    if (!body) {
       return;
     }
     this.guardando.set(true);
-    this.store.crear({ sku: raw.sku, nombre: raw.nombre, precio, stock }).subscribe({
+    this.store.crear(body).subscribe({
       next: (producto) => {
         this.notifications.success('Producto creado', producto.nombre);
         this.guardando.set(false);
@@ -278,7 +312,9 @@ export class ProductosPage {
     });
   }
 
-  protected errorCampo(campo: 'sku' | 'nombre' | 'precio' | 'stock'): string {
+  protected errorCampo(
+    campo: 'sku' | 'nombre' | 'marca' | 'rubro' | 'codigoBarras' | 'costo' | 'precio' | 'stock',
+  ): string {
     const control = this.form.controls[campo];
     if (!control.touched || !control.errors) {
       return '';
