@@ -1,0 +1,107 @@
+<section class="page">
+  <header class="page__header">
+    <p class="page__subtitle">Saldos, movimientos y cobranzas de clientes</p>
+    @if (clienteSeleccionadoId()) {
+      <app-button variant="primary" size="md" (clicked)="abrirRecibo()">
+        <app-icon name="plus" />
+        Registrar recibo
+      </app-button>
+    }
+  </header>
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filasSaldos().length === 0"
+    emptyMessage="No hay movimientos de cuenta corriente aún. Facturá un remito para generar deuda."
+    [skeletonRows]="4"
+  >
+    <div class="tabla-scroll">
+      <app-table
+        [columns]="columnasSaldos"
+        [rows]="filasSaldos()"
+        headerVariant="soft"
+        [striped]="true"
+        [compact]="true"
+      >
+        <ng-template appTableCell="acciones" let-row>
+          <div class="fila-acciones">
+            <button
+              type="button"
+              class="fila-acciones__btn fila-acciones__btn--config"
+              title="Ver estado de cuenta"
+              aria-label="Ver estado de cuenta"
+              (click)="verDetalle($any(row)['clienteId'])"
+            >
+              <app-icon name="file-text" />
+            </button>
+          </div>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+
+  @if (clienteSeleccionadoId(); as clienteId) {
+    <section class="detalle card">
+      <header class="detalle__head">
+        <div>
+          <h3>{{ clienteDetalle() }}</h3>
+          <p>Saldo actual: {{ formatearTotal(saldoDetalle()) }}</p>
+        </div>
+        <app-badge [variant]="saldoDetalle() > 0 ? 'warning' : 'success'">
+          {{ saldoDetalle() > 0 ? 'Con deuda' : 'Al día' }}
+        </app-badge>
+      </header>
+      @if (filasMovimientos().length === 0) {
+        <p class="detalle__hint">Sin movimientos para este cliente.</p>
+      } @else {
+        <app-table
+          [columns]="columnasMov"
+          [rows]="filasMovimientos()"
+          headerVariant="soft"
+          [striped]="true"
+          [compact]="true"
+        >
+          <ng-template appTableCell="tipoLabel" let-row>
+            <app-badge [variant]="$any(row)['badge']">
+              {{ $any(row)['tipoLabel'] }}
+            </app-badge>
+          </ng-template>
+        </app-table>
+      }
+    </section>
+  }
+</section>
+
+<app-side-drawer
+  [abierto]="drawerRecibo()"
+  titulo="Registrar recibo"
+  ancho="480px"
+  (cerrar)="cerrarRecibo()"
+>
+  <div class="form-drawer">
+    <form [formGroup]="form">
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Cobranza · {{ clienteDetalle() }}</h4>
+        </header>
+        <div class="form-section__body">
+          <app-select-input
+            label="Factura"
+            [options]="facturaOptions()"
+            formControlName="facturaId"
+          />
+          <app-text-input label="Monto" type="number" formControlName="monto" />
+          <app-select-input label="Medio" [options]="medioOptions" formControlName="medio" />
+          <app-text-input label="Observación" formControlName="observacion" />
+        </div>
+      </section>
+    </form>
+    <footer class="form-drawer__footer">
+      <app-button variant="outline" size="md" (clicked)="cerrarRecibo()">Cancelar</app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarRecibo()">
+        Cobrar
+      </app-button>
+    </footer>
+  </div>
+</app-side-drawer>

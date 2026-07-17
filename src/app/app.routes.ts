@@ -34,6 +34,13 @@ export const routes: Routes = [
         loadChildren: () => import('./features/ventas/ventas.routes').then((m) => m.VENTAS_ROUTES),
       },
       {
+        path: 'cuenta-corriente',
+        loadChildren: () =>
+          import('./features/cuenta-corriente/cuenta-corriente.routes').then(
+            (m) => m.CUENTA_CORRIENTE_ROUTES,
+          ),
+      },
+      {
         path: 'configuracion',
         loadChildren: () =>
           import('./features/configuracion/configuracion.routes').then(

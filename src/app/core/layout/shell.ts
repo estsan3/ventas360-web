@@ -10,6 +10,7 @@ const TITULOS: Record<string, string> = {
   clientes: 'Clientes',
   productos: 'Productos',
   ventas: 'Ventas',
+  'cuenta-corriente': 'Cuenta corriente',
   configuracion: 'Configuración',
 };
 
@@ -18,6 +19,7 @@ const NAV_ITEMS: SidebarItem[] = [
   { id: 'clientes', icon: 'user', label: 'Clientes' },
   { id: 'productos', icon: 'package', label: 'Productos' },
   { id: 'ventas', icon: 'dollar', label: 'Ventas' },
+  { id: 'cuenta-corriente', icon: 'file-text', label: 'Cuenta corriente' },
   { id: 'configuracion', icon: 'settings', label: 'Configuración', section: 'bottom' },
 ];
 
