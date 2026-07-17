@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { DepositoCatalogo, ListaPrecioCatalogo, VendedorCatalogo } from './catalogos.models';
 import { ParametrosNegocioDto, ParametrosOperativosDto, TalonarioDto } from './parametros.dto';
 import {
   negocioToDto,
@@ -15,6 +16,21 @@ import { ParametrosNegocio, ParametrosOperativos, Talonario } from './parametros
 import { UsuarioDto } from './usuario.dto';
 import { nuevoUsuarioToDto, usuarioToModel } from './usuario.mapper';
 import { NuevoUsuario, Usuario } from './usuario.model';
+
+interface DepositoDto {
+  id: string;
+  codigo: string;
+  nombre: string;
+  activo: boolean;
+}
+
+interface ListaPrecioDto {
+  id: string;
+  codigo: string;
+  nombre: string;
+  es_default: boolean;
+  activo: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ConfiguracionService {
@@ -35,6 +51,148 @@ export class ConfiguracionService {
 
   darDeBaja(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/usuarios/${id}`);
+  }
+
+  listarVendedores(): Observable<VendedorCatalogo[]> {
+    return this.http.get<UsuarioDto[]>(`${this.base}/catalogos/vendedores`).pipe(
+      map((items) =>
+        items.map((u) => ({
+          id: u.id,
+          nombre: u.nombre,
+          email: u.email,
+          rol: u.rol,
+        })),
+      ),
+    );
+  }
+
+  crearVendedor(nombre: string): Observable<VendedorCatalogo> {
+    return this.http.post<UsuarioDto>(`${this.base}/catalogos/vendedores`, { nombre }).pipe(
+      map((u) => ({
+        id: u.id,
+        nombre: u.nombre,
+        email: u.email,
+        rol: u.rol,
+      })),
+    );
+  }
+
+  eliminarVendedor(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/catalogos/vendedores/${id}`);
+  }
+
+  listarDepositos(): Observable<DepositoCatalogo[]> {
+    return this.http.get<DepositoDto[]>(`${this.base}/stock/depositos`).pipe(
+      map((items) =>
+        items.map((d) => ({
+          id: d.id,
+          codigo: d.codigo,
+          nombre: d.nombre,
+          activo: d.activo,
+        })),
+      ),
+    );
+  }
+
+  crearDeposito(body: { codigo: string; nombre: string }): Observable<DepositoCatalogo> {
+    return this.http.post<DepositoDto>(`${this.base}/stock/depositos`, body).pipe(
+      map((d) => ({
+        id: d.id,
+        codigo: d.codigo,
+        nombre: d.nombre,
+        activo: d.activo,
+      })),
+    );
+  }
+
+  actualizarDeposito(id: string, body: { nombre: string }): Observable<DepositoCatalogo> {
+    return this.http.put<DepositoDto>(`${this.base}/stock/depositos/${id}`, body).pipe(
+      map((d) => ({
+        id: d.id,
+        codigo: d.codigo,
+        nombre: d.nombre,
+        activo: d.activo,
+      })),
+    );
+  }
+
+  desactivarDeposito(id: string): Observable<DepositoCatalogo> {
+    return this.http.patch<DepositoDto>(`${this.base}/stock/depositos/${id}/desactivar`, {}).pipe(
+      map((d) => ({
+        id: d.id,
+        codigo: d.codigo,
+        nombre: d.nombre,
+        activo: d.activo,
+      })),
+    );
+  }
+
+  listarListasPrecio(): Observable<ListaPrecioCatalogo[]> {
+    return this.http.get<ListaPrecioDto[]>(`${this.base}/precios/listas`).pipe(
+      map((items) =>
+        items.map((l) => ({
+          id: l.id,
+          codigo: l.codigo,
+          nombre: l.nombre,
+          esDefault: l.es_default,
+          activo: l.activo,
+        })),
+      ),
+    );
+  }
+
+  crearListaPrecio(body: {
+    codigo: string;
+    nombre: string;
+    esDefault?: boolean;
+  }): Observable<ListaPrecioCatalogo> {
+    return this.http
+      .post<ListaPrecioDto>(`${this.base}/precios/listas`, {
+        codigo: body.codigo,
+        nombre: body.nombre,
+        es_default: body.esDefault ?? false,
+      })
+      .pipe(
+        map((l) => ({
+          id: l.id,
+          codigo: l.codigo,
+          nombre: l.nombre,
+          esDefault: l.es_default,
+          activo: l.activo,
+        })),
+      );
+  }
+
+  actualizarListaPrecio(
+    id: string,
+    body: { nombre?: string; esDefault?: boolean },
+  ): Observable<ListaPrecioCatalogo> {
+    return this.http
+      .put<ListaPrecioDto>(`${this.base}/precios/listas/${id}`, {
+        nombre: body.nombre,
+        es_default: body.esDefault,
+      })
+      .pipe(
+        map((l) => ({
+          id: l.id,
+          codigo: l.codigo,
+          nombre: l.nombre,
+          esDefault: l.es_default,
+          activo: l.activo,
+        })),
+      );
+  }
+
+  desactivarListaPrecio(id: string): Observable<ListaPrecioCatalogo> {
+    return this.http.patch<ListaPrecioDto>(`${this.base}/precios/listas/${id}/desactivar`, {}).pipe(
+      map((l) => ({
+        id: l.id,
+        codigo: l.codigo,
+        nombre: l.nombre,
+        esDefault: l.es_default,
+        activo: l.activo,
+      })),
+    );
   }
 
   obtenerNegocio(): Observable<ParametrosNegocio> {

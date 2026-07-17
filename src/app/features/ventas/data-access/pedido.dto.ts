@@ -1,5 +1,14 @@
-export type TipoComprobanteDto = 'pedido' | 'remito' | 'factura';
-export type EstadoPedidoDto = 'borrador' | 'confirmado' | 'entregado' | 'facturado' | 'cancelado';
+export type TipoComprobanteDto = 'presupuesto' | 'pedido' | 'remito' | 'factura';
+export type EstadoPedidoDto =
+  | 'borrador'
+  | 'confirmado'
+  | 'entregado'
+  | 'facturado'
+  | 'cancelado'
+  | 'vigente'
+  | 'aceptado'
+  | 'vencido'
+  | 'convertido';
 
 export interface LineaPedidoDto {
   id: string;
@@ -42,6 +51,60 @@ export interface ClienteRefDto {
   id: string;
   nombre: string;
   activo: boolean;
+  email?: string;
+  telefono?: string;
+  cuit?: string;
+  condicion_iva?: string;
+  limite_credito?: number;
+  zona_id?: string | null;
+  vendedor_id?: string | null;
+  bloqueado?: boolean;
+}
+
+export interface SaldoClienteDto {
+  cliente_id: string;
+  saldo: number;
+  debe_total: number;
+  haber_total: number;
+}
+
+export interface MovimientoCxcDto {
+  id: string;
+  cliente_id: string;
+  tipo: 'debe' | 'haber';
+  monto: number;
+  referencia_tipo: string;
+  referencia_id: string;
+  concepto: string;
+  fecha: string;
+}
+
+export interface EstadoCuentaDto {
+  cliente_id: string;
+  saldo: number;
+  movimientos: MovimientoCxcDto[];
+}
+
+export interface ReciboDto {
+  id: string;
+  cliente_id: string;
+  fecha: string;
+  monto: number;
+  medio: 'efectivo' | 'transferencia' | 'tarjeta';
+  observacion: string;
+}
+
+export interface ZonaRefDto {
+  id: string;
+  nombre: string;
+  codigo: string;
+  activo: boolean;
+}
+
+export interface UsuarioRefDto {
+  id: string;
+  nombre: string;
+  rol: string;
 }
 
 export interface ProductoRefDto {
@@ -50,6 +113,7 @@ export interface ProductoRefDto {
   nombre: string;
   activo: boolean;
   precio: number;
+  stock?: number;
 }
 
 export interface DepositoRefDto {

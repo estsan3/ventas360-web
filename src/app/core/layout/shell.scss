@@ -1,23 +1,15 @@
 @use 'tokens' as t;
+@use 'typography' as ty;
 
-// Experimento visual: header + menú unidos en "L invertida" con el
-// color del menú (revertible con git revert)
 .shell {
   display: flex;
-  gap: 0;
-  height: 100vh;
-  padding: 0;
-  background: t.$color-primary-surface;
+  min-height: 100vh;
+  background: t.$color-background;
+  font-family: ty.$font-family-base;
 
-  // La sidebar pierde el redondeo: es la pata vertical de la L
-  ::ng-deep app-sidebar .sidebar {
-    border-radius: 0;
-    height: 100%;
-  }
-
-  &__column {
+  &__main {
     flex: 1;
-    min-width: 0; // permite que tablas internas scrolleen en vez de desbordar
+    min-width: 0;
     display: flex;
     flex-direction: column;
   }
@@ -26,16 +18,71 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    background: t.$color-background;
-    border-top-left-radius: t.$radius-lg; // curva interna de la L
   }
 
-  &__titulo {
-    margin: 24px 0 0;
-    padding: 0 24px; // alineado con el contenido de las secciones
-    text-align: left;
-    font-size: 25px;
-    font-weight: 700;
-    color: t.$color-primary-dark; // verde oscuro de la paleta
+  &__menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    border: none;
+    background: transparent;
+    cursor: default;
+  }
+
+  &__menu {
+    position: fixed;
+    bottom: 64px;
+    left: 16px;
+    z-index: 101;
+    min-width: 220px;
+    padding: t.$space-xs;
+    background: t.$color-surface;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-md;
+    box-shadow: t.$shadow-md;
+    display: flex;
+    flex-direction: column;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: t.$space-sm;
+      padding: t.$space-sm t.$space-md;
+      border: none;
+      border-radius: t.$radius-sm;
+      background: transparent;
+      font-family: inherit;
+      font-size: ty.$font-size-md-sm;
+      font-weight: ty.$font-weight-semibold;
+      color: t.$color-text;
+      text-align: left;
+      cursor: pointer;
+
+      &:hover {
+        background: t.$color-background-alt;
+      }
+    }
+  }
+
+  &__menu-user {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: t.$space-sm t.$space-md t.$space-md;
+    border-bottom: 1px solid t.$color-border-soft;
+    margin-bottom: t.$space-xs;
+
+    strong {
+      font-size: 13.5px;
+    }
+
+    small {
+      font-size: 12px;
+      color: t.$color-text-muted;
+    }
+  }
+
+  &__menu-salir {
+    color: t.$color-danger !important;
   }
 }

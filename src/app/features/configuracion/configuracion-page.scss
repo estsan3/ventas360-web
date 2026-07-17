@@ -8,6 +8,77 @@
   padding: t.$space-lg;
   font-family: ty.$font-family-base;
 
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: t.$space-md;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: ty.$font-size-2xl;
+    font-weight: ty.$font-weight-bold;
+    color: t.$color-text;
+  }
+
+  &__subtitle {
+    margin: t.$space-xs 0 0;
+    color: t.$color-text-muted;
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: t.$space-lg;
+    align-items: start;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: t.$space-sm;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-lg;
+    background: t.$color-surface;
+  }
+
+  &__nav-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: t.$space-sm t.$space-md;
+    border: none;
+    border-radius: t.$radius-md;
+    background: transparent;
+    color: t.$color-text;
+    font-size: ty.$font-size-sm;
+    font-weight: ty.$font-weight-medium;
+    cursor: pointer;
+
+    &:hover {
+      background: t.$color-background-alt;
+    }
+
+    &--on {
+      background: t.$color-primary-light;
+      color: t.$color-primary-deep;
+      font-weight: ty.$font-weight-semibold;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: t.$space-lg;
+    min-width: 0;
+  }
+
   &__card {
     display: flex;
     align-items: center;
@@ -82,11 +153,21 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: t.$space-md;
+    align-items: end;
 
     &--talonario {
       padding-top: t.$space-sm;
       border-top: 1px solid t.$color-border;
     }
+  }
+
+  &__check {
+    display: inline-flex;
+    align-items: center;
+    gap: t.$space-sm;
+    font-size: ty.$font-size-sm;
+    color: t.$color-text;
+    padding-bottom: t.$space-sm;
   }
 
   &__hint {
@@ -99,6 +180,12 @@
     display: flex;
     justify-content: flex-end;
     gap: t.$space-sm;
+  }
+
+  &__row-actions {
+    display: inline-flex;
+    gap: 4px;
+    justify-content: flex-end;
   }
 
   &__icon-btn {
@@ -118,20 +205,6 @@
       border-color: t.$color-primary;
     }
   }
-}
-
-.page__header {
-  h1 {
-    margin: 0;
-    font-size: ty.$font-size-2xl;
-    font-weight: ty.$font-weight-bold;
-    color: t.$color-text;
-  }
-}
-
-.page__subtitle {
-  margin: t.$space-xs 0 0;
-  color: t.$color-text-muted;
 }
 
 .tabla-scroll {

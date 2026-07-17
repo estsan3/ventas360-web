@@ -1,1 +1,167 @@
+@use 'dc-list' as dc;
 @use '../catalogo-page';
+
+.lst {
+  @include dc.dc-list-page;
+
+  &__header {
+    @include dc.dc-list-header;
+  }
+
+  &__title {
+    @include dc.dc-list-title;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__btn {
+    border-radius: 9px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+
+    &--ghost {
+      border: 1px solid dc.$dc-border;
+      background: #fff;
+      color: dc.$dc-text;
+
+      &:hover {
+        background: dc.$dc-hover;
+      }
+    }
+  }
+
+  &__cta {
+    @include dc.dc-list-cta;
+    padding: 9px 16px;
+    font-size: 13px;
+  }
+
+  &__toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    flex: 1;
+    min-width: 280px;
+    max-width: 420px;
+    padding: 10px 14px;
+    border: 1px solid dc.$dc-border;
+    border-radius: 9px;
+    font-size: 13.5px;
+    background: #fff;
+    color: dc.$dc-text;
+    font-family: inherit;
+    outline-color: dc.$dc-primary;
+  }
+
+  &__filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__chip {
+    @include dc.dc-list-chip;
+
+    &--danger {
+      color: dc.$dc-danger;
+
+      &:hover {
+        background: dc.$dc-danger-bg;
+      }
+
+      &.lst__chip--on {
+        background: dc.$dc-danger;
+        color: #fff;
+        border: none;
+
+        &:hover {
+          background: #9f1f18;
+        }
+      }
+    }
+  }
+
+  &__card {
+    @include dc.dc-list-card;
+  }
+
+  &__table {
+    @include dc.dc-list-table;
+  }
+
+  &__row {
+    cursor: pointer;
+  }
+
+  &__sku {
+    font-size: 12.5px;
+    color: dc.$dc-muted;
+    font-weight: 600;
+  }
+
+  &__name {
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  &__th-right,
+  &__td-right {
+    text-align: right;
+  }
+
+  &__strong {
+    font-weight: 600;
+  }
+
+  &__muted {
+    color: dc.$dc-muted;
+  }
+
+  &__badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 3px 9px;
+    white-space: nowrap;
+
+    &--danger {
+      color: dc.$dc-danger;
+      background: dc.$dc-danger-bg;
+    }
+
+    &--warn {
+      color: dc.$dc-warn;
+      background: dc.$dc-warn-bg;
+    }
+  }
+
+  &__footer {
+    padding: 12px 20px;
+    border-top: 1px solid dc.$dc-border-soft;
+    font-size: 12.5px;
+    color: dc.$dc-muted;
+  }
+
+  &__empty {
+    padding: 40px 20px;
+    text-align: center;
+    font-size: 13.5px;
+    color: dc.$dc-muted;
+
+    &--error {
+      color: dc.$dc-danger;
+    }
+  }
+}

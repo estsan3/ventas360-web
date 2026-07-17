@@ -9,7 +9,7 @@ Angular standalone (sin NgModules). Backend: FastAPI REST. Target: PC + tablet.
 
 ## Carpetas
 
-- `core/` — singleton: interceptors, guards, services, models, layout, state transversal
+- `core/` — singleton: interceptors, guards, services, models, layout (shell + sidebar), state transversal
 - `shared/` — presentacional (`ui/`, pipes, directives, validators); sin HTTP ni stores
 - `features/<dominio>/` — `data-access/` + pantalla smart + `ui/` dumb + `<dominio>.routes.ts`
 - `notifications/` — desacoplado (store Signals + transporte)

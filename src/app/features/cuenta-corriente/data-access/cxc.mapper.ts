@@ -1,18 +1,24 @@
 import {
   ClienteRefDto,
+  ComprobanteCxcDto,
   CrearReciboDto,
   EstadoCuentaDto,
   FacturaRefDto,
+  ListaPrecioDto,
   ReciboDto,
   SaldoClienteDto,
+  ZonaRefDto,
 } from './cxc.dto';
 import {
   ClienteRef,
+  ComprobanteCxc,
   CrearRecibo,
   EstadoCuenta,
   FacturaRef,
+  ListaPrecioRef,
   Recibo,
   SaldoCliente,
+  ZonaRef,
 } from './cxc.model';
 
 export function saldoToModel(dto: SaldoClienteDto): SaldoCliente {
@@ -21,6 +27,8 @@ export function saldoToModel(dto: SaldoClienteDto): SaldoCliente {
     saldo: dto.saldo,
     debeTotal: dto.debe_total,
     haberTotal: dto.haber_total,
+    fechaUltimoMovimiento: dto.fecha_ultimo_movimiento ?? null,
+    fechaDebeMasAntigua: dto.fecha_debe_mas_antigua ?? null,
   };
 }
 
@@ -58,12 +66,36 @@ export function crearReciboToDto(model: CrearRecibo): CrearReciboDto {
     monto: model.monto,
     medio: model.medio,
     observacion: model.observacion ?? '',
-    imputaciones: [{ factura_id: model.facturaId, monto: model.monto }],
+    imputaciones: model.imputaciones.map((i) => ({
+      factura_id: i.facturaId,
+      monto: i.monto,
+    })),
   };
 }
 
 export function clienteRefToModel(dto: ClienteRefDto): ClienteRef {
-  return { id: dto.id, nombre: dto.nombre, activo: dto.activo };
+  return {
+    id: dto.id,
+    nombre: dto.nombre,
+    activo: dto.activo,
+    email: dto.email ?? '',
+    telefono: dto.telefono ?? '',
+    cuit: dto.cuit ?? '',
+    condicionIva: dto.condicion_iva ?? 'consumidor_final',
+    limiteCredito: dto.limite_credito ?? 0,
+    zonaId: dto.zona_id ?? null,
+    vendedorId: dto.vendedor_id ?? null,
+    bloqueado: dto.bloqueado ?? false,
+  };
+}
+
+export function zonaRefToModel(dto: ZonaRefDto): ZonaRef {
+  return {
+    id: dto.id,
+    nombre: dto.nombre,
+    codigo: dto.codigo,
+    activo: dto.activo,
+  };
 }
 
 export function facturaRefToModel(dto: FacturaRefDto): FacturaRef {
@@ -72,5 +104,38 @@ export function facturaRefToModel(dto: FacturaRefDto): FacturaRef {
     total: dto.total,
     fecha: dto.fecha,
     estado: dto.estado,
+  };
+}
+
+export function comprobanteCxcToModel(dto: ComprobanteCxcDto): ComprobanteCxc {
+  return {
+    id: dto.id,
+    tipo: dto.tipo === 'factura' ? 'factura' : 'remito',
+    clienteId: dto.cliente_id,
+    estado: dto.estado,
+    neto: dto.neto,
+    iva: dto.iva,
+    ivaPorcentaje: dto.iva_porcentaje,
+    total: dto.total,
+    numero: dto.numero,
+    fecha: dto.fecha,
+    origenId: dto.origen_id,
+    lineas: (dto.lineas ?? []).map((l) => ({
+      id: l.id,
+      productoId: l.producto_id,
+      descripcion: l.descripcion ?? '',
+      cantidad: l.cantidad,
+      precioUnitario: l.precio_unitario,
+    })),
+  };
+}
+
+export function listaPrecioToModel(dto: ListaPrecioDto): ListaPrecioRef {
+  return {
+    id: dto.id,
+    codigo: dto.codigo,
+    nombre: dto.nombre,
+    esDefault: dto.es_default,
+    activo: dto.activo,
   };
 }

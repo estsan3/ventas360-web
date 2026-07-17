@@ -30,10 +30,15 @@ export function crearCompraToDto(model: CrearCompra): CrearCompraDto {
     proveedor_id: model.proveedorId,
     tipo: model.tipo,
     deposito_id: model.depositoId,
-    lineas: model.lineas.map((l) => ({
-      producto_id: l.productoId,
-      cantidad: l.cantidad,
-      precio_unitario: l.precioUnitario,
-    })),
+    lineas: model.lineas.map((l) => {
+      const linea: { producto_id: string; cantidad: number; precio_unitario?: number } = {
+        producto_id: l.productoId,
+        cantidad: l.cantidad,
+      };
+      if (l.precioUnitario !== undefined) {
+        linea.precio_unitario = l.precioUnitario;
+      }
+      return linea;
+    }),
   };
 }

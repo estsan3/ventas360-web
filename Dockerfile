@@ -18,6 +18,8 @@ FROM nginx:1.27-alpine AS runtime
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist/ventas360-web/browser /usr/share/nginx/html
+# Assets del repo a veces vienen con modo 600; nginx no puede servirlos.
+RUN chmod -R a+rX /usr/share/nginx/html
 
 EXPOSE 80
 

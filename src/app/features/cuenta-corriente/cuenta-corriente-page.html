@@ -1,107 +1,534 @@
-<section class="page">
-  <header class="page__header">
-    <p class="page__subtitle">Saldos, movimientos y cobranzas de clientes</p>
-    @if (clienteSeleccionadoId()) {
-      <app-button variant="primary" size="md" (clicked)="abrirRecibo()">
-        <app-icon name="plus" />
-        Registrar recibo
-      </app-button>
-    }
+<section class="page ctc">
+  <header class="ctc__header">
+    <h1 class="ctc__title">Cuenta corriente</h1>
+    <div class="ctc__actions">
+      <button type="button" class="ctc__btn ctc__btn--ghost">Imprimir resumen</button>
+      <button type="button" class="ctc__btn ctc__btn--primary" (click)="abrirCobro()">
+        + Registrar cobro
+      </button>
+    </div>
   </header>
 
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filasSaldos().length === 0"
-    emptyMessage="No hay movimientos de cuenta corriente aún. Facturá un remito para generar deuda."
-    [skeletonRows]="4"
-  >
-    <div class="tabla-scroll">
-      <app-table
-        [columns]="columnasSaldos"
-        [rows]="filasSaldos()"
-        headerVariant="soft"
-        [striped]="true"
-        [compact]="true"
-      >
-        <ng-template appTableCell="acciones" let-row>
-          <div class="fila-acciones">
+  <div class="ctc__filters">
+    <div class="ctc__filters-head">
+      <div>
+        <div class="ctc__filters-title">Buscar cuentas</div>
+        <div class="ctc__filters-sub">
+          Filtrá por cliente, plazo, montos y datos del cliente / movimiento
+        </div>
+      </div>
+      <button type="button" class="ctc__btn ctc__btn--sm" (click)="limpiarFiltros()">
+        Limpiar filtros
+      </button>
+    </div>
+
+    <div class="ctc__filters-grid">
+      <label class="ctc__field ctc__field--wide">
+        <span class="ctc__field-label">Cliente</span>
+        <input
+          class="ctc__input"
+          type="search"
+          [ngModel]="qCliente()"
+          (ngModelChange)="qCliente.set($event)"
+          placeholder="Nombre, CUIT, email o teléfono…"
+        />
+      </label>
+
+      <label class="ctc__field">
+        <span class="ctc__field-label">Plazo (días)</span>
+        <select class="ctc__select" [ngModel]="plazo()" (ngModelChange)="plazo.set($any($event))">
+          <option value="todo">Todos los plazos</option>
+          <option value="30">0 – 30 días</option>
+          <option value="60">31 – 60 días</option>
+          <option value="90">61 – 90 días</option>
+          <option value="mas90">Más de 90 días</option>
+        </select>
+      </label>
+
+      <label class="ctc__field">
+        <span class="ctc__field-label">Situación</span>
+        <select
+          class="ctc__select"
+          [ngModel]="situacion()"
+          (ngModelChange)="situacion.set($any($event))"
+        >
+          <option value="todos">Todas</option>
+          <option value="debe">Debe</option>
+          <option value="favor">A favor</option>
+          <option value="al_dia">Al día</option>
+        </select>
+      </label>
+
+      <label class="ctc__field">
+        <span class="ctc__field-label">Monto mínimo</span>
+        <input
+          class="ctc__input"
+          type="text"
+          inputmode="decimal"
+          [ngModel]="montoMin()"
+          (ngModelChange)="montoMin.set($event)"
+          placeholder="Ej. 10000"
+        />
+      </label>
+
+      <label class="ctc__field">
+        <span class="ctc__field-label">Monto máximo</span>
+        <input
+          class="ctc__input"
+          type="text"
+          inputmode="decimal"
+          [ngModel]="montoMax()"
+          (ngModelChange)="montoMax.set($event)"
+          placeholder="Ej. 500000"
+        />
+      </label>
+
+      <label class="ctc__field">
+        <span class="ctc__field-label">Tipo movimiento</span>
+        <select
+          class="ctc__select"
+          [ngModel]="tipoMov()"
+          (ngModelChange)="tipoMov.set($any($event))"
+        >
+          <option value="todos">Todos</option>
+          <option value="debe">Solo debe</option>
+          <option value="haber">Solo haber</option>
+          <option value="factura">Facturas</option>
+          <option value="recibo">Recibos</option>
+          <option value="ajuste">Ajustes</option>
+        </select>
+      </label>
+
+      <label class="ctc__field">
+        <span class="ctc__field-label">Zona</span>
+        <select class="ctc__select" [ngModel]="zonaId()" (ngModelChange)="zonaId.set($event)">
+          <option value="">Todas las zonas</option>
+          @for (z of zonas(); track z.id) {
+            <option [value]="z.id">{{ z.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="ctc__field">
+        <span class="ctc__field-label">Estado cliente</span>
+        <select
+          class="ctc__select"
+          [ngModel]="bloqueo()"
+          (ngModelChange)="bloqueo.set($any($event))"
+        >
+          <option value="todos">Todos</option>
+          <option value="habilitados">Habilitados</option>
+          <option value="bloqueados">Bloqueados</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="ctc__filters-meta">
+      {{ clientesFiltrados().length }} cuenta(s) coinciden con los filtros
+    </div>
+  </div>
+
+  <div class="ctc__layout">
+    <aside class="ctc__listado">
+      <div class="ctc__listado-head">Clientes</div>
+      @if (clientesFiltrados().length === 0) {
+        <div class="ctc__empty ctc__empty--sm">Ninguna cuenta con esos criterios</div>
+      } @else {
+        <div class="ctc__listado-scroll">
+          @for (fila of clientesFiltrados(); track fila.cliente.id) {
             <button
               type="button"
-              class="fila-acciones__btn fila-acciones__btn--config"
-              title="Ver estado de cuenta"
-              aria-label="Ver estado de cuenta"
-              (click)="verDetalle($any(row)['clienteId'])"
+              class="ctc__cli"
+              [class.ctc__cli--on]="clienteId() === fila.cliente.id"
+              (click)="elegirCliente(fila.cliente.id)"
             >
-              <app-icon name="file-text" />
+              <div class="ctc__cli-top">
+                <span class="ctc__cli-nombre">{{ fila.cliente.nombre }}</span>
+                <span
+                  class="ctc__pill"
+                  [class.ctc__pill--debe]="fila.situacion === 'debe'"
+                  [class.ctc__pill--favor]="fila.situacion === 'favor'"
+                  [class.ctc__pill--ok]="fila.situacion === 'al_dia'"
+                >
+                  {{ fila.situacionLabel }}
+                </span>
+              </div>
+              <div class="ctc__cli-meta">
+                {{ fila.cliente.cuit || 'Sin CUIT' }} · {{ fila.zonaNombre }}
+                @if (fila.antiguedadDias !== null) {
+                  · {{ fila.antiguedadDias }}d
+                }
+              </div>
+              <div
+                class="ctc__cli-saldo"
+                [class.ctc__cli-saldo--debe]="fila.situacion === 'debe'"
+                [class.ctc__cli-saldo--favor]="fila.situacion === 'favor'"
+              >
+                {{ fila.saldoFmt }}
+              </div>
             </button>
-          </div>
-        </ng-template>
-      </app-table>
-    </div>
-  </app-state-wrapper>
-
-  @if (clienteSeleccionadoId(); as clienteId) {
-    <section class="detalle card">
-      <header class="detalle__head">
-        <div>
-          <h3>{{ clienteDetalle() }}</h3>
-          <p>Saldo actual: {{ formatearTotal(saldoDetalle()) }}</p>
+          }
         </div>
-        <app-badge [variant]="saldoDetalle() > 0 ? 'warning' : 'success'">
-          {{ saldoDetalle() > 0 ? 'Con deuda' : 'Al día' }}
-        </app-badge>
-      </header>
-      @if (filasMovimientos().length === 0) {
-        <p class="detalle__hint">Sin movimientos para este cliente.</p>
-      } @else {
-        <app-table
-          [columns]="columnasMov"
-          [rows]="filasMovimientos()"
-          headerVariant="soft"
-          [striped]="true"
-          [compact]="true"
-        >
-          <ng-template appTableCell="tipoLabel" let-row>
-            <app-badge [variant]="$any(row)['badge']">
-              {{ $any(row)['tipoLabel'] }}
-            </app-badge>
-          </ng-template>
-        </app-table>
       }
-    </section>
-  }
+    </aside>
+
+    <div class="ctc__detalle">
+      <div class="ctc__cliente">
+        <div class="ctc__cliente-izq">
+          <div class="ctc__avatar" aria-hidden="true">{{ inicialesCliente() }}</div>
+          <div>
+            <div class="ctc__cliente-nombre">
+              {{ clienteActual()?.nombre ?? 'Seleccioná un cliente' }}
+            </div>
+            <div class="ctc__cliente-meta">
+              @if (clienteActual()) {
+                {{ metaCliente() }}
+              } @else {
+                Sin cliente seleccionado
+              }
+            </div>
+          </div>
+        </div>
+        <div class="ctc__kpis">
+          <div>
+            <div class="ctc__kpi-label">Saldo total</div>
+            <div class="ctc__kpi-value">{{ kpiSaldo() }}</div>
+          </div>
+          <div>
+            <div class="ctc__kpi-label">Debe</div>
+            <div class="ctc__kpi-value">{{ kpiDebe() }}</div>
+          </div>
+          <div>
+            <div class="ctc__kpi-label">Haber</div>
+            <div class="ctc__kpi-value ctc__kpi-value--ok">{{ kpiHaber() }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctc__tabs">
+        <button
+          type="button"
+          class="ctc__tab"
+          [class.ctc__tab--on]="panel() === 'comprobantes'"
+          (click)="setPanel('comprobantes')"
+        >
+          Remitos y facturas
+        </button>
+        <button
+          type="button"
+          class="ctc__tab"
+          [class.ctc__tab--on]="panel() === 'movimientos'"
+          (click)="setPanel('movimientos')"
+        >
+          Movimientos cta. cte.
+        </button>
+      </div>
+
+      @if (panel() === 'comprobantes') {
+        <div class="ctc__card">
+          @if (listaPrecio(); as lista) {
+            <div class="ctc__lista-hint">
+              Precios recalculados con lista vigente:
+              <strong>{{ lista.nombre }}</strong>
+              ({{ lista.codigo }})
+            </div>
+          }
+          @if (!clienteId()) {
+            <div class="ctc__empty">Elegí un cliente de la lista</div>
+          } @else if (comprobantesVista().length === 0) {
+            <div class="ctc__empty">Este cliente no tiene remitos ni facturas</div>
+          } @else {
+            <table class="ctc__table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Comprobante</th>
+                  <th>Estado</th>
+                  <th class="ctc__th-right">Ítems</th>
+                  <th class="ctc__th-right">Neto</th>
+                  <th class="ctc__th-right">IVA</th>
+                  <th class="ctc__th-right">%</th>
+                  <th class="ctc__th-right">Total</th>
+                  <th class="ctc__th-right">Deuda</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of comprobantesVista(); track row.comprobante.id) {
+                  <tr>
+                    <td>{{ row.fechaFmt }}</td>
+                    <td>
+                      <span
+                        class="ctc__badge"
+                        [class.ctc__badge--fac]="row.comprobante.tipo === 'factura'"
+                        [class.ctc__badge--rem]="row.comprobante.tipo === 'remito'"
+                      >
+                        {{ row.tipoLabel }}
+                      </span>
+                    </td>
+                    <td class="ctc__strong">{{ row.numero }}</td>
+                    <td class="ctc__ref">{{ row.estado }}</td>
+                    <td class="ctc__td-right">{{ row.items }}</td>
+                    <td class="ctc__td-right">{{ row.netoOriginalFmt }}</td>
+                    <td class="ctc__td-right">{{ row.ivaOriginalFmt }}</td>
+                    <td class="ctc__td-right">{{ row.ivaPorcentajeFmt }}</td>
+                    <td class="ctc__td-right ctc__saldo">{{ row.totalOriginalFmt }}</td>
+                    <td
+                      class="ctc__td-right"
+                      [class.ctc__cli-saldo--debe]="row.pendiente"
+                      [class.ctc__dash]="!row.pendiente"
+                    >
+                      {{ row.pendiente ? row.deudaFmt : row.deudaLabel }}
+                    </td>
+                    <td class="ctc__td-right">
+                      <button
+                        type="button"
+                        class="ctc__btn ctc__btn--sm"
+                        (click)="abrirDetalle(row.comprobante)"
+                      >
+                        Ver detalle
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      } @else {
+        <div class="ctc__card">
+          @if (!clienteId()) {
+            <div class="ctc__empty">Elegí un cliente de la lista</div>
+          } @else if (filas().length === 0) {
+            <div class="ctc__empty">No hay movimientos con los filtros actuales</div>
+          } @else {
+            <table class="ctc__table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Comprobante</th>
+                  <th>Ref.</th>
+                  <th class="ctc__th-right">Debe</th>
+                  <th class="ctc__th-right">Haber</th>
+                  <th class="ctc__th-right">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of filas(); track row.id) {
+                  <tr>
+                    <td>{{ row.fecha }}</td>
+                    <td>
+                      <span
+                        class="ctc__badge"
+                        [class.ctc__badge--fac]="row.tipo === 'FAC'"
+                        [class.ctc__badge--rec]="row.tipo === 'REC'"
+                        [class.ctc__badge--nc]="row.tipo === 'NC'"
+                        [class.ctc__badge--aju]="row.tipo === 'AJU'"
+                      >
+                        {{ row.tipo }}
+                      </span>
+                    </td>
+                    <td class="ctc__strong">{{ row.comprobante }}</td>
+                    <td class="ctc__ref">{{ row.referenciaTipo }}</td>
+                    <td class="ctc__td-right" [class.ctc__dash]="row.debe === '—'">
+                      {{ row.debe }}
+                    </td>
+                    <td
+                      class="ctc__td-right"
+                      [class.ctc__dash]="row.haber === '—'"
+                      [class.ctc__haber]="row.haber !== '—'"
+                    >
+                      {{ row.haber }}
+                    </td>
+                    <td class="ctc__td-right ctc__saldo">{{ row.saldo }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      }
+    </div>
+  </div>
 </section>
 
-<app-side-drawer
-  [abierto]="drawerRecibo()"
-  titulo="Registrar recibo"
-  ancho="480px"
-  (cerrar)="cerrarRecibo()"
->
-  <div class="form-drawer">
-    <form [formGroup]="form">
-      <section class="form-section">
-        <header class="form-section__head">
-          <h4>Cobranza · {{ clienteDetalle() }}</h4>
-        </header>
-        <div class="form-section__body">
-          <app-select-input
-            label="Factura"
-            [options]="facturaOptions()"
-            formControlName="facturaId"
-          />
-          <app-text-input label="Monto" type="number" formControlName="monto" />
-          <app-select-input label="Medio" [options]="medioOptions" formControlName="medio" />
-          <app-text-input label="Observación" formControlName="observacion" />
+@if (detalleOpen() && detalleTotales(); as det) {
+  <div class="ctc-modal" (click)="cerrarDetalle()">
+    <div class="ctc-modal__panel" (click)="$event.stopPropagation()">
+      <div class="ctc-modal__head">
+        <div>
+          <h2 class="ctc-modal__title">{{ det.tipoLabel }} {{ det.numero }}</h2>
+          <p class="ctc-modal__sub">
+            Fecha {{ det.fechaFmt }} · Estado {{ det.estado }} · Precios:
+            {{ det.listaNombre }}
+          </p>
         </div>
-      </section>
-    </form>
-    <footer class="form-drawer__footer">
-      <app-button variant="outline" size="md" (clicked)="cerrarRecibo()">Cancelar</app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarRecibo()">
-        Cobrar
-      </app-button>
-    </footer>
+        <button type="button" class="ctc-modal__close" (click)="cerrarDetalle()">✕</button>
+      </div>
+
+      <div class="ctc-modal__kpis">
+        <div>
+          <div class="ctc__kpi-label">Neto</div>
+          <div class="ctc__kpi-value">{{ det.netoOriginalFmt }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">IVA {{ det.ivaPorcentajeFmt }}</div>
+          <div class="ctc__kpi-value">{{ det.ivaOriginalFmt }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">Total</div>
+          <div class="ctc__kpi-value">{{ det.totalOriginalFmt }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">{{ det.pendiente ? 'Deuda' : 'Situación' }}</div>
+          <div class="ctc__kpi-value" [class.ctc__cli-saldo--debe]="det.pendiente">
+            {{ det.pendiente ? det.deudaFmt : '—' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="ctc-modal__table-wrap">
+        <table class="ctc__table">
+          <thead>
+            <tr>
+              <th>Artículo</th>
+              <th class="ctc__th-right">Cant.</th>
+              <th class="ctc__th-right">P. unit.</th>
+              <th class="ctc__th-right">Neto</th>
+              <th class="ctc__th-right">IVA %</th>
+              <th class="ctc__th-right">IVA $</th>
+              <th class="ctc__th-right">Total</th>
+              <th class="ctc__th-right">Var. lista</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of detalleLineas(); track l.productoId + l.descripcion) {
+              <tr>
+                <td class="ctc__strong">{{ l.descripcion }}</td>
+                <td class="ctc__td-right">{{ l.cantidad }}</td>
+                <td class="ctc__td-right">{{ l.precioUnitarioFmt }}</td>
+                <td class="ctc__td-right">{{ l.netoFmt }}</td>
+                <td class="ctc__td-right">{{ l.ivaPorcentajeFmt }}</td>
+                <td class="ctc__td-right">{{ l.ivaFmt }}</td>
+                <td class="ctc__td-right ctc__saldo">{{ l.totalFmt }}</td>
+                <td
+                  class="ctc__td-right"
+                  [class.ctc__cli-saldo--debe]="(l.cambioPct ?? 0) > 0"
+                  [class.ctc__haber]="(l.cambioPct ?? 0) < 0"
+                >
+                  @if (l.cambioPct === null) {
+                    —
+                  } @else if (l.cambioPct === 0) {
+                    0%
+                  } @else {
+                    {{ l.cambioPct > 0 ? '+' : '' }}{{ l.cambioPct }}%
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ctc-modal__foot">
+        <button type="button" class="ctc__btn ctc__btn--ghost" (click)="cerrarDetalle()">
+          Cerrar
+        </button>
+      </div>
+    </div>
   </div>
-</app-side-drawer>
+}
+
+@if (cobroOpen()) {
+  <div class="ctc-modal" (click)="cerrarCobro()">
+    <div class="ctc-modal__panel ctc-modal__panel--cobro" (click)="$event.stopPropagation()">
+      <div class="ctc-modal__head">
+        <div>
+          <h2 class="ctc-modal__title">Registrar cobro</h2>
+          <p class="ctc-modal__sub">Imputa el pago a los comprobantes más antiguos del cliente</p>
+        </div>
+        <button type="button" class="ctc-modal__close" (click)="cerrarCobro()">✕</button>
+      </div>
+
+      <div class="ctc-cobro">
+        <label class="ctc__field">
+          <span class="ctc__field-label">Cliente</span>
+          <select
+            class="ctc__select"
+            [ngModel]="cobroClienteId()"
+            (ngModelChange)="onCobroClienteChange($event)"
+          >
+            @for (fila of clientesConDeuda(); track fila.cliente.id) {
+              <option [value]="fila.cliente.id">
+                {{ fila.cliente.nombre }} · {{ fila.saldoFmt }}
+              </option>
+            }
+          </select>
+        </label>
+
+        <div class="ctc-cobro__saldo">
+          Saldo deudor:
+          <strong>{{ cobroSaldoFmt() }}</strong>
+        </div>
+
+        <label class="ctc__field">
+          <span class="ctc__field-label">Monto a cobrar</span>
+          <input
+            class="ctc__input"
+            type="text"
+            inputmode="decimal"
+            [ngModel]="cobroMonto()"
+            (ngModelChange)="cobroMonto.set($event)"
+            placeholder="0,00"
+          />
+        </label>
+
+        <label class="ctc__field">
+          <span class="ctc__field-label">Medio</span>
+          <select
+            class="ctc__select"
+            [ngModel]="cobroMedio()"
+            (ngModelChange)="cobroMedio.set($any($event))"
+          >
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="tarjeta">Tarjeta</option>
+          </select>
+        </label>
+
+        <label class="ctc__field">
+          <span class="ctc__field-label">Observación (opcional)</span>
+          <input
+            class="ctc__input"
+            type="text"
+            [ngModel]="cobroObs()"
+            (ngModelChange)="cobroObs.set($event)"
+            placeholder="Ej. Transferencia banco Nación"
+            maxlength="200"
+          />
+        </label>
+      </div>
+
+      <div class="ctc-modal__foot ctc-modal__foot--actions">
+        <button
+          type="button"
+          class="ctc__btn ctc__btn--ghost"
+          [disabled]="cobroGuardando()"
+          (click)="cerrarCobro()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="ctc__btn ctc__btn--primary"
+          [disabled]="cobroGuardando()"
+          (click)="confirmarCobro()"
+        >
+          {{ cobroGuardando() ? 'Registrando…' : 'Confirmar cobro' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

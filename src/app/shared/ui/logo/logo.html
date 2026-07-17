@@ -1,6 +1,6 @@
-<span class="logo" [class.logo--sm]="size() === 'sm'">
+<span class="logo" [class.logo--sm]="size() === 'sm'" [class.logo--compact]="compact()">
+  <span class="logo__mark">V</span>
   @if (!compact()) {
-    <span class="logo__text">Ventas</span>
+    <span class="logo__text">Ventas<span class="logo__accent">360</span></span>
   }
-  <span class="logo__chip">360</span>
 </span>

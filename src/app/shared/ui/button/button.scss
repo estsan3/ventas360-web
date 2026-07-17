@@ -7,7 +7,7 @@
   justify-content: center;
   gap: t.$space-sm;
   font-family: ty.$font-family-base;
-  font-weight: ty.$font-weight-medium;
+  font-weight: ty.$font-weight-bold;
   border: none;
   border-radius: t.$radius-md;
   cursor: pointer;
@@ -20,10 +20,10 @@
     cursor: not-allowed;
   }
 
-  // --- Variantes ---
   &--primary {
     background: t.$color-primary;
     color: #fff;
+    box-shadow: t.$shadow-sm;
 
     &:hover:not(:disabled) {
       background: t.$color-primary-dark;
@@ -35,7 +35,7 @@
     color: #fff;
 
     &:hover:not(:disabled) {
-      background: t.$color-danger-strong;
+      background: #9f1f19;
     }
   }
 
@@ -43,38 +43,37 @@
     background: t.$color-surface;
     color: t.$color-text;
     border: 1px solid t.$color-border;
-    box-shadow: t.$shadow-sm;
+    font-weight: ty.$font-weight-semibold;
+    box-shadow: none;
 
     &:hover:not(:disabled) {
-      background: t.$color-background;
+      background: t.$color-background-alt;
     }
   }
 
-  // --- Tamaños ---
   &--xl {
     height: 48px;
-    padding: 0 t.$space-xl;
-    font-size: ty.$font-size-lg;
+    padding: 0 18px;
+    font-size: ty.$font-size-md;
   }
 
   &--md {
-    height: 36px;
-    padding: 0 t.$space-md;
-    font-size: ty.$font-size-md-sm;
+    height: auto;
+    padding: 10px 18px;
+    font-size: 13.5px;
   }
 
   &--sm {
-    height: 28px;
-    padding: 0 t.$space-md;
-    font-size: ty.$font-size-sm;
-    border-radius: t.$radius-full;
+    height: auto;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    border-radius: t.$radius-sm;
   }
 
   &--full {
     width: 100%;
   }
 
-  // Iconos svg proyectados heredan el tamaño del texto
   ::ng-deep svg {
     width: 1.2em;
     height: 1.2em;

@@ -1,9 +1,8 @@
 /**
  * Paleta categórica de charts en ORDEN FIJO (nunca ciclada).
- * Validada con dataviz/validate_palette.js (lightness, chroma, CVD, contraste).
- * Debe coincidir con $chart-1..4 de styles/_tokens.scss.
+ * Alineada al mock DC Ventas360 (naranja / warm).
  */
-export const CHART_COLORS = ['#007c2e', '#2563eb', '#d97706', '#37b38d'] as const;
+export const CHART_COLORS = ['#e86412', '#2563eb', '#f0b585', '#3d8f5f'] as const;
 
 export interface ChartDatum {
   label: string;
@@ -12,5 +11,5 @@ export interface ChartDatum {
   trend?: string;
 }
 
-/** Par de verdes validado (dataviz) para gráficos de 2 series */
-export const CHART_PAIR = ['#007c2e', '#37b38d'] as const;
+/** Par naranja del mock para gráficos de 2 series */
+export const CHART_PAIR = ['#e86412', '#f0b585'] as const;

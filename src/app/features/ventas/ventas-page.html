@@ -1,231 +1,745 @@
-<section class="page">
-  <header class="page__header">
-    <p class="page__subtitle">Pedidos, remitos y facturas con ciclo de vida y stock</p>
-    <app-button variant="primary" size="md" (clicked)="abrirCrear()">
-      <app-icon name="plus" />
-      Nuevo comprobante
-    </app-button>
+<section class="page fact">
+  <header class="fact__header">
+    <div class="fact__title-row">
+      <h1 class="fact__title">{{ titulo() }}</h1>
+      <span class="fact__meta">{{ metaComprobante() }}</span>
+    </div>
+    <div class="fact__actions">
+      @if (esFactura()) {
+        <button
+          type="button"
+          class="fact__btn fact__btn--outline"
+          [disabled]="guardando()"
+          (click)="guardarPresupuesto()"
+        >
+          Guardar presupuesto
+        </button>
+        <button
+          type="button"
+          class="fact__btn fact__btn--dark"
+          [disabled]="guardando()"
+          (click)="guardarPrincipal()"
+        >
+          {{ ctaPrincipal() }}
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="fact__btn fact__btn--outline"
+          [routerLink]="listadoTrasGuardar()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="fact__btn fact__btn--dark"
+          [disabled]="guardando()"
+          (click)="guardarPrincipal()"
+        >
+          {{ ctaPrincipal() }}
+        </button>
+      }
+    </div>
   </header>
 
-  <div class="toolbar card">
-    <app-text-input
-      label="Buscar"
-      placeholder="Cliente, tipo, estado o ID…"
-      [ngModel]="busqueda()"
-      (ngModelChange)="busqueda.set($event)"
-    />
-    <app-select-input
-      label="Tipo"
-      [options]="filtroTipoOptions"
-      [ngModel]="filtroTipo()"
-      (ngModelChange)="filtroTipo.set($any($event))"
-    />
-    <app-select-input
-      label="Estado"
-      [options]="filtroOptions"
-      [ngModel]="filtro()"
-      (ngModelChange)="filtro.set($any($event))"
-    />
-  </div>
-
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filas().length === 0"
-    emptyMessage="No hay comprobantes para mostrar"
-    [skeletonRows]="4"
-  >
-    <div class="tabla-scroll">
-      <app-table
-        [columns]="columnas"
-        [rows]="filas()"
-        headerVariant="soft"
-        [striped]="true"
-        [compact]="true"
-      >
-        <ng-template appTableCell="estadoLabel" let-row>
-          <app-badge [variant]="$any(row)['badge']">
-            {{ $any(row)['estadoLabel'] }}
-          </app-badge>
-        </ng-template>
-        <ng-template appTableCell="acciones" let-row>
-          <div class="fila-acciones">
-            <button
-              type="button"
-              class="fila-acciones__btn fila-acciones__btn--config"
-              title="Configurar comprobante"
-              aria-label="Configurar comprobante"
-              (click)="abrirConfig($any(row))"
-            >
-              <app-icon name="settings" />
-            </button>
-          </div>
-        </ng-template>
-      </app-table>
-    </div>
-  </app-state-wrapper>
-</section>
-
-<app-side-drawer
-  [abierto]="drawerCrear()"
-  titulo="Nuevo comprobante"
-  ancho="640px"
-  (cerrar)="cerrarCrear()"
->
-  <div class="form-drawer">
-    <form [formGroup]="form">
-      <section class="form-section">
-        <header class="form-section__head">
-          <h4>Cabecera</h4>
-        </header>
-        <div class="form-section__body">
-          <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
-          <app-select-input
-            label="Cliente"
-            [options]="clienteOptions()"
-            formControlName="clienteId"
+  <div class="fact__body">
+    <div class="fact__main">
+      <div class="fact__search-card fact__search-card--cliente">
+        <div class="fact__f2">⌨ F3</div>
+        <div class="fact__search-wrap">
+          <input
+            class="fact__search fact__search--cliente fact__search--neutral"
+            [value]="clienteInput()"
+            (input)="onClienteInput($any($event.target).value)"
+            (focus)="onClienteFocus()"
+            (blur)="cerrarClienteQuick()"
+            placeholder="Nombre, fantasía o CUIT (mín. 3 caracteres)…"
+            autocomplete="off"
           />
-          @if (esRemito()) {
-            <app-select-input
-              label="Depósito"
-              [options]="depositoOptions()"
-              formControlName="depositoId"
-            />
-          }
-          <app-text-input label="Fecha" type="date" formControlName="fecha" />
-        </div>
-      </section>
-
-      <section class="form-section">
-        <header class="form-section__head">
-          <div>
-            <h4>Líneas</h4>
-            <p>Artículos y cantidades (precio resuelto por API)</p>
-          </div>
-          <app-button variant="outline" size="sm" (clicked)="agregarLinea()">
-            <app-icon name="plus" />
-            Agregar
-          </app-button>
-        </header>
-        <div class="form-section__body lineas-pedido" formArrayName="lineas">
-          @for (grupo of lineas.controls; track $index; let i = $index) {
-            <div class="lineas-pedido__row" [formGroupName]="i">
-              <app-select-input
-                label="Producto"
-                [options]="productoOptions()"
-                formControlName="productoId"
-              />
-              <app-text-input label="Cant." type="number" formControlName="cantidad" />
+          <button
+            type="button"
+            class="fact__clear"
+            title="Limpiar"
+            (mousedown)="clearInput($event)"
+          >
+            ✕
+          </button>
+          @if (clienteQuickOpen()) {
+            <div class="fact__dropdown">
+              <div class="fact__dropdown-head">
+                @if (clienteBuscando()) {
+                  Buscando…
+                } @else if (clienteInput().trim().length < 3) {
+                  Autocompletado · escribí al menos 3 caracteres
+                } @else {
+                  Resultados
+                }
+              </div>
               <button
                 type="button"
-                class="fila-acciones__btn fila-acciones__btn--danger"
-                title="Quitar línea"
-                aria-label="Quitar línea"
-                [disabled]="lineas.length <= 1"
-                (click)="quitarLinea(i)"
+                class="fact__dropdown-item fact__dropdown-item--simple"
+                (mousedown)="elegirCliente(null, 'Consumidor final')"
               >
-                <app-icon name="trash" />
+                Consumidor final
               </button>
+              @for (c of clientesAutocomplete(); track c.id) {
+                <button type="button" class="fact__dropdown-item" (mousedown)="elegirClienteRef(c)">
+                  <div>
+                    <div class="fact__dropdown-name">{{ c.nombre }}</div>
+                    <div class="fact__dropdown-sub">{{ metaDeCliente(c) }}</div>
+                  </div>
+                  @if (c.bloqueado) {
+                    <span class="fact__chip fact__chip--danger">Bloqueado</span>
+                  }
+                </button>
+              } @empty {
+                @if (!clienteBuscando() && clienteInput().trim().length >= 3) {
+                  <div class="fact__dropdown-empty">Sin coincidencias</div>
+                }
+              }
             </div>
           }
         </div>
-      </section>
-    </form>
-    <footer class="form-drawer__footer">
-      <app-button variant="outline" size="md" (clicked)="cerrarCrear()">Cancelar</app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarPedido()">
-        Crear
-      </app-button>
-    </footer>
-  </div>
-</app-side-drawer>
+        <button
+          type="button"
+          class="fact__icon-btn"
+          title="Búsqueda avanzada de clientes"
+          (click)="abrirBuscarCliente()"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="fact__btn fact__btn--ghost"
+          title="Venta rápida sin cliente"
+          (click)="elegirCliente(null, 'Consumidor final')"
+        >
+          Consumidor final
+        </button>
+      </div>
 
-<app-modal
-  [abierto]="configModalAbierto()"
-  [titulo]="configModalTitulo()"
-  ancho="960px"
-  (cerrar)="cerrarConfigModal()"
->
-  @if (pedidoSeleccionado(); as pedido) {
-    <div class="config-modal">
-      <section class="config-modal__master">
-        <div class="config-modal__head config-modal__head--master">
-          <h3>{{ etiquetaTipo(pedido.tipo) }}</h3>
-          <app-badge [variant]="badgeDe(pedido.estado)">
-            {{ etiquetaEstado(pedido.estado) }}
-          </app-badge>
+      <div class="fact__search-card">
+        <div class="fact__f2">⌨ F2</div>
+        <div class="fact__search-wrap">
+          <input
+            class="fact__search"
+            [value]="busqueda()"
+            (input)="busqueda.set($any($event.target).value)"
+            (focus)="abrirBusqueda()"
+            (blur)="cerrarBusqueda()"
+            placeholder="Código, código de barras, descripción o marca…"
+          />
+          <button
+            type="button"
+            class="fact__clear"
+            title="Limpiar"
+            (mousedown)="clearInput($event)"
+          >
+            ✕
+          </button>
+          @if (buscando()) {
+            <div class="fact__dropdown">
+              <div class="fact__dropdown-head">
+                {{ resultados().length }} resultados
+                @if (busqueda()) {
+                  para "{{ busqueda() }}"
+                }
+              </div>
+              @for (r of resultados(); track r.producto.id) {
+                <button
+                  type="button"
+                  class="fact__dropdown-item"
+                  (mousedown)="elegirProducto(r.producto)"
+                >
+                  <div>
+                    <div class="fact__dropdown-name">{{ r.nombre }}</div>
+                    <div class="fact__dropdown-sub">{{ r.detalle }}</div>
+                  </div>
+                  <div class="fact__dropdown-right">
+                    <div class="fact__dropdown-price">{{ r.precio }}</div>
+                    <div
+                      class="fact__dropdown-stock"
+                      [class.fact__dropdown-stock--ok]="r.stockTono === 'ok'"
+                      [class.fact__dropdown-stock--warn]="r.stockTono === 'warn'"
+                      [class.fact__dropdown-stock--danger]="r.stockTono === 'danger'"
+                    >
+                      {{ r.stockLabel }}
+                    </div>
+                  </div>
+                </button>
+              } @empty {
+                <div class="fact__dropdown-foot">No hay productos que coincidan</div>
+              }
+              <div class="fact__dropdown-foot">↑↓ para moverte · Enter selecciona · Esc cierra</div>
+            </div>
+          }
         </div>
-        <dl class="pedido-detalle__meta config-modal__meta">
-          <div>
-            <dt>Cliente</dt>
-            <dd>{{ clienteDetalle() }}</dd>
-          </div>
-          <div>
-            <dt>Fecha</dt>
-            <dd>{{ pedido.fecha }}</dd>
-          </div>
-          <div>
-            <dt>Neto</dt>
-            <dd>{{ formatearTotal(pedido.neto) }}</dd>
-          </div>
-          <div>
-            <dt>IVA ({{ pedido.ivaPorcentaje }}%)</dt>
-            <dd>{{ formatearTotal(pedido.iva) }}</dd>
-          </div>
-          <div>
-            <dt>Total</dt>
-            <dd>{{ formatearTotal(pedido.total) }}</dd>
-          </div>
-          <div>
-            <dt>Líneas</dt>
-            <dd>{{ pedido.lineas.length }}</dd>
-          </div>
-        </dl>
-      </section>
+        <div class="fact__search-actions">
+          <button
+            type="button"
+            class="fact__icon-btn"
+            title="Búsqueda avanzada de artículos"
+            (click)="abrirBuscarArticulo()"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.3-4.3" />
+            </svg>
+          </button>
+          <input
+            class="fact__qty"
+            type="text"
+            inputmode="numeric"
+            [value]="cantidadAgregar()"
+            (input)="cantidadAgregar.set(+$any($event.target).value || 1)"
+          />
+          <button
+            type="button"
+            class="fact__btn fact__btn--primary"
+            [disabled]="resultados().length === 0"
+            (click)="resultados()[0] && elegirProducto(resultados()[0].producto)"
+          >
+            Agregar ↵
+          </button>
+        </div>
+      </div>
 
-      <section class="config-modal__section">
-        <div class="config-modal__head">
-          <h3>Opciones de estado</h3>
-        </div>
-        @if (transicionesDisponibles().length === 0) {
-          <p class="config-modal__hint">Este comprobante ya está en un estado final.</p>
-        } @else {
-          <div class="pedido-detalle__acciones">
-            @for (t of transicionesDisponibles(); track t.estado) {
-              <app-button
-                [variant]="t.danger ? 'danger' : 'primary'"
-                size="sm"
-                [disabled]="cambiandoEstado()"
-                (clicked)="cambiarEstado(t.estado)"
-              >
-                {{ t.label }}
-              </app-button>
+      <div class="fact__table-card">
+        <table class="fact__table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descripción</th>
+              <th class="fact__th-right">Stock</th>
+              <th class="fact__th-right">Cant.</th>
+              <th class="fact__th-right">P. unitario</th>
+              <th class="fact__th-right">Dto.</th>
+              <th class="fact__th-right">Importe</th>
+              <th class="fact__th-x"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (linea of lineas(); track linea.productoId) {
+              <tr>
+                <td class="fact__code">{{ linea.codigo }}</td>
+                <td class="fact__desc">{{ linea.descripcion }}</td>
+                <td
+                  class="fact__td-right fact__stock-cell"
+                  [class.fact__stock-cell--warn]="
+                    linea.stockDisponible - linea.cantidad <= 5 &&
+                    linea.stockDisponible - linea.cantidad > 0
+                  "
+                  [class.fact__stock-cell--danger]="linea.stockDisponible - linea.cantidad <= 0"
+                >
+                  {{ linea.stockDisponible }}
+                </td>
+                <td class="fact__td-right">
+                  <input
+                    class="fact__cant"
+                    type="text"
+                    inputmode="numeric"
+                    [value]="linea.cantidad"
+                    (change)="setCantidad(linea.productoId, $any($event.target).value)"
+                  />
+                </td>
+                <td class="fact__td-right">{{ formatearPrecio(linea.precioUnitario) }}</td>
+                <td class="fact__td-right fact__muted">{{ linea.dto }}</td>
+                <td class="fact__td-right fact__importe">{{ importeLinea(linea) }}</td>
+                <td class="fact__td-x">
+                  <button
+                    type="button"
+                    class="fact__del"
+                    title="Eliminar renglón"
+                    (click)="eliminarLinea(linea.productoId)"
+                  >
+                    ✕
+                  </button>
+                </td>
+              </tr>
+            }
+            <tr>
+              <td colspan="8" class="fact__empty-row">
+                @if (lineas().length === 0) {
+                  Escaneá o buscá artículos para armar el comprobante…
+                } @else {
+                  Escaneá o buscá el próximo artículo…
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="fact__side">
+      <div class="fact__card">
+        <div class="fact__label">Cliente seleccionado</div>
+        <div class="fact__cliente-name">{{ clienteNombre() }}</div>
+        <div class="fact__cliente-meta">{{ clienteMeta() }}</div>
+        @if (clienteId()) {
+          <div class="fact__saldo" [attr.data-tono]="clienteSaldoVista()?.tono ?? 'loading'">
+            @if (clienteSaldoCargando()) {
+              <span class="fact__saldo-label">Cta. cte.</span>
+              <span class="fact__saldo-monto">…</span>
+            } @else if (clienteSaldoVista(); as saldo) {
+              <span class="fact__saldo-label">
+                @if (saldo.flecha) {
+                  <span class="fact__saldo-flecha" aria-hidden="true">{{ saldo.flecha }}</span>
+                }
+                {{ saldo.label }}
+              </span>
+              <span class="fact__saldo-monto">{{ saldo.monto }}</span>
+            } @else {
+              <span class="fact__saldo-label">Cta. cte.</span>
+              <span class="fact__saldo-monto">Sin datos</span>
             }
           </div>
+          @if (clienteSaldoVista()?.tono === 'debe') {
+            <button type="button" class="fact__btn-cobro" (click)="abrirCobro()">
+              Registrar cobro
+            </button>
+          }
         }
-      </section>
-
-      <section class="config-modal__section">
-        <div class="config-modal__head">
-          <h3>Líneas</h3>
+        <div class="fact__chips">
+          @if (clienteBloqueado()) {
+            <span class="fact__chip fact__chip--danger">Bloqueado</span>
+          }
+          <span class="fact__chip fact__chip--neutral">{{ titulo() }}</span>
         </div>
-        <div class="config-modal__tabla-scroll config-modal__tabla">
-          <app-table
-            [columns]="columnasLineas"
-            [rows]="lineasDetalle()"
-            headerVariant="soft"
-            [striped]="true"
-            [compact]="true"
-            [dense]="true"
+      </div>
+
+      @if (esFactura()) {
+        <div class="fact__card">
+          <div class="fact__label">Condición de venta</div>
+          <div class="fact__seg">
+            <button
+              type="button"
+              class="fact__seg-btn"
+              [class.fact__seg-btn--on]="condicion() === 'ctacte'"
+              (click)="setCondicion('ctacte')"
+            >
+              Cta. cte.
+            </button>
+            <button
+              type="button"
+              class="fact__seg-btn"
+              [class.fact__seg-btn--on]="condicion() === 'contado'"
+              (click)="setCondicion('contado')"
+            >
+              Contado
+            </button>
+            <button
+              type="button"
+              class="fact__seg-btn"
+              [class.fact__seg-btn--on]="condicion() === 'tarjeta'"
+              (click)="setCondicion('tarjeta')"
+            >
+              Tarjeta
+            </button>
+            <button
+              type="button"
+              class="fact__seg-btn"
+              [class.fact__seg-btn--on]="condicion() === 'cheque'"
+              (click)="setCondicion('cheque')"
+            >
+              Cheque
+            </button>
+          </div>
+          @if (isCtaCte()) {
+            <div class="fact__hint">Va a cuenta corriente · se genera un remito</div>
+          }
+          @if (isPagoInmediato()) {
+            <div class="fact__hint">Podés emitir factura fiscal o remito sin factura fiscal</div>
+          }
+          @if (isContado()) {
+            <div class="fact__pago">
+              <div class="fact__label">Forma de pago</div>
+              <div class="fact__seg fact__seg--sm">
+                <button
+                  type="button"
+                  class="fact__seg-btn fact__seg-btn--sm"
+                  [class.fact__seg-btn--on]="medioPago() === 'efectivo'"
+                  (click)="medioPago.set('efectivo')"
+                >
+                  Efectivo
+                </button>
+                <button
+                  type="button"
+                  class="fact__seg-btn fact__seg-btn--sm"
+                  [class.fact__seg-btn--on]="medioPago() === 'debito'"
+                  (click)="medioPago.set('debito')"
+                >
+                  Débito
+                </button>
+                <button
+                  type="button"
+                  class="fact__seg-btn fact__seg-btn--sm"
+                  [class.fact__seg-btn--on]="medioPago() === 'transferencia'"
+                  (click)="medioPago.set('transferencia')"
+                >
+                  Transf.
+                </button>
+              </div>
+              @if (isEfectivo()) {
+                <div class="fact__recibe">
+                  <span class="fact__recibe-label">Recibe $</span>
+                  <input
+                    class="fact__recibe-input"
+                    [value]="montoRecibido()"
+                    (input)="montoRecibido.set($any($event.target).value)"
+                    placeholder="0,00"
+                  />
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <div class="fact__totales">
+        <div class="fact__tot-row">
+          <span>Subtotal</span><span>$ {{ subtotalFmt() }}</span>
+        </div>
+        <div class="fact__tot-row">
+          <span>Neto gravado</span><span>$ {{ netoFmt() }}</span>
+        </div>
+        <div class="fact__tot-row">
+          <span>IVA 21%</span><span>$ {{ ivaFmt() }}</span>
+        </div>
+        <div class="fact__tot-sep"></div>
+        <div class="fact__tot-final">
+          <span>TOTAL</span>
+          <span class="fact__tot-amount">$ {{ totalFmt() }}</span>
+        </div>
+        @if (esFactura() && isEfectivo()) {
+          <div class="fact__tot-sep"></div>
+          <div class="fact__tot-row">
+            <span>Recibe</span>
+            <span>$ {{ montoRecibidoFmt() }}</span>
+          </div>
+          <div class="fact__tot-final">
+            <span
+              class="fact__vuelto"
+              [class.fact__vuelto--ok]="vueltoOk()"
+              [class.fact__vuelto--falt]="!vueltoOk()"
+            >
+              {{ vueltoLabel() }}
+            </span>
+            <span
+              class="fact__vuelto-amount"
+              [class.fact__vuelto--ok]="vueltoOk()"
+              [class.fact__vuelto--falt]="!vueltoOk()"
+            >
+              $ {{ vueltoFmt() }}
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="fact__shortcuts">
+        @if (esFactura()) {
+          @if (isCtaCte()) {
+            F2 artículo · F3 cliente · Guardar presupuesto · Generar remito
+          } @else {
+            F2 artículo · F3 cliente · Guardar presupuesto · Emitir factura o remito
+          }
+        } @else {
+          F2 artículo · F3 cliente · Guardar {{ tipo() }}
+        }
+      </div>
+    </aside>
+  </div>
+</section>
+
+@if (buscarArticuloOpen()) {
+  <div class="fact-modal" (click)="buscarArticuloOpen.set(false)">
+    <div class="fact-modal__panel" (click)="$event.stopPropagation()">
+      <div class="fact-modal__head">
+        <h2 class="fact-modal__title">Buscar artículo</h2>
+        <button type="button" class="fact-modal__close" (click)="buscarArticuloOpen.set(false)">
+          ✕
+        </button>
+      </div>
+      <div class="fact-modal__filters">
+        <div class="fact-modal__search-wrap">
+          <input
+            class="fact-modal__input"
+            placeholder="Código, descripción, marca…"
+            [value]="busqueda()"
+            (input)="busqueda.set($any($event.target).value)"
           />
         </div>
-      </section>
-
-      <footer class="config-modal__footer">
-        <app-button variant="outline" size="md" (clicked)="cerrarConfigModal()">
-          Cerrar
-        </app-button>
-      </footer>
+      </div>
+      <div class="fact-modal__list">
+        @for (a of articulosModal(); track a.producto.id) {
+          <div class="fact-modal__row fact-modal__row--art">
+            <div>
+              <div class="fact-modal__name">{{ a.nombre }}</div>
+              <div class="fact-modal__sub">{{ a.detalle }}</div>
+            </div>
+            <div
+              class="fact-modal__stock"
+              [class.fact-modal__stock--ok]="a.stockTono === 'ok'"
+              [class.fact-modal__stock--warn]="a.stockTono === 'warn'"
+              [class.fact-modal__stock--danger]="a.stockTono === 'danger'"
+            >
+              {{ a.stockLabel }}
+            </div>
+            <div class="fact-modal__price">{{ a.precio }}</div>
+            <input class="fact-modal__qty" value="1" #qtyModal />
+            <button
+              type="button"
+              class="fact__btn fact__btn--primary fact__btn--modal"
+              [disabled]="a.stockDisponible <= 0"
+              (click)="agregarProducto(a.producto, +qtyModal.value || 1)"
+            >
+              Agregar
+            </button>
+          </div>
+        } @empty {
+          <div class="fact-modal__row">No hay productos en el catálogo</div>
+        }
+      </div>
+      <div class="fact-modal__foot">
+        <button
+          type="button"
+          class="fact__btn fact__btn--outline"
+          (click)="buscarArticuloOpen.set(false)"
+        >
+          Salir sin agregar
+        </button>
+      </div>
     </div>
-  }
-</app-modal>
+  </div>
+}
+
+@if (buscarClienteOpen()) {
+  <div class="fact-modal fact-modal--full" (click)="cerrarBuscarCliente()">
+    <div class="fact-modal__panel" (click)="$event.stopPropagation()">
+      <div class="fact-modal__head">
+        <div>
+          <h2 class="fact-modal__title">Buscar cliente</h2>
+          <p class="fact-modal__subtitle">Filtrá por nombre, CUIT, zona, estado o vendedor</p>
+        </div>
+        <button type="button" class="fact-modal__close" (click)="cerrarBuscarCliente()">✕</button>
+      </div>
+      <div class="fact-modal__filters">
+        <div class="fact-modal__search-wrap">
+          <input
+            class="fact-modal__input"
+            [value]="modalQ()"
+            (input)="onModalQ($any($event.target).value)"
+            placeholder="Nombre, fantasía o CUIT…"
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            class="fact__clear"
+            title="Limpiar"
+            (mousedown)="clearInput($event)"
+          >
+            ✕
+          </button>
+        </div>
+        <select
+          class="fact-modal__select"
+          [value]="modalZonaId()"
+          (change)="onModalZona($any($event.target).value)"
+        >
+          <option value="">Zona: todas</option>
+          @for (z of zonasRef(); track z.id) {
+            <option [value]="z.id">{{ z.nombre }}</option>
+          }
+        </select>
+        <select
+          class="fact-modal__select"
+          [value]="modalEstado()"
+          (change)="onModalEstado($any($event.target).value)"
+        >
+          <option value="activos">Estado: activos</option>
+          <option value="todos">Estado: todos</option>
+          <option value="bloqueados">Estado: bloqueados</option>
+        </select>
+        <select
+          class="fact-modal__select"
+          [value]="modalVendedorId()"
+          (change)="onModalVendedor($any($event.target).value)"
+        >
+          <option value="">Vendedor: todos</option>
+          @for (u of usuariosRef(); track u.id) {
+            <option [value]="u.id">{{ u.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="fact-modal__list fact-modal__list--grow">
+        @if (modalBuscando()) {
+          <div class="fact-modal__row fact-modal__row--muted">Buscando clientes…</div>
+        } @else {
+          @for (c of modalResultados(); track c.id) {
+            <button
+              type="button"
+              class="fact-modal__row fact-modal__row--cli"
+              (click)="elegirClienteRef(c)"
+            >
+              <div>
+                <div class="fact-modal__name">{{ c.nombre }}</div>
+                <div class="fact-modal__sub">{{ metaDeCliente(c) }}</div>
+              </div>
+              @if (c.bloqueado) {
+                <span class="fact__chip fact__chip--danger">Bloqueado</span>
+              } @else if (c.activo) {
+                <span class="fact__chip fact__chip--ok">Activo</span>
+              } @else {
+                <span class="fact__chip fact__chip--neutral">Inactivo</span>
+              }
+            </button>
+          } @empty {
+            <div class="fact-modal__row fact-modal__row--muted">
+              No hay clientes con esos criterios
+            </div>
+          }
+        }
+      </div>
+      <div class="fact-modal__foot">
+        <button type="button" class="fact__btn fact__btn--outline" (click)="cerrarBuscarCliente()">
+          Salir sin elegir
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (emitirOpcionesOpen()) {
+  <div class="fact-modal" (click)="cerrarEmitirOpciones()">
+    <div class="fact-modal__panel fact-modal__panel--cobro" (click)="$event.stopPropagation()">
+      <div class="fact-modal__head">
+        <div>
+          <h2 class="fact-modal__title">Emitir comprobante</h2>
+          <p class="fact-modal__subtitle">{{ clienteNombre() }} · $ {{ totalFmt() }}</p>
+        </div>
+        <button type="button" class="fact-modal__close" (click)="cerrarEmitirOpciones()">✕</button>
+      </div>
+      <div class="fact-emit">
+        <button
+          type="button"
+          class="fact-emit__opt"
+          [disabled]="guardando()"
+          (click)="elegirEmision('factura_fiscal')"
+        >
+          <span class="fact-emit__opt-title">Factura fiscal</span>
+          <span class="fact-emit__opt-sub"> Comprobante fiscal · cobra y cierra la venta </span>
+        </button>
+        <button
+          type="button"
+          class="fact-emit__opt"
+          [disabled]="guardando()"
+          (click)="elegirEmision('remito_pago')"
+        >
+          <span class="fact-emit__opt-title">Remito sin factura fiscal</span>
+          <span class="fact-emit__opt-sub">
+            Comprobante de entrega · sin factura · cobra al contado
+          </span>
+        </button>
+      </div>
+      <div class="fact-modal__foot">
+        <button
+          type="button"
+          class="fact__btn fact__btn--outline"
+          [disabled]="guardando()"
+          (click)="cerrarEmitirOpciones()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (cobroOpen()) {
+  <div class="fact-modal" (click)="cerrarCobro()">
+    <div class="fact-modal__panel fact-modal__panel--cobro" (click)="$event.stopPropagation()">
+      <div class="fact-modal__head">
+        <div>
+          <h2 class="fact-modal__title">Registrar cobro</h2>
+          <p class="fact-modal__subtitle">
+            {{ clienteNombre() }} · {{ clienteSaldoVista()?.monto }}
+          </p>
+        </div>
+        <button type="button" class="fact-modal__close" (click)="cerrarCobro()">✕</button>
+      </div>
+      <div class="fact-cobro">
+        <label class="fact-cobro__field">
+          <span class="fact-cobro__label">Monto a cobrar</span>
+          <input
+            class="fact-modal__input"
+            type="text"
+            inputmode="decimal"
+            [value]="cobroMonto()"
+            (input)="cobroMonto.set($any($event.target).value)"
+            placeholder="0,00"
+          />
+        </label>
+        <label class="fact-cobro__field">
+          <span class="fact-cobro__label">Medio</span>
+          <select
+            class="fact-modal__select"
+            [value]="cobroMedio()"
+            (change)="cobroMedio.set($any($event.target).value)"
+          >
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="tarjeta">Tarjeta</option>
+          </select>
+        </label>
+        <label class="fact-cobro__field">
+          <span class="fact-cobro__label">Observación (opcional)</span>
+          <input
+            class="fact-modal__input"
+            type="text"
+            [value]="cobroObs()"
+            (input)="cobroObs.set($any($event.target).value)"
+            placeholder="Ej. Transferencia"
+            maxlength="200"
+          />
+        </label>
+      </div>
+      <div class="fact-modal__foot fact-modal__foot--actions">
+        <button
+          type="button"
+          class="fact__btn fact__btn--outline"
+          [disabled]="cobroGuardando()"
+          (click)="cerrarCobro()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="fact__btn fact__btn--primary"
+          [disabled]="cobroGuardando()"
+          (click)="confirmarCobro()"
+        >
+          {{ cobroGuardando() ? 'Registrando…' : 'Confirmar cobro' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -11,23 +11,20 @@
 >
   <span class="kpi__icon"><ng-content /></span>
   <div class="kpi__content">
-    <div class="kpi__row">
-      <span class="kpi__label">{{ label() }}</span>
-      @if (trend()) {
-        <span
-          class="kpi__trend"
-          [class.kpi__trend--bad]="trendIsBad()"
-          [class.kpi__trend--neutral]="trendTone() === 'neutral'"
-        >
-          @if (trendTone() !== 'neutral') {
-            {{ trendGlyph() }}
-          }
-          {{ trend() }}
-        </span>
-      }
-    </div>
+    <span class="kpi__label">{{ label() }}</span>
     <span class="kpi__value">{{ value() }}</span>
-    @if (detail()) {
+    @if (trend()) {
+      <span
+        class="kpi__trend"
+        [class.kpi__trend--bad]="trendIsBad()"
+        [class.kpi__trend--neutral]="trendTone() === 'neutral'"
+      >
+        @if (trendTone() !== 'neutral') {
+          ▲
+        }
+        {{ trend() }}
+      </span>
+    } @else if (detail()) {
       <span class="kpi__detail">{{ detail() }}</span>
     }
   </div>

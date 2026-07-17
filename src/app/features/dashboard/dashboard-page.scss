@@ -1,56 +1,425 @@
 @use 'tokens' as t;
 @use 'typography' as ty;
 
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: t.$space-lg;
-  padding: t.$space-lg;
+// Colores exactos del mock DC Inicio
+$dc-border: #e7e2dc;
+$dc-border-soft: #f0ece7;
+$dc-muted: #78716c;
+$dc-subtle: #a8a29e;
+$dc-text: #1c1917;
+$dc-primary: #e86412;
+$dc-primary-deep: #c25510;
+$dc-primary-dark: #d15607;
+$dc-ok: #3d8f5f;
+$dc-ok-bg: #e9f4ee;
+$dc-alert: #c2410c;
+$dc-danger: #b3261e;
+$dc-danger-bg: #fbeae9;
+$dc-warn: #b45309;
+$dc-warn-bg: #fdf3e4;
+$dc-neutral-bg: #f1efec;
+$dc-neutral: #57534e;
+$dc-bar-light: #f3d9c3;
+$dc-bar-mid: #f0b585;
+$dc-hover: #faf7f3;
+
+.dash {
+  gap: 0;
+  padding: 28px;
+  max-width: 1360px;
+  margin: 0 auto;
   font-family: ty.$font-family-base;
+  color: $dc-text;
 
   &__header {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    gap: t.$space-md;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: $dc-text;
   }
 
   &__subtitle {
-    margin: 0;
-    color: t.$color-text-muted;
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: $dc-muted;
   }
 
-  &__note {
-    margin: 0;
-    padding: t.$space-md;
-    border-radius: t.$radius-md;
-    background: t.$color-primary-light;
-    color: t.$color-primary-dark;
-    font-size: ty.$font-size-md;
-    line-height: 1.5;
-  }
-}
+  &__cta {
+    background: $dc-primary;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 10px 18px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 1px 2px rgba(232, 100, 18, 0.35);
 
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: t.$space-md;
-}
-
-.top {
-  padding: t.$space-lg;
-  border: 1px solid t.$color-border;
-  border-radius: t.$radius-lg;
-  background: t.$color-surface;
-
-  h3 {
-    margin: 0 0 t.$space-md;
-    font-size: ty.$font-size-lg;
-    font-weight: ty.$font-weight-semibold;
+    &:hover {
+      background: $dc-primary-dark;
+    }
   }
 
-  &__empty {
-    margin: 0;
-    color: t.$color-text-muted;
+  &__kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+
+    @media (max-width: t.$breakpoint-desktop) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: t.$breakpoint-tablet) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__kpi {
+    background: #fff;
+    border: 1px solid $dc-border;
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+
+  &__kpi-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $dc-subtle;
+  }
+
+  &__kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 6px;
+    font-variant-numeric: tabular-nums;
+    color: $dc-text;
+    line-height: 1.15;
+  }
+
+  &__kpi-foot {
+    font-size: 12px;
+    color: $dc-muted;
+    margin-top: 4px;
+
+    &--ok {
+      color: $dc-ok;
+      font-weight: 600;
+    }
+
+    &--alert {
+      color: $dc-alert;
+      font-weight: 600;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: 1.4fr 1.4fr 1fr;
+    grid-template-areas:
+      'chart chart stock'
+      'tabla tabla accesos';
+
+    @media (max-width: t.$breakpoint-desktop) {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        'chart chart'
+        'tabla tabla'
+        'stock accesos';
+    }
+
+    @media (max-width: t.$breakpoint-tablet) {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'chart'
+        'tabla'
+        'stock'
+        'accesos';
+    }
+  }
+
+  &__card {
+    background: #fff;
+    border: 1px solid $dc-border;
+    border-radius: 12px;
+  }
+
+  &__chart {
+    grid-area: chart;
+    padding: 18px 20px;
+  }
+
+  &__tabla {
+    grid-area: tabla;
+    overflow: hidden;
+  }
+
+  &__side {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__reposicion {
+    grid-area: stock;
+  }
+
+  &__vencimientos {
+    grid-area: accesos;
+  }
+
+  &__card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+
+    &--tabla {
+      padding: 16px 20px 10px;
+      margin-bottom: 0;
+    }
+  }
+
+  &__card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: $dc-text;
+  }
+
+  &__side .dash__card-title {
+    margin-bottom: 12px;
+  }
+
+  &__card-meta {
+    font-size: 12px;
+    color: $dc-muted;
+
+    b {
+      font-variant-numeric: tabular-nums;
+      color: $dc-text;
+    }
+  }
+
+  &__link {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: $dc-primary-deep;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+      color: $dc-primary;
+      text-decoration: underline;
+    }
+  }
+
+  &__bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    height: 150px;
+  }
+
+  &__bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 6px;
+    height: 100%;
+  }
+
+  &__bar-fill {
+    border-radius: 6px 6px 3px 3px;
+    min-height: 8%;
+
+    &--light {
+      background: $dc-bar-light;
+    }
+
+    &--mid {
+      background: $dc-bar-mid;
+    }
+
+    &--today {
+      background: $dc-primary;
+    }
+  }
+
+  &__bar-label {
+    text-align: center;
+    font-size: 11.5px;
+    color: $dc-subtle;
+
+    &--today {
+      font-weight: 700;
+      color: $dc-text;
+    }
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: $dc-subtle;
+      text-align: left;
+      padding: 8px 12px;
+      border: none;
+    }
+
+    th:first-child {
+      padding-left: 20px;
+    }
+
+    th:last-child {
+      padding-right: 20px;
+    }
+
+    td {
+      padding: 11px 12px;
+      font-size: 13px;
+      border-top: 1px solid $dc-border-soft;
+      color: $dc-text;
+      font-variant-numeric: tabular-nums;
+    }
+
+    td:first-child {
+      padding-left: 20px;
+    }
+
+    td:last-child {
+      padding-right: 20px;
+    }
+
+    tbody tr:hover {
+      background: $dc-hover;
+    }
+  }
+
+  &__th-right,
+  &__td-right {
+    text-align: right;
+  }
+
+  &__td-strong {
+    font-weight: 600;
+  }
+
+  &__badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 3px 9px;
+    white-space: nowrap;
+
+    &--success {
+      color: $dc-ok;
+      background: $dc-ok-bg;
+    }
+
+    &--warning {
+      color: $dc-warn;
+      background: $dc-warn-bg;
+    }
+
+    &--neutral {
+      color: $dc-neutral;
+      background: $dc-neutral-bg;
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  &__list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__list-main {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &__list-sub {
+    font-size: 11.5px;
+    color: $dc-subtle;
+    font-variant-numeric: tabular-nums;
+
+    &--danger {
+      color: $dc-danger;
+      font-weight: 600;
+    }
+  }
+
+  &__list-amount {
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  &__pill {
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 3px 9px;
+    white-space: nowrap;
+
+    &--danger {
+      color: $dc-danger;
+      background: $dc-danger-bg;
+    }
+
+    &--warn {
+      color: $dc-warn;
+      background: $dc-warn-bg;
+    }
+  }
+
+  &__link-btn {
+    margin-top: 14px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid $dc-border;
+    border-radius: 9px;
+    padding: 9px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $dc-primary-deep;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+      background: $dc-hover;
+    }
   }
 }

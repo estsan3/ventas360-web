@@ -2,7 +2,7 @@
   <header class="page__header">
     <div>
       <h1>Proveedores</h1>
-      <p class="page__subtitle">Maestro de proveedores (Fase B1)</p>
+      <p class="page__subtitle">Maestro de proveedores</p>
     </div>
     <app-button variant="primary" size="md" (clicked)="abrirAlta()">
       <app-icon name="plus" />
@@ -31,13 +31,35 @@
             {{ $any(row)['estado'] }}
           </app-badge>
         </ng-template>
+        <ng-template appTableCell="acciones" let-row>
+          <div class="fila-acciones">
+            <button
+              type="button"
+              class="fila-acciones__btn"
+              title="Editar"
+              (click)="abrirEditar($any(row)['id'])"
+            >
+              <app-icon name="settings" />
+            </button>
+            @if ($any(row)['activo']) {
+              <button
+                type="button"
+                class="fila-acciones__btn"
+                title="Desactivar"
+                (click)="desactivar($any(row)['id'])"
+              >
+                <app-icon name="alert-circle" />
+              </button>
+            }
+          </div>
+        </ng-template>
       </app-table>
     </div>
   </app-state-wrapper>
 
   <app-side-drawer
     [abierto]="drawerAbierto()"
-    titulo="Nuevo proveedor"
+    [titulo]="drawerTitulo()"
     (cerrar)="drawerAbierto.set(false)"
   >
     <form class="form-drawer" [formGroup]="form">

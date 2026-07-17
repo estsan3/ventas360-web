@@ -1,0 +1,163 @@
+<section class="page lst">
+  <header class="lst__header">
+    <h1 class="lst__title">Remitos de venta</h1>
+    <button type="button" class="lst__cta" (click)="irNuevo()">+ Nuevo remito</button>
+  </header>
+
+  <div class="lst__filters">
+    <button
+      type="button"
+      class="lst__chip"
+      [class.lst__chip--on]="chip() === 'todos'"
+      (click)="setChip('todos')"
+    >
+      Todos ({{ contadores().todos }})
+    </button>
+    <button
+      type="button"
+      class="lst__chip"
+      [class.lst__chip--on]="chip() === 'a_entregar'"
+      (click)="setChip('a_entregar')"
+    >
+      A entregar ({{ contadores().a_entregar }})
+    </button>
+    <button
+      type="button"
+      class="lst__chip"
+      [class.lst__chip--on]="chip() === 'entregado'"
+      (click)="setChip('entregado')"
+    >
+      Entregados ({{ contadores().entregado }})
+    </button>
+    <button
+      type="button"
+      class="lst__chip"
+      [class.lst__chip--on]="chip() === 'sin_facturar'"
+      (click)="setChip('sin_facturar')"
+    >
+      Sin facturar ({{ contadores().sin_facturar }})
+    </button>
+  </div>
+
+  <div class="lst__card">
+    @if (filas().length === 0) {
+      <div class="lst__empty">No hay remitos para mostrar</div>
+    } @else {
+      <table class="lst__table">
+        <thead>
+          <tr>
+            <th>Remito</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Origen → Destino</th>
+            <th class="lst__th-right">Total</th>
+            <th>Estado</th>
+            <th class="lst__th-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filas(); track row.id) {
+            <tr>
+              <td class="lst__strong">{{ row.numero }}</td>
+              <td>{{ row.fecha }}</td>
+              <td>{{ row.cliente }}</td>
+              <td>{{ row.ruta }}</td>
+              <td class="lst__td-right lst__strong">{{ row.total }}</td>
+              <td>
+                <span
+                  class="lst__badge"
+                  [class.lst__badge--warn]="row.estado === 'A entregar'"
+                  [class.lst__badge--ok]="row.estado === 'Facturado'"
+                  [class.lst__badge--neutral]="row.estado === 'Sin facturar'"
+                  [class.lst__badge--danger]="row.estado === 'Cancelado'"
+                >
+                  {{ row.estado }}
+                </span>
+              </td>
+              <td class="lst__td-right">
+                <div class="lst__acciones">
+                  <button
+                    type="button"
+                    class="lst__accion lst__accion--muted"
+                    (click)="abrirDetalleDesdeFila(row.id)"
+                  >
+                    Ver
+                  </button>
+                  @if (row.accion !== 'Ver') {
+                    <button
+                      type="button"
+                      class="lst__accion"
+                      [class.lst__accion--primary]="row.accionTono === 'primary'"
+                      (click)="onAccion(row)"
+                    >
+                      {{ row.accion }}
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</section>
+
+@if (detalleVista(); as det) {
+  <div class="lst-modal" (click)="cerrarDetalle()">
+    <div class="lst-modal__panel" (click)="$event.stopPropagation()">
+      <div class="lst-modal__head">
+        <div>
+          <h2 class="lst-modal__title">{{ det.titulo }}</h2>
+          <p class="lst-modal__sub">{{ det.subtitulo }}</p>
+        </div>
+        <button type="button" class="lst-modal__close" (click)="cerrarDetalle()">✕</button>
+      </div>
+      <div class="lst-modal__kpis">
+        <div>
+          <div class="lst-modal__kpi-label">Neto</div>
+          <div class="lst-modal__kpi-value">{{ det.neto }}</div>
+        </div>
+        <div>
+          <div class="lst-modal__kpi-label">IVA</div>
+          <div class="lst-modal__kpi-value">{{ det.iva }}</div>
+        </div>
+        <div>
+          <div class="lst-modal__kpi-label">Total</div>
+          <div class="lst-modal__kpi-value">{{ det.total }}</div>
+        </div>
+      </div>
+      <div class="lst-modal__table-wrap">
+        <table class="lst__table">
+          <thead>
+            <tr>
+              <th>Artículo</th>
+              <th class="lst__th-right">Cant.</th>
+              <th class="lst__th-right">P. unit.</th>
+              <th class="lst__th-right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of det.lineas; track l.id) {
+              <tr>
+                <td class="lst__strong">{{ l.descripcion }}</td>
+                <td class="lst__td-right">{{ l.cantidad }}</td>
+                <td class="lst__td-right">{{ l.precio }}</td>
+                <td class="lst__td-right lst__strong">{{ l.subtotal }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="lst__empty">Sin líneas</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="lst-modal__foot">
+        <button type="button" class="lst__accion lst__accion--muted" (click)="cerrarDetalle()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+}

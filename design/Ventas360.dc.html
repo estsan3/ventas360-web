@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#faf9f7;font-family:'Archivo',system-ui,sans-serif;color:#1c1917;-webkit-font-smoothing:antialiased}
+a{color:#c25510;text-decoration:none}a:hover{color:#e86412;text-decoration:underline}
+table{border-collapse:collapse;width:100%}
+input,select,button{font-family:'Archivo',system-ui,sans-serif}
+::placeholder{color:#b8b2ab}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex">
+
+<aside style="width:{{ sidebarWidth }};flex:none;background:#ffffff;border-right:1px solid #e7e2dc;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;transition:width .15s ease;overflow:hidden;z-index:20">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px 16px;height:28px">
+    <button onClick="{{ toggleSidebar }}" title="Mostrar/ocultar etiquetas" style="border:none;background:none;cursor:pointer;padding:6px;border-radius:8px;display:flex;flex:none;color:#57534e" style-hover="background:#f1efec">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;gap:8px;white-space:nowrap">
+        <div style="width:26px;height:26px;border-radius:8px;background:#e86412;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;flex:none">V</div>
+        <div style="font-weight:700;font-size:15px;letter-spacing:-.01em">Ventas<span style="color:#e86412">360</span></div>
+      </div>
+    </sc-if>
+  </div>
+  <nav style="flex:1;overflow-y:auto;padding:6px 10px;display:flex;flex-direction:column;gap:2px">
+    <sc-for list="{{ navItems }}" as="it" hint-placeholder-count="12">
+      <button onClick="{{ go }}" data-screen="{{ it.id }}" title="{{ it.label }}" style="border:none;cursor:pointer;padding:10px;border-radius:9px;font-size:13.5px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:12px;background:{{ it.bg }};color:{{ it.color }}" style-hover="color:#1c1917">
+        <span style="flex:none;display:flex">{{ it.icon }}</span>
+        <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ true }}"><span>{{ it.label }}</span></sc-if>
+      </button>
+    </sc-for>
+  </nav>
+  <div style="border-top:1px solid #f0ece7;padding:12px 16px;display:flex;align-items:center;gap:10px">
+    <div style="width:32px;height:32px;border-radius:50%;background:#f5efe8;border:1px solid #e7e2dc;display:grid;place-items:center;font-size:12px;font-weight:700;color:#c25510;flex:none">MG</div>
+    <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:12px;color:#78716c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Suc. Central · Caja 1</div>
+    </sc-if>
+  </div>
+</aside>
+
+<main style="flex:1;min-width:0;max-width:1360px;margin:0 auto;padding:28px;box-sizing:border-box">
+
+<sc-if value="{{ isInicio }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Hola, Marcos</h1>
+      <div style="font-size:13px;color:#78716c;margin-top:3px">Viernes 17 de julio · Resumen del día</div>
+    </div>
+    <button onClick="{{ goFacturacion }}" style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 1px 2px rgba(232,100,18,.35)" style-hover="background:#d15607">+ Nueva venta</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px">
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px">
+      <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Ventas de hoy</div>
+      <div style="font-size:26px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 486.320</div>
+      <div style="font-size:12px;color:#3d8f5f;margin-top:4px;font-weight:600">▲ 12% vs. ayer · 23 comprobantes</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px">
+      <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Pedidos pendientes</div>
+      <div style="font-size:26px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">14</div>
+      <div style="font-size:12px;color:#78716c;margin-top:4px">5 para entregar hoy</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px">
+      <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Saldo a cobrar</div>
+      <div style="font-size:26px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 1.284.900</div>
+      <div style="font-size:12px;color:#c2410c;margin-top:4px;font-weight:600">$ 312.400 vencido</div>
+    </div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px">
+      <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Bajo stock mínimo</div>
+      <div style="font-size:26px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">9 artículos</div>
+      <div style="font-size:12px;color:#78716c;margin-top:4px">2 sin stock</div>
+    </div>
+  </div>
+  <div style="display:grid;gap:18px;grid-template-columns:{{ dashCols }};grid-template-areas:{{ dashAreas }}">
+    <div style="grid-area:chart;background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+        <div style="font-size:14.5px;font-weight:700">Ventas de la semana</div>
+        <div style="font-size:12px;color:#78716c">Total <b style="font-variant-numeric:tabular-nums">$ 2.914.200</b></div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:14px;height:150px">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:100%"><div style="background:#f3d9c3;border-radius:6px 6px 3px 3px;height:52%"></div><div style="text-align:center;font-size:11.5px;color:#a8a29e">Sáb</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:100%"><div style="background:#f3d9c3;border-radius:6px 6px 3px 3px;height:30%"></div><div style="text-align:center;font-size:11.5px;color:#a8a29e">Dom</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:100%"><div style="background:#f0b585;border-radius:6px 6px 3px 3px;height:66%"></div><div style="text-align:center;font-size:11.5px;color:#a8a29e">Lun</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:100%"><div style="background:#f0b585;border-radius:6px 6px 3px 3px;height:58%"></div><div style="text-align:center;font-size:11.5px;color:#a8a29e">Mar</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:100%"><div style="background:#f0b585;border-radius:6px 6px 3px 3px;height:74%"></div><div style="text-align:center;font-size:11.5px;color:#a8a29e">Mié</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:100%"><div style="background:#f0b585;border-radius:6px 6px 3px 3px;height:62%"></div><div style="text-align:center;font-size:11.5px;color:#a8a29e">Jue</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;height:100%"><div style="background:#e86412;border-radius:6px 6px 3px 3px;height:88%"></div><div style="text-align:center;font-size:11.5px;font-weight:700;color:#1c1917">Hoy</div></div>
+      </div>
+    </div>
+    <div style="grid-area:tabla;background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+      <div style="padding:16px 20px 10px;display:flex;justify-content:space-between;align-items:baseline">
+        <div style="font-size:14.5px;font-weight:700">Últimos comprobantes</div>
+        <a href="#" style="font-size:12.5px;font-weight:600">Ver todos</a>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 20px">Comprobante</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 12px">Cliente</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 12px">Total</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 20px 8px 12px">Estado</th>
+        </tr></thead>
+        <tbody>
+          <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;font-weight:600">FAC A 0003-00014582</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Constructora Delta SRL</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 148.900,00</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Cobrada</span></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;font-weight:600">FAC B 0003-00014581</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Rodríguez, Aníbal</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 23.450,00</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Cobrada</span></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;font-weight:600">FAC A 0003-00014580</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Agropecuaria El Ceibo</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 86.200,00</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">Cta. cte.</span></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;font-weight:600">REM 0002-00003401</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Constructora Delta SRL</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 61.780,00</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#57534e;background:#f1efec;border-radius:99px;padding:3px 9px">Remito</span></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;font-weight:600">FAC B 0003-00014579</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Pintado Fácil (M. Suárez)</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 12.300,00</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Cobrada</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="grid-area:stock;background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+      <div style="font-size:14.5px;font-weight:700;margin-bottom:12px">Reposición urgente</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Disco corte 115mm</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">DIS-115 · Tyrolit</div></div><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px;white-space:nowrap">0 un.</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Guante nitrilo T9</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">GUA-N09 · Libus</div></div><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px;white-space:nowrap">0 un.</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Tornillo fix 8×50 ×100</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">TOR-850 · Fischer</div></div><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px;white-space:nowrap">4 un.</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Cinta papel 24mm</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">CIN-P24 · Doble A</div></div><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px;white-space:nowrap">6 un.</span></div>
+      </div>
+      <button onClick="{{ goArticulos }}" style="margin-top:14px;width:100%;background:#fff;border:1px solid #e7e2dc;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#faf7f3">Ver stock completo</button>
+    </div>
+    <div style="grid-area:accesos;background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+      <div style="font-size:14.5px;font-weight:700;margin-bottom:12px">Vencimientos próximos</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;gap:10px"><div><div style="font-size:13px;font-weight:600">Corralón Mitre SA</div><div style="font-size:11.5px;color:#b3261e;font-weight:600">Venció el 10/07</div></div><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">$ 187.400</div></div>
+        <div style="display:flex;justify-content:space-between;gap:10px"><div><div style="font-size:13px;font-weight:600">Agropecuaria El Ceibo</div><div style="font-size:11.5px;color:#78716c">Vence el 21/07</div></div><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">$ 96.800</div></div>
+        <div style="display:flex;justify-content:space-between;gap:10px"><div><div style="font-size:13px;font-weight:600">Constructora Delta SRL</div><div style="font-size:11.5px;color:#78716c">Vence el 28/07</div></div><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">$ 148.900</div></div>
+      </div>
+      <button onClick="{{ goCtacte }}" style="margin-top:14px;width:100%;background:#fff;border:1px solid #e7e2dc;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#faf7f3">Ir a cuentas corrientes</button>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isClientesLista }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Clientes</h1>
+    <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Nuevo cliente</button>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:14px">
+    <input placeholder="Buscar por nombre, fantasía o CUIT…" style="flex:1;max-width:380px;padding:10px 14px;border:1px solid #e7e2dc;border-radius:9px;font-size:13.5px;background:#fff;outline-color:#e86412">
+    <select style="padding:10px 12px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff;color:#57534e"><option>Zona: todas</option><option>Centro</option><option>Norte</option><option>Rural</option></select>
+    <select style="padding:10px 12px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff;color:#57534e"><option>Estado: activos</option><option>Todos</option><option>Bloqueados</option></select>
+    <select style="padding:10px 12px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff;color:#57534e"><option>Vendedor: todos</option><option>M. Giménez</option><option>L. Paredes</option></select>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Cliente</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">CUIT</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Localidad</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Zona</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Cond. IVA</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Saldo cta. cte.</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px 10px 12px">Estado</th>
+      </tr></thead>
+      <tbody>
+        <tr onClick="{{ verCliente }}" style="cursor:pointer" style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Constructora Delta SRL</div><div style="font-size:11.5px;color:#a8a29e">Delta Construcciones</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">30-70812345-9</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Gral. Pico</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Centro</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Resp. Inscripto</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 148.900,00</td><td style="padding:13px 20px 13px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span></td></tr>
+        <tr onClick="{{ verCliente }}" style="cursor:pointer" style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Corralón Mitre SA</div><div style="font-size:11.5px;color:#a8a29e">Corralón Mitre</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">30-65409821-3</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Gral. Pico</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Norte</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Resp. Inscripto</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#b3261e">$ 187.400,00</td><td style="padding:13px 20px 13px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px">Bloqueado</span></td></tr>
+        <tr onClick="{{ verCliente }}" style="cursor:pointer" style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Agropecuaria El Ceibo</div><div style="font-size:11.5px;color:#a8a29e">El Ceibo</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">30-71234567-1</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Metileo</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Rural</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Resp. Inscripto</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 96.800,00</td><td style="padding:13px 20px 13px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span></td></tr>
+        <tr onClick="{{ verCliente }}" style="cursor:pointer" style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Rodríguez, Aníbal</div><div style="font-size:11.5px;color:#a8a29e">—</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">20-28456123-7</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Gral. Pico</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Centro</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Monotributo</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 0,00</td><td style="padding:13px 20px 13px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span></td></tr>
+        <tr onClick="{{ verCliente }}" style="cursor:pointer" style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Pintado Fácil (M. Suárez)</div><div style="font-size:11.5px;color:#a8a29e">Pintado Fácil</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">27-33218904-5</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Speluzzi</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Norte</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Monotributo</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 12.300,00</td><td style="padding:13px 20px 13px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span></td></tr>
+        <tr onClick="{{ verCliente }}" style="cursor:pointer" style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Metalúrgica Pampa SRL</div><div style="font-size:11.5px;color:#a8a29e">MetalPampa</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">30-69875412-2</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Gral. Pico</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Norte</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Resp. Inscripto</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 54.120,00</td><td style="padding:13px 20px 13px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span></td></tr>
+      </tbody>
+    </table>
+    <div style="padding:12px 20px;border-top:1px solid #f0ece7;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#78716c">
+      <div>248 clientes · mostrando 1–6</div>
+      <div style="display:flex;gap:6px"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 11px;font-size:12.5px;cursor:pointer;color:#a8a29e">‹ Anterior</button><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 11px;font-size:12.5px;cursor:pointer;font-weight:600" style-hover="background:#faf7f3">Siguiente ›</button></div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isFicha }}" hint-placeholder-val="{{ false }}">
+  <div style="margin-bottom:16px"><button onClick="{{ cerrarFicha }}" style="border:none;background:none;color:#c25510;font-size:13px;font-weight:700;cursor:pointer;padding:0" style-hover="text-decoration:underline">← Volver a clientes</button></div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:22px 24px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
+    <div style="display:flex;gap:16px;align-items:center">
+      <div style="width:52px;height:52px;border-radius:14px;background:#f5efe8;display:grid;place-items:center;font-size:18px;font-weight:800;color:#c25510">CD</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px"><h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em">Constructora Delta SRL</h1><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span></div>
+        <div style="font-size:13px;color:#78716c;margin-top:4px;font-variant-numeric:tabular-nums">Delta Construcciones · CUIT 30-70812345-9 · Resp. Inscripto · Cliente #1042 · Alta 03/2019</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Editar</button>
+      <button onClick="{{ goFacturacion }}" style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Nueva venta</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+        <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;margin-bottom:12px">Contacto</div>
+        <div style="display:flex;flex-direction:column;gap:9px;font-size:13px">
+          <div><div style="color:#a8a29e;font-size:11.5px">Dirección</div>Av. San Martín 1240, Gral. Pico (6360), La Pampa</div>
+          <div><div style="color:#a8a29e;font-size:11.5px">Teléfono</div><span style="font-variant-numeric:tabular-nums">02302 42-7788 · Cel 2302 55-1234</span></div>
+          <div><div style="color:#a8a29e;font-size:11.5px">Email</div>compras@deltasrl.com.ar</div>
+          <div><div style="color:#a8a29e;font-size:11.5px">Contacto</div>Griselda Otaño (compras)</div>
+          <div><div style="color:#a8a29e;font-size:11.5px">Horario de entrega</div>Lun a Vie 8:00–12:00</div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+        <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;margin-bottom:12px">Condiciones comerciales</div>
+        <div style="display:flex;flex-direction:column;gap:9px;font-size:13px">
+          <div style="display:flex;justify-content:space-between"><span style="color:#78716c">Lista de precios</span><b>Lista 2 — Mayorista</b></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#78716c">Descuentos</span><b style="font-variant-numeric:tabular-nums">10% + 5%</b></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#78716c">Cond. de pago</span><b>Cta. cte. 30 días</b></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#78716c">Límite de crédito</span><b style="font-variant-numeric:tabular-nums">$ 500.000</b></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#78716c">Vendedor</span><b>M. Giménez</b></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#78716c">Transporte</span><b>Expreso Pico</b></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Saldo actual</div><div style="font-size:22px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums">$ 148.900,00</div></div>
+        <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Crédito disponible</div><div style="font-size:22px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums;color:#3d8f5f">$ 351.100</div></div>
+        <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Compras últimos 12m</div><div style="font-size:22px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums">$ 3.42 M</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+        <div style="padding:16px 20px 10px;display:flex;justify-content:space-between;align-items:baseline">
+          <div style="font-size:14.5px;font-weight:700">Últimos movimientos</div>
+          <button onClick="{{ goCtacte }}" style="border:none;background:none;color:#c25510;font-size:12.5px;font-weight:600;cursor:pointer;padding:0" style-hover="text-decoration:underline">Ver cuenta corriente</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 20px">Fecha</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 12px">Comprobante</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 12px">Debe</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 12px">Haber</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 20px 8px 12px">Saldo</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">17/07/26</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">FAC A 0003-00014582</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">148.900,00</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">148.900,00</td></tr>
+            <tr><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">09/07/26</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">REC 0001-00008812</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f">92.500,00</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">0,00</td></tr>
+            <tr><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">28/06/26</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">FAC A 0003-00014390</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">92.500,00</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">92.500,00</td></tr>
+            <tr><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15/06/26</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">REM 0002-00003377</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">0,00</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isArticulos }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Artículos y stock</h1>
+    <div style="display:flex;gap:8px">
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Actualizar precios</button>
+      <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Nuevo artículo</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
+    <input placeholder="Buscar por código, descripción o código de barras…" style="flex:1;min-width:280px;max-width:420px;padding:10px 14px;border:1px solid #e7e2dc;border-radius:9px;font-size:13.5px;background:#fff;outline-color:#e86412">
+    <div style="display:flex;gap:6px">
+      <button style="border:none;background:#1c1917;color:#fff;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer">Todos</button>
+      <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Herramientas</button>
+      <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Fijaciones</button>
+      <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Pinturas</button>
+      <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Electricidad</button>
+      <button style="border:1px solid #e7e2dc;background:#fff;color:#b3261e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#fbeae9">⚠ Bajo mínimo (9)</button>
+    </div>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Código</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Descripción</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Rubro</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Marca</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Stock</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Costo</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Precio 1</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Precio 2</th>
+      </tr></thead>
+      <tbody>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">AMO-750</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Amoladora angular 750W 115mm</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Herramientas</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Bosch</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right"><span style="font-variant-numeric:tabular-nums;font-weight:600">12</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 61.900</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 89.900</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 82.700</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">DIS-115</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Disco de corte 115×1.6mm acero</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Herramientas</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Tyrolit</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right"><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px">0</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 1.480</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 2.350</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 2.120</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">TOR-850</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Tornillo fix 8×50 caja ×100</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Fijaciones</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Fischer</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">4</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 5.900</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 9.400</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 8.650</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">LAT-20B</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Látex interior blanco 20L</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Pinturas</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Alba</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right"><span style="font-variant-numeric:tabular-nums;font-weight:600">28</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 48.200</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 72.900</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 66.400</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">CAB-2X15</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Cable taller 2×1.5mm rollo 100m</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Electricidad</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Prysmian</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right"><span style="font-variant-numeric:tabular-nums;font-weight:600">7</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 38.700</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 58.900</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 53.800</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">GUA-N09</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Guante nitrilo T9 par</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Seguridad</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Libus</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right"><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px">0</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 2.100</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 3.600</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 3.290</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">TAL-13</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Taladro percutor 13mm 650W</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Herramientas</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Black+Decker</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right"><span style="font-variant-numeric:tabular-nums;font-weight:600">9</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 52.400</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 78.500</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 71.900</td></tr>
+      </tbody>
+    </table>
+    <div style="padding:12px 20px;border-top:1px solid #f0ece7;font-size:12.5px;color:#78716c">3.412 artículos activos · mostrando 1–7</div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isFacturacion }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div style="display:flex;align-items:baseline;gap:14px">
+      <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Mostrador</h1>
+      <span style="font-size:13px;color:#78716c;font-variant-numeric:tabular-nums">FAC A 0003-00014583 · 17/07/2026</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;color:#57534e" style-hover="background:#faf7f3">Guardar borrador</button>
+      <button style="background:#1c1917;color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#000">Emitir factura (F10)</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:18px;flex-direction:{{ factDir }};align-items:stretch">
+    <div style="flex:1.8;display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 16px;display:flex;gap:10px;align-items:center;position:relative;z-index:11;flex-wrap:wrap">
+        <div style="font-size:12px;font-weight:700;color:#a8a29e;white-space:nowrap;flex:none">⌨ F3</div>
+        <div style="flex:1;position:relative;min-width:180px">
+          <input onFocus="{{ toggleClienteQuick }}" defaultValue="Constructora Delta SRL" placeholder="Nombre, fantasía o CUIT del cliente…" style="width:100%;box-sizing:border-box;padding:11px 34px 11px 14px;border:2px solid #e7e2dc;border-radius:9px;font-size:14px;outline:none;background:#fff">
+          <button onMouseDown="{{ clearInput }}" title="Limpiar" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);border:none;background:none;color:#b8b2ab;font-size:14px;cursor:pointer;padding:4px;line-height:1" style-hover="color:#57534e">✕</button>
+          <sc-if value="{{ clienteQuickOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid #e7e2dc;border-radius:12px;box-shadow:0 12px 32px rgba(28,25,23,.14);overflow:hidden">
+              <div style="padding:9px 14px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;border-bottom:1px solid #f0ece7">Selección rápida</div>
+              <div onMouseDown="{{ elegirCliente }}" style="padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:1px solid #f0ece7" style-hover="background:#faf7f3">Consumidor final</div>
+              <div onMouseDown="{{ elegirCliente }}" style="padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:1px solid #f0ece7" style-hover="background:#faf7f3">Constructora Delta SRL</div>
+              <div onMouseDown="{{ elegirCliente }}" style="padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:1px solid #f0ece7" style-hover="background:#faf7f3">Rodríguez, Aníbal</div>
+              <div onMouseDown="{{ elegirCliente }}" style="padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Agropecuaria El Ceibo</div>
+            </div>
+          </sc-if>
+        </div>
+        <button onClick="{{ abrirBuscarCliente }}" title="Búsqueda avanzada de clientes" style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:11px;display:flex;color:#57534e;cursor:pointer;flex:none" style-hover="background:#faf7f3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </button>
+        <button onClick="{{ elegirCliente }}" title="Venta rápida sin cliente" style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:11px 14px;font-size:12.5px;font-weight:700;color:#57534e;cursor:pointer;white-space:nowrap;flex:none" style-hover="background:#faf7f3">Consumidor final</button>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 16px;display:flex;gap:10px;align-items:center;position:relative;z-index:10;flex-wrap:wrap">
+        <div style="font-size:12px;font-weight:700;color:#a8a29e;white-space:nowrap;flex:none">⌨ F2</div>
+        <div style="flex:1;position:relative;min-width:180px">
+          <input onFocus="{{ abrirBusqueda }}" onBlur="{{ cerrarBusqueda }}" defaultValue="correa amarok" placeholder="Código, código de barras, descripción o marca… ej: correa amarok" style="width:100%;box-sizing:border-box;padding:11px 34px 11px 14px;border:2px solid #e86412;border-radius:9px;font-size:14px;outline:none;background:#fffcf9">
+          <button onMouseDown="{{ clearInput }}" title="Limpiar" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);border:none;background:none;color:#b8b2ab;font-size:14px;cursor:pointer;padding:4px;line-height:1" style-hover="color:#57534e">✕</button>
+          <sc-if value="{{ buscando }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid #e7e2dc;border-radius:12px;box-shadow:0 12px 32px rgba(28,25,23,.14);overflow:hidden">
+              <div style="padding:9px 14px;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;border-bottom:1px solid #f0ece7">4 resultados para "correa amarok"</div>
+              <div onMouseDown="{{ elegirResultado }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;background:#fff8f2" style-hover="background:#fdf1e6">
+                <div><div style="font-size:13.5px;font-weight:600">Correa Poly-V VW Amarok 2.0 TDI</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">COR-AMK20 · Gates · Correas</div></div>
+                <div style="text-align:right;flex:none"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">$ 38.400</div><div style="font-size:11.5px;color:#3d8f5f;font-weight:600">Stock 6</div></div>
+              </div>
+              <div onMouseDown="{{ elegirResultado }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-top:1px solid #f0ece7" style-hover="background:#faf7f3">
+                <div><div style="font-size:13.5px;font-weight:600">Correa distribución VW Amarok 2.0 (kit)</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">COR-AMKD · Continental · Correas</div></div>
+                <div style="text-align:right;flex:none"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">$ 96.200</div><div style="font-size:11.5px;color:#3d8f5f;font-weight:600">Stock 3</div></div>
+              </div>
+              <div onMouseDown="{{ elegirResultado }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-top:1px solid #f0ece7" style-hover="background:#faf7f3">
+                <div><div style="font-size:13.5px;font-weight:600">Tensor de correa VW Amarok</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">TEN-AMK · SKF · Correas</div></div>
+                <div style="text-align:right;flex:none"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">$ 52.700</div><div style="font-size:11.5px;color:#b45309;font-weight:600">Stock 1</div></div>
+              </div>
+              <div onMouseDown="{{ elegirResultado }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-top:1px solid #f0ece7" style-hover="background:#faf7f3">
+                <div><div style="font-size:13.5px;font-weight:600">Correa alternador VW Amarok V6</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">COR-AMKV6 · Gates · Correas</div></div>
+                <div style="text-align:right;flex:none"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">$ 44.900</div><div style="font-size:11.5px;color:#b3261e;font-weight:600">Sin stock</div></div>
+              </div>
+              <div style="padding:8px 14px;font-size:11.5px;color:#a8a29e;border-top:1px solid #f0ece7">↑↓ para moverte · Enter selecciona y pasa a la grilla · Esc cierra</div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display:flex;gap:10px;flex:none">
+          <button onClick="{{ abrirBuscarArticulo }}" title="Búsqueda avanzada de artículos" style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:11px;display:flex;color:#57534e;cursor:pointer;flex:none" style-hover="background:#faf7f3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          </button>
+          <input value="1" style="width:56px;text-align:center;padding:11px 6px;border:1px solid #e7e2dc;border-radius:9px;font-size:14px;font-variant-numeric:tabular-nums">
+          <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:11px 16px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap" style-hover="background:#d15607">Agregar ↵</button>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden;flex:1">
+        <table>
+          <thead><tr>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Código</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Descripción</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Cant.</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">P. unitario</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Dto.</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Importe</th>
+            <th style="padding:10px 20px 10px 6px;width:36px"></th>
+          </tr></thead>
+          <tbody>
+            <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">AMO-750</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Amoladora angular 750W 115mm</td><td style="padding:12px;border-top:1px solid #f0ece7;text-align:right"><input value="1" style="width:52px;text-align:right;padding:6px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13.5px;font-variant-numeric:tabular-nums"></td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">89.900,00</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">10%</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">80.910,00</td><td style="padding:12px 20px 12px 6px;border-top:1px solid #f0ece7;text-align:center"><button title="Eliminar renglón" style="border:none;background:none;color:#b8b2ab;font-size:15px;cursor:pointer;padding:4px 6px;border-radius:6px;line-height:1" style-hover="color:#b3261e;background:#fbeae9">✕</button></td></tr>
+            <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">DIS-115</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Disco de corte 115×1.6mm acero</td><td style="padding:12px;border-top:1px solid #f0ece7;text-align:right"><input value="10" style="width:52px;text-align:right;padding:6px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13.5px;font-variant-numeric:tabular-nums"></td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">2.350,00</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">10%</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">21.150,00</td><td style="padding:12px 20px 12px 6px;border-top:1px solid #f0ece7;text-align:center"><button title="Eliminar renglón" style="border:none;background:none;color:#b8b2ab;font-size:15px;cursor:pointer;padding:4px 6px;border-radius:6px;line-height:1" style-hover="color:#b3261e;background:#fbeae9">✕</button></td></tr>
+            <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">GUA-N09</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Guante nitrilo T9 par</td><td style="padding:12px;border-top:1px solid #f0ece7;text-align:right"><input value="5" style="width:52px;text-align:right;padding:6px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13.5px;font-variant-numeric:tabular-nums"></td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">3.600,00</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">—</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">18.000,00</td><td style="padding:12px 20px 12px 6px;border-top:1px solid #f0ece7;text-align:center"><button title="Eliminar renglón" style="border:none;background:none;color:#b8b2ab;font-size:15px;cursor:pointer;padding:4px 6px;border-radius:6px;line-height:1" style-hover="color:#b3261e;background:#fbeae9">✕</button></td></tr>
+            <tr><td colspan="7" style="padding:26px 20px;border-top:1px solid #f0ece7;text-align:center;color:#b8b2ab;font-size:13px">Escaneá o buscá el próximo artículo…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:14px">
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px">
+        <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;margin-bottom:10px">Cliente seleccionado</div>
+        <div style="font-size:14px;font-weight:700">Constructora Delta SRL</div>
+        <div style="font-size:12px;color:#78716c;font-variant-numeric:tabular-nums;margin-top:2px">30-70812345-9 · Resp. Inscripto · Lista 2</div>
+        <div style="margin-top:10px;display:flex;gap:8px;font-size:12px">
+          <span style="background:#e9f4ee;color:#3d8f5f;font-weight:700;border-radius:99px;padding:3px 9px">Crédito OK</span>
+          <span style="background:#f1efec;color:#57534e;font-weight:600;border-radius:99px;padding:3px 9px">Dto. cliente 10% + 5%</span>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px">
+        <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;margin-bottom:10px">Condición de venta</div>
+        <div style="display:flex;gap:6px">
+          <button onClick="{{ pickCondVenta }}" data-cond="ctacte" style="flex:1;border:{{ condStyles.ctacte.border }};background:{{ condStyles.ctacte.bg }};color:{{ condStyles.ctacte.color }};border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer">Cta. cte.</button>
+          <button onClick="{{ pickCondVenta }}" data-cond="contado" style="flex:1;border:{{ condStyles.contado.border }};background:{{ condStyles.contado.bg }};color:{{ condStyles.contado.color }};border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer">Contado</button>
+          <button onClick="{{ pickCondVenta }}" data-cond="tarjeta" style="flex:1;border:{{ condStyles.tarjeta.border }};background:{{ condStyles.tarjeta.bg }};color:{{ condStyles.tarjeta.color }};border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer">Tarjeta</button>
+          <button onClick="{{ pickCondVenta }}" data-cond="cheque" style="flex:1;border:{{ condStyles.cheque.border }};background:{{ condStyles.cheque.bg }};color:{{ condStyles.cheque.color }};border-radius:9px;padding:9px 6px;font-size:12.5px;font-weight:700;cursor:pointer">Cheque</button>
+        </div>
+        <sc-if value="{{ isCtacteCond }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:10px;font-size:12px;color:#78716c">Vencimiento: <b style="color:#1c1917">16/08/2026</b> (30 días)</div>
+        </sc-if>
+        <sc-if value="{{ isContado }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0ece7">
+            <div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;margin-bottom:8px">Forma de pago</div>
+            <div style="display:flex;gap:6px;margin-bottom:10px">
+              <button onClick="{{ pickMedioPago }}" data-medio="efectivo" style="flex:1;border:{{ medioStyles.efectivo.border }};background:{{ medioStyles.efectivo.bg }};color:{{ medioStyles.efectivo.color }};border-radius:8px;padding:7px 6px;font-size:12px;font-weight:700;cursor:pointer">Efectivo</button>
+              <button onClick="{{ pickMedioPago }}" data-medio="debito" style="flex:1;border:{{ medioStyles.debito.border }};background:{{ medioStyles.debito.bg }};color:{{ medioStyles.debito.color }};border-radius:8px;padding:7px 6px;font-size:12px;font-weight:700;cursor:pointer">Débito</button>
+              <button onClick="{{ pickMedioPago }}" data-medio="transferencia" style="flex:1;border:{{ medioStyles.transferencia.border }};background:{{ medioStyles.transferencia.bg }};color:{{ medioStyles.transferencia.color }};border-radius:8px;padding:7px 6px;font-size:12px;font-weight:700;cursor:pointer">Transf.</button>
+            </div>
+            <sc-if value="{{ isEfectivo }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:12.5px;font-weight:600;white-space:nowrap">Recibe $</div>
+                <input onInput="{{ setMontoRecibido }}" value="{{ montoRecibido }}" placeholder="0,00" style="flex:1;padding:8px 10px;border:1px solid #e7e2dc;border-radius:8px;font-size:13px;font-variant-numeric:tabular-nums">
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+      <div style="background:#1c1917;border-radius:12px;padding:18px 20px;color:#fff">
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;color:#d6d0c8"><span>Subtotal</span><span style="font-variant-numeric:tabular-nums">$ 124.850,00</span></div>
+          <div style="display:flex;justify-content:space-between;color:#d6d0c8"><span>Descuento adicional 5%</span><span style="font-variant-numeric:tabular-nums">− $ 6.242,50</span></div>
+          <div style="display:flex;justify-content:space-between;color:#d6d0c8"><span>Neto gravado</span><span style="font-variant-numeric:tabular-nums">$ 118.607,50</span></div>
+          <div style="display:flex;justify-content:space-between;color:#d6d0c8"><span>IVA 21%</span><span style="font-variant-numeric:tabular-nums">$ 24.907,58</span></div>
+          <div style="border-top:1px solid rgba(255,255,255,.15);margin:4px 0"></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:700;font-size:14px">TOTAL</span><span style="font-variant-numeric:tabular-nums;font-weight:800;font-size:24px">$ 143.515,08</span></div>
+          <sc-if value="{{ isEfectivo }}" hint-placeholder-val="{{ false }}">
+            <div style="border-top:1px solid rgba(255,255,255,.15);margin:4px 0"></div>
+            <div style="display:flex;justify-content:space-between;color:#d6d0c8"><span>Recibe</span><span style="font-variant-numeric:tabular-nums">$ {{ montoRecibidoFmt }}</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:700;color:{{ vueltoColor }}">{{ vueltoLabel }}</span><span style="font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;color:{{ vueltoColor }}">$ {{ vueltoFmt }}</span></div>
+          </sc-if>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:#a8a29e;line-height:1.6">F2 buscar artículo · F3 cambiar cliente · F6 descuento · F10 emitir · Esc cancelar</div>
+    </div>
+  </div>
+
+  <sc-if value="{{ isBuscarArticulo }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(28,25,23,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:60;overflow-y:auto">
+      <div style="background:#fff;border-radius:14px;width:min(820px,100%);padding:22px 26px 26px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0;font-size:18px;font-weight:700">Buscar artículo</h2>
+          <button onClick="{{ cerrarBuscarArticulo }}" style="border:none;background:none;font-size:20px;color:#a8a29e;cursor:pointer;line-height:1" style-hover="color:#1c1917">✕</button>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <div style="position:relative;flex:2;min-width:220px">
+            <input placeholder="Código, descripción, marca, código de barras…" style="width:100%;box-sizing:border-box;padding:9px 34px 9px 12px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px">
+            <button onMouseDown="{{ clearInput }}" title="Limpiar" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);border:none;background:none;color:#b8b2ab;font-size:14px;cursor:pointer;padding:4px;line-height:1" style-hover="color:#57534e">✕</button>
+          </div>
+          <select style="flex:1;min-width:130px;padding:9px 10px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff"><option>Rubro: todos</option><option>Herramientas</option><option>Fijaciones</option><option>Pinturas</option><option>Electricidad</option></select>
+          <select style="flex:1;min-width:130px;padding:9px 10px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff"><option>Marca: todas</option><option>Bosch</option><option>Gates</option><option>Fischer</option></select>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#57534e;white-space:nowrap"><input type="checkbox" checked style="width:15px;height:15px">Solo con stock</label>
+        </div>
+        <div style="border:1px solid #e7e2dc;border-radius:10px;overflow:hidden;max-height:360px;overflow-y:auto">
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid #f0ece7" style-hover="background:#faf7f3">
+            <div><div style="font-size:13.5px;font-weight:600">Correa Poly-V VW Amarok 2.0 TDI</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">COR-AMK20 · Gates · Correas</div></div>
+            <div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">$ 38.400</div>
+            <input value="1" style="width:52px;text-align:center;padding:7px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums">
+            <button onClick="{{ agregarDesdeModal }}" style="background:#e86412;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">Agregar</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid #f0ece7" style-hover="background:#faf7f3">
+            <div><div style="font-size:13.5px;font-weight:600">Amoladora angular 750W 115mm</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">AMO-750 · Bosch · Herramientas</div></div>
+            <div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">$ 89.900</div>
+            <input value="1" style="width:52px;text-align:center;padding:7px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums">
+            <button onClick="{{ agregarDesdeModal }}" style="background:#e86412;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">Agregar</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:11px 14px" style-hover="background:#faf7f3">
+            <div><div style="font-size:13.5px;font-weight:600">Tornillo fix 8×50 caja ×100</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">TOR-850 · Fischer · Fijaciones</div></div>
+            <div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">$ 9.400</div>
+            <input value="1" style="width:52px;text-align:center;padding:7px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums">
+            <button onClick="{{ agregarDesdeModal }}" style="background:#e86412;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">Agregar</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px">
+          <button onClick="{{ cerrarBuscarArticulo }}" style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Salir sin agregar</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isBuscarCliente }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(28,25,23,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:60;overflow-y:auto">
+      <div style="background:#fff;border-radius:14px;width:min(820px,100%);padding:22px 26px 26px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0;font-size:18px;font-weight:700">Buscar cliente</h2>
+          <button onClick="{{ cerrarBuscarCliente }}" style="border:none;background:none;font-size:20px;color:#a8a29e;cursor:pointer;line-height:1" style-hover="color:#1c1917">✕</button>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <div style="position:relative;flex:2;min-width:220px">
+            <input placeholder="Nombre, fantasía o CUIT…" style="width:100%;box-sizing:border-box;padding:9px 34px 9px 12px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px">
+            <button onMouseDown="{{ clearInput }}" title="Limpiar" style="position:absolute;top:50%;right:8px;transform:translateY(-50%);border:none;background:none;color:#b8b2ab;font-size:14px;cursor:pointer;padding:4px;line-height:1" style-hover="color:#57534e">✕</button>
+          </div>
+          <select style="flex:1;min-width:120px;padding:9px 10px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff"><option>Zona: todas</option><option>Centro</option><option>Norte</option><option>Rural</option></select>
+          <select style="flex:1;min-width:120px;padding:9px 10px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff"><option>Estado: activos</option><option>Todos</option><option>Bloqueados</option></select>
+          <select style="flex:1;min-width:120px;padding:9px 10px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff"><option>Vendedor: todos</option><option>M. Giménez</option><option>L. Paredes</option></select>
+        </div>
+        <div style="border:1px solid #e7e2dc;border-radius:10px;overflow:hidden;max-height:360px;overflow-y:auto">
+          <div onClick="{{ elegirCliente }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f0ece7;cursor:pointer" style-hover="background:#faf7f3">
+            <div><div style="font-size:13.5px;font-weight:600">Constructora Delta SRL</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">30-70812345-9 · Gral. Pico · Centro</div></div>
+            <span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span>
+          </div>
+          <div onClick="{{ elegirCliente }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f0ece7;cursor:pointer" style-hover="background:#faf7f3">
+            <div><div style="font-size:13.5px;font-weight:600">Agropecuaria El Ceibo</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">30-71234567-1 · Metileo · Rural</div></div>
+            <span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span>
+          </div>
+          <div onClick="{{ elegirCliente }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;cursor:pointer" style-hover="background:#faf7f3">
+            <div><div style="font-size:13.5px;font-weight:600">Metalúrgica Pampa SRL</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">30-69875412-2 · Gral. Pico · Norte</div></div>
+            <span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Activo</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:18px">
+          <button onClick="{{ cerrarBuscarCliente }}" style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Salir sin elegir</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</sc-if>
+
+<sc-if value="{{ isPedidos }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Pedidos de venta</h1>
+    <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Nuevo pedido</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:14px">
+    <button style="border:none;background:#1c1917;color:#fff;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer">Todos (32)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Pendientes (14)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Preparados (6)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Facturados (12)</button>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Pedido</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Fecha</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Cliente</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Vendedor</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Total</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Estado</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Acción</th>
+      </tr></thead>
+      <tbody>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PED-002841</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">17/07 09:42</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Constructora Delta SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">M. Giménez</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 143.515,08</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">Pendiente</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Facturar</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PED-002840</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">17/07 09:10</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Metalúrgica Pampa SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">L. Paredes</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 67.320,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#1d4ed8;background:#e8eefc;border-radius:99px;padding:3px 9px">Preparado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Facturar</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PED-002839</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">16/07 17:35</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Agropecuaria El Ceibo</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">M. Giménez</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 96.800,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Facturado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PED-002838</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">16/07 15:02</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Rodríguez, Aníbal</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Mostrador</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 23.450,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">Pendiente</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Facturar</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PED-002837</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">16/07 11:48</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Pintado Fácil (M. Suárez)</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">L. Paredes</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 41.900,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px">Sin stock</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCtacte }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Cuenta corriente</h1>
+    <div style="display:flex;gap:8px">
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Imprimir resumen</button>
+      <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Registrar cobro</button>
+    </div>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 20px;margin-bottom:18px;display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+    <div style="flex:1;min-width:260px;display:flex;align-items:center;gap:12px">
+      <div style="width:42px;height:42px;border-radius:12px;background:#f5efe8;display:grid;place-items:center;font-size:15px;font-weight:800;color:#c25510">CD</div>
+      <div>
+        <div style="font-size:15px;font-weight:700">Constructora Delta SRL</div>
+        <div style="font-size:12px;color:#78716c">Cta. cte. 30 días · Límite $ 500.000</div>
+      </div>
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;margin-left:6px" style-hover="background:#faf7f3">Cambiar cliente</button>
+    </div>
+    <div style="display:flex;gap:28px">
+      <div><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Saldo total</div><div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:3px">$ 148.900,00</div></div>
+      <div><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Vencido</div><div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:3px;color:#3d8f5f">$ 0,00</div></div>
+      <div><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">A vencer</div><div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:3px">$ 148.900,00</div></div>
+    </div>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <div style="padding:14px 20px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #f0ece7">
+      <select style="padding:8px 12px;border:1px solid #e7e2dc;border-radius:8px;font-size:12.5px;background:#fff;color:#57534e"><option>Últimos 90 días</option><option>Este año</option><option>Todo</option></select>
+      <select style="padding:8px 12px;border:1px solid #e7e2dc;border-radius:8px;font-size:12.5px;background:#fff;color:#57534e"><option>Todos los comprobantes</option><option>Solo facturas</option><option>Solo recibos</option></select>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Fecha</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Tipo</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Comprobante</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Debe</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Haber</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Saldo</th>
+      </tr></thead>
+      <tbody>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">17/07/26</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#57534e;background:#f1efec;border-radius:99px;padding:3px 9px">FAC</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">A 0003-00014582</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">148.900,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:700">148.900,00</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">09/07/26</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">REC</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">0001-00008812</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f">92.500,00</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:700">0,00</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">28/06/26</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#57534e;background:#f1efec;border-radius:99px;padding:3px 9px">FAC</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">A 0003-00014390</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">92.500,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:700">92.500,00</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">02/06/26</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">NC</span></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">A 0003-00000218</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f">8.420,00</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:700">0,00</td></tr>
+      </tbody>
+    </table>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCompras }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Compras</h1>
+    <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Cargar factura de compra</button>
+  </div>
+  <div style="display:flex;gap:2px;margin-bottom:18px;background:#efece7;border-radius:10px;padding:3px;width:fit-content">
+    <button onClick="{{ tabFacturas }}" style="border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;background:{{ tabFcBg }};color:{{ tabFcColor }};box-shadow:{{ tabFcShadow }}">Facturas de compra</button>
+    <button onClick="{{ tabPedidosC }}" style="border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;background:{{ tabPcBg }};color:{{ tabPcColor }};box-shadow:{{ tabPcShadow }}">Pedidos de compra</button>
+    <button onClick="{{ tabProveedores }}" style="border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;background:{{ tabPrBg }};color:{{ tabPrColor }};box-shadow:{{ tabPrShadow }}">Proveedores</button>
+    <button onClick="{{ tabListas }}" style="border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;background:{{ tabLiBg }};color:{{ tabLiColor }};box-shadow:{{ tabLiShadow }}">Listas de precios</button>
+  </div>
+  <sc-if value="{{ isTabFacturas }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+      <table>
+        <thead><tr>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Comprobante</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Fecha</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Proveedor</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Total</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Saldo</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Vence</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px 10px 12px">Estado</th>
+        </tr></thead>
+        <tbody>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">FC A 0012-00045821</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Distribuidora Herrafe SA</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 842.300,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">$ 842.300,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">14/08/26</td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">A pagar</span></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">FC A 0003-00112904</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">12/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Pinturerías del Centro SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 386.400,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 0,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">—</td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Pagada</span></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">FC B 0008-00009133</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">10/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Eléctrica Pampeana</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 218.760,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#b3261e">$ 118.760,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#b3261e;font-weight:600">09/07/26</td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px">Vencida</span></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">OC 0001-00000912</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">08/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Distribuidora Herrafe SA</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 512.000,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">—</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">—</td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#1d4ed8;background:#e8eefc;border-radius:99px;padding:3px 9px">Orden abierta</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isTabPedidosC }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+      <table>
+        <thead><tr>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Pedido</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Fecha</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Proveedor</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Total</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Recepción prevista</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Estado</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Acción</th>
+        </tr></thead>
+        <tbody>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PC-000381</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">16/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Distribuidora Herrafe SA</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 486.200,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">24/07/26</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">Pendiente</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Generar OC</button></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PC-000380</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">14/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Pinturerías del Centro SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 214.800,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">21/07/26</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#1d4ed8;background:#e8eefc;border-radius:99px;padding:3px 9px">Confirmado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PC-000379</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">10/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Eléctrica Pampeana</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 96.400,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15/07/26</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Recibido</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isTabProveedores }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button onClick="{{ abrirNuevoProveedor }}" style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">+ Nuevo proveedor</button>
+    </div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+      <table>
+        <thead><tr>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Proveedor</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">CUIT</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Rubro</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Contacto</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Saldo a pagar</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px 10px 12px">Cond. pago</th>
+        </tr></thead>
+        <tbody>
+          <tr style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Distribuidora Herrafe SA</div><div style="font-size:11.5px;color:#a8a29e">Herramientas y fijaciones</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">30-58712340-6</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Ferretería gral.</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">J. Almada · 011 4780-2200</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 842.300,00</td><td style="padding:13px 20px 13px 12px;font-size:13px;border-top:1px solid #f0ece7">30 días FF</td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Pinturerías del Centro SRL</div><div style="font-size:11.5px;color:#a8a29e">Pinturas y accesorios</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">30-64291785-2</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Pinturas</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">S. Vega · 02954 43-1122</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">$ 0,00</td><td style="padding:13px 20px 13px 12px;font-size:13px;border-top:1px solid #f0ece7">Contado 5% dto.</td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:13px 20px;border-top:1px solid #f0ece7"><div style="font-size:13.5px;font-weight:600">Eléctrica Pampeana</div><div style="font-size:11.5px;color:#a8a29e">Material eléctrico</div></td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">30-70998812-4</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">Electricidad</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7">R. Funes · 02302 43-8890</td><td style="padding:13px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#b3261e">$ 118.760,00</td><td style="padding:13px 20px 13px 12px;font-size:13px;border-top:1px solid #f0ece7">15 días FF</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isTabListas }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="font-size:13px;font-weight:600;color:#57534e;white-space:nowrap">Actualizar precios del proveedor</div>
+      <select onChange="{{ pickListaProveedor }}" style="padding:9px 12px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff;min-width:240px">
+        <sc-for list="{{ listaProveedores }}" as="p" hint-placeholder-count="3">
+          <option value="{{ p.id }}">{{ p.nombre }}</option>
+        </sc-for>
+      </select>
+      <div style="flex:1"></div>
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;color:#c25510;cursor:pointer;white-space:nowrap" style-hover="background:#fff8f2">📎 Cargar archivo Excel…</button>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start">
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow-x:auto;min-width:0">
+        <div style="padding:16px 20px 10px;display:flex;justify-content:space-between;align-items:baseline">
+          <div style="font-size:14.5px;font-weight:700">Vista previa · {{ listaProveedorNombre }}</div>
+          <div style="font-size:12.5px;color:#78716c">{{ listaArchivo }}</div>
+        </div>
+        <table>
+          <thead><tr>
+            <sc-for list="{{ listaPreviewCols }}" as="c" hint-placeholder-count="5">
+              <th style="font-size:11px;font-weight:700;text-transform:uppercase;color:#c25510;text-align:left;padding:8px 20px;white-space:nowrap">{{ c }}</th>
+            </sc-for>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ listaPreviewRows }}" as="r" hint-placeholder-count="4">
+              <tr style-hover="background:#faf7f3">
+                <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="5">
+                  <td style="padding:11px 20px;font-size:12.5px;border-top:1px solid #f0ece7;color:#57534e;font-variant-numeric:tabular-nums;white-space:nowrap">{{ cell }}</td>
+                </sc-for>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <div style="padding:14px 20px;border-top:1px solid #f0ece7;background:#faf9f7">
+          <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">Última importación · {{ listaProveedorNombre }} · {{ listaFecha }}</div>
+          <div style="display:flex;gap:14px;font-size:12px;color:#57534e;flex-wrap:wrap">
+            <span><b style="color:#3d8f5f">{{ listaActualizados }}</b> precios actualizados</span>
+            <span><b style="color:#b45309">{{ listaNuevos }}</b> artículos nuevos (a revisar)</span>
+            <span><b style="color:#b3261e">{{ listaSinMatch }}</b> códigos sin coincidencia</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <div style="font-size:14px;font-weight:700">Mapeo de columnas</div>
+          <span style="font-size:11px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px;white-space:nowrap">Solo esta importación</span>
+        </div>
+        <div style="font-size:12px;color:#78716c;margin-top:4px;margin-bottom:14px">Tomado del alta de {{ listaProveedorNombre }}. Podés corregirlo para este archivo puntual; para dejarlo fijo, editalo desde la ficha del proveedor.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ listaMapeo }}" as="m" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:120px;font-size:13px;font-weight:600">{{ m.campo }}</div>
+              <select style="flex:1;padding:8px 10px;border:1px solid #e7e2dc;border-radius:8px;font-size:13px;background:#fff">
+                <option>{{ m.columna }}</option>
+                <option>Columna A</option><option>Columna B</option><option>Columna C</option><option>Columna D</option><option>Columna E</option>
+              </select>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:120px;font-size:13px;font-weight:600">Empieza en fila</div><input value="{{ listaFilaInicio }}" style="flex:1;padding:8px 10px;border:1px solid #e7e2dc;border-radius:8px;font-size:13px;font-variant-numeric:tabular-nums"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+          <div style="flex:1;font-size:13px;font-weight:600">Actualizar precio de venta</div>
+          <select style="padding:8px 10px;border:1px solid #e7e2dc;border-radius:8px;font-size:12.5px;background:#fff"><option>Aplicar margen del rubro</option><option>Solo actualizar costo</option></select>
+        </div>
+        <button style="margin-top:14px;width:100%;background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#d15607">Importar con este mapeo</button>
+      </div>
+    </div>
+  </sc-if>
+</sc-if>
+
+<sc-if value="{{ isNuevoProveedor }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;background:rgba(28,25,23,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;z-index:50;overflow-y:auto">
+    <div style="background:#fff;border-radius:14px;width:min(760px,100%);padding:24px 28px 28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <h2 style="margin:0;font-size:18px;font-weight:700">Nuevo proveedor</h2>
+        <button onClick="{{ cerrarNuevoProveedor }}" style="border:none;background:none;font-size:20px;color:#a8a29e;cursor:pointer;line-height:1" style-hover="color:#1c1917">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div><div style="font-size:11.5px;color:#a8a29e;margin-bottom:4px">Razón social</div><input placeholder="Distribuidora Herrafe SA" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e7e2dc;border-radius:8px;font-size:13px"></div>
+        <div><div style="font-size:11.5px;color:#a8a29e;margin-bottom:4px">CUIT</div><input placeholder="30-00000000-0" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e7e2dc;border-radius:8px;font-size:13px;font-variant-numeric:tabular-nums"></div>
+        <div><div style="font-size:11.5px;color:#a8a29e;margin-bottom:4px">Rubro</div><input placeholder="Herramientas y fijaciones" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e7e2dc;border-radius:8px;font-size:13px"></div>
+        <div><div style="font-size:11.5px;color:#a8a29e;margin-bottom:4px">Condición de pago</div><input placeholder="30 días FF" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e7e2dc;border-radius:8px;font-size:13px"></div>
+      </div>
+      <div style="border-top:1px solid #f0ece7;padding-top:16px">
+        <div style="font-size:14px;font-weight:700">Formato de la lista de precios (Excel)</div>
+        <div style="font-size:12px;color:#78716c;margin-top:4px;margin-bottom:12px">Este mapeo queda guardado en el proveedor: define qué columna del Excel corresponde a cada dato de tu base. Agregá tantas filas como columnas te envíe.</div>
+        <div style="border:1px solid #e7e2dc;border-radius:10px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:100px 1fr 32px;background:#faf9f7;border-bottom:1px solid #e7e2dc">
+            <div style="padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Columna Excel</div>
+            <div style="padding:8px 12px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Concepto en mi base de datos</div>
+            <div></div>
+          </div>
+          <sc-for list="{{ nuevoProvMapeo }}" as="m" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:100px 1fr 32px;border-bottom:1px solid #f0ece7;align-items:center">
+              <select style="margin:6px 8px;padding:7px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px">
+                <option>{{ m.columna }}</option>
+                <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option>
+              </select>
+              <select style="margin:6px 8px;padding:7px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px">
+                <option>{{ m.campo }}</option>
+                <option>Código de producto</option><option>Descripción</option><option>Precio de costo</option><option>Precio de lista</option><option>Marca</option><option>Rubro</option><option>Unidad de medida</option><option>Alícuota IVA</option><option>(ignorar columna)</option>
+              </select>
+              <button onClick="{{ quitarFilaMapeo }}" data-idx="{{ $index }}" title="Quitar" style="border:none;background:none;color:#b8b2ab;font-size:15px;cursor:pointer;padding:4px" style-hover="color:#b3261e">✕</button>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ agregarFilaMapeo }}" style="margin-top:10px;border:1px dashed #d8d2c9;background:#fff;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">+ Agregar columna</button>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+          <div style="font-size:13px;font-weight:600">La lista empieza en la fila</div>
+          <input value="2" style="width:60px;padding:7px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px">
+        <button onClick="{{ cerrarNuevoProveedor }}" style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Cancelar</button>
+        <button onClick="{{ cerrarNuevoProveedor }}" style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#d15607">Guardar proveedor</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCaja }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <div>
+      <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Caja y bancos</h1>
+      <div style="font-size:13px;color:#78716c;margin-top:3px">Caja 1 · Apertura 08:02 · Marcos Giménez</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Registrar egreso</button>
+      <button style="background:#1c1917;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#000">Cerrar caja del día</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px">
+    <div style="background:#1c1917;border-radius:12px;padding:16px 18px;color:#fff"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a096">Efectivo en caja</div><div style="font-size:24px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 213.480</div><div style="font-size:12px;color:#a8a096;margin-top:4px;font-variant-numeric:tabular-nums">Ingresos $ 486.320 · Egresos $ 272.840</div></div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Cheques en cartera</div><div style="font-size:24px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 645.200</div><div style="font-size:12px;color:#78716c;margin-top:4px">8 cheques · próx. 24/07</div></div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Banco Nación c/c</div><div style="font-size:24px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 1.892.140</div><div style="font-size:12px;color:#78716c;margin-top:4px;font-variant-numeric:tabular-nums">Conciliado al 15/07</div></div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Tarjetas a acreditar</div><div style="font-size:24px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 168.900</div><div style="font-size:12px;color:#78716c;margin-top:4px">Acredita 21/07</div></div>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <div style="padding:16px 20px 10px;font-size:14.5px;font-weight:700">Movimientos de hoy</div>
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 20px">Hora</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 12px">Concepto</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 12px">Medio</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 12px">Ingreso</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 20px 8px 12px">Egreso</th>
+      </tr></thead>
+      <tbody>
+        <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">11:32</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600">Cobro FAC B 0003-00014581 · Rodríguez, Aníbal</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Efectivo</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f;font-weight:600">23.450,00</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">10:58</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600">Pago flete Expreso Pico · REM 0002-00003401</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Efectivo</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#b3261e;font-weight:600">18.200,00</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">10:12</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600">Cobro parcial REC 0001-00008819 · Metalúrgica Pampa</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Cheque 30d</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f;font-weight:600">120.000,00</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">09:47</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600">Venta mostrador FAC B 0003-00014580</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Tarjeta débito</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f;font-weight:600">86.200,00</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">08:02</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600">Apertura de caja · fondo fijo</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7">Efectivo</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f;font-weight:600">50.000,00</td><td style="padding:11px 20px 11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPresupuestos }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Presupuestos</h1>
+    <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Nuevo presupuesto</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:14px">
+    <button style="border:none;background:#1c1917;color:#fff;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer">Todos (18)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Vigentes (7)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Aceptados (5)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Vencidos (6)</button>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Presupuesto</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Fecha</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Cliente</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Vendedor</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Total</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Validez</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Estado</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Acción</th>
+      </tr></thead>
+      <tbody>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PRE-001204</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">17/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Constructora Delta SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">M. Giménez</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 486.900,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15 días</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#1d4ed8;background:#e8eefc;border-radius:99px;padding:3px 9px">Vigente</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Convertir</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PRE-001203</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Metalúrgica Pampa SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">L. Paredes</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 212.400,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15 días</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Aceptado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Facturar</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PRE-001202</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">11/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Agropecuaria El Ceibo</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">M. Giménez</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 96.800,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">7 días</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Aceptado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">PRE-001199</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">28/06/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Rodríguez, Aníbal</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Mostrador</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 38.200,00</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15 días</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px">Vencido</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Renovar</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isRemitos }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Remitos de venta</h1>
+    <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Nuevo remito</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:14px">
+    <button style="border:none;background:#1c1917;color:#fff;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer">Todos (26)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">A entregar (8)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Entregados (11)</button>
+    <button style="border:1px solid #e7e2dc;background:#fff;color:#57534e;border-radius:99px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Sin facturar (7)</button>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Remito</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Fecha</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Cliente</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Origen → Destino</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Total</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Estado</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Acción</th>
+      </tr></thead>
+      <tbody>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">REM 0002-00003401</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">17/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Constructora Delta SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Suc. Central → Obra Av. San Martín</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 61.780,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">A entregar</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Facturar</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">REM 0002-00003400</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">16/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Agropecuaria El Ceibo</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Suc. Central → Establecimiento Metileo</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 96.800,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Entregado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">REM 0002-00003399</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Metalúrgica Pampa SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Suc. Central → Planta Ruta 1 km 4</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 54.120,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#57534e;background:#f1efec;border-radius:99px;padding:3px 9px">Sin facturar</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Facturar</button></td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">REM 0002-00003398</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">14/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Pintado Fácil (M. Suárez)</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Suc. Central → Local Speluzzi</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">$ 41.900,00</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Facturado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isInventario }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Stock</h1>
+  </div>
+  <div style="display:flex;gap:2px;margin-bottom:18px;background:#efece7;border-radius:10px;padding:3px;width:fit-content">
+    <sc-for list="{{ stockTabs }}" as="t" hint-placeholder-count="3">
+      <button onClick="{{ pickStockTab }}" data-tab="{{ t.id }}" style="border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }}">{{ t.label }}</button>
+    </sc-for>
+  </div>
+  <sc-if value="{{ isStockToma }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div style="font-size:13px;color:#78716c">Toma INV-0042 en curso · iniciada hoy 08:30 · Depósito Central</div>
+    <div style="display:flex;gap:8px">
+      <button style="border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#faf7f3">Exportar valorizado</button>
+      <button style="background:#1c1917;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#000">Cerrar toma y ajustar</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px">
+    <div style="background:#fff;border:2px solid #e86412;border-radius:12px;padding:16px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#c25510">Depósito Central</div><div style="font-size:22px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 48.2 M</div><div style="font-size:12px;color:#78716c;margin-top:4px;font-variant-numeric:tabular-nums">2.840 artículos · en conteo</div></div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Depósito 2 — Anexo</div><div style="font-size:22px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 12.6 M</div><div style="font-size:12px;color:#78716c;margin-top:4px;font-variant-numeric:tabular-nums">486 artículos · últ. toma 04/26</div></div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:16px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e">Depósito 3 — Corralón</div><div style="font-size:22px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 9.1 M</div><div style="font-size:12px;color:#78716c;margin-top:4px;font-variant-numeric:tabular-nums">218 artículos · últ. toma 04/26</div></div>
+    <div style="background:#1c1917;border-radius:12px;padding:16px 18px;color:#fff"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a096">Valor total inventario</div><div style="font-size:22px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums">$ 69.9 M</div><div style="font-size:12px;color:#a8a096;margin-top:4px">Costo reposición · USD 48.2 k</div></div>
+  </div>
+  <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+    <div style="padding:14px 20px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #f0ece7">
+      <input placeholder="Escaneá o buscá el artículo a contar…" style="flex:1;max-width:380px;padding:9px 14px;border:1px solid #e7e2dc;border-radius:9px;font-size:13px;background:#fff;outline-color:#e86412">
+      <span style="font-size:12.5px;color:#78716c;font-variant-numeric:tabular-nums">Contados 312 de 2.840 · <b style="color:#b3261e">14 con diferencia</b></span>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Código</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Artículo</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Ubicación</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Sistema</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Conteo</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Diferencia</th>
+        <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Valor dif.</th>
+      </tr></thead>
+      <tbody>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">AMO-750</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Amoladora angular 750W 115mm</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">Est. B · Cas. 12</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">12</td><td style="padding:12px;border-top:1px solid #f0ece7;text-align:right"><input value="12" style="width:58px;text-align:right;padding:6px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums"></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#3d8f5f;font-weight:600">0</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td></tr>
+        <tr style="background:#fffbf5" style-hover="background:#fdf6ec"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">TOR-850</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Tornillo fix 8×50 caja ×100</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">Est. D · Cas. 03</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">4</td><td style="padding:12px;border-top:1px solid #f0ece7;text-align:right"><input value="2" style="width:58px;text-align:right;padding:6px 8px;border:1px solid #e6b980;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums;background:#fffcf7"></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#b3261e;font-weight:700">−2</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#b3261e">− $ 11.800</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">LAT-20B</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Látex interior blanco 20L</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">Est. A · Cas. 01</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">28</td><td style="padding:12px;border-top:1px solid #f0ece7;text-align:right"><input value="29" style="width:58px;text-align:right;padding:6px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums"></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#1d4ed8;font-weight:600">+1</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#1d4ed8">+ $ 48.200</td></tr>
+        <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:12.5px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums;color:#78716c;font-weight:600">CAB-2X15</td><td style="padding:12px;font-size:13.5px;border-top:1px solid #f0ece7;font-weight:600">Cable taller 2×1.5mm rollo 100m</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">Est. E · Cas. 08</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">7</td><td style="padding:12px;border-top:1px solid #f0ece7;text-align:right"><input placeholder="—" style="width:58px;text-align:right;padding:6px 8px;border:1px solid #e7e2dc;border-radius:7px;font-size:13px;font-variant-numeric:tabular-nums"></td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">Sin contar</td><td style="padding:12px 20px 12px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;color:#a8a29e">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isStockRecepcion }}" hint-placeholder-val="{{ false }}">
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start">
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow-x:auto;min-width:0">
+      <div style="padding:16px 20px 10px;display:flex;justify-content:space-between;align-items:baseline">
+        <div style="font-size:14.5px;font-weight:700">Remitos de proveedor recibidos</div>
+        <div style="font-size:12.5px;color:#78716c">Al confirmar, el stock se actualiza</div>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 20px">Remito</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Fecha</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Proveedor</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 12px">Renglones</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Carga</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:10px 12px">Estado</th>
+          <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:10px 20px 10px 12px">Acción</th>
+        </tr></thead>
+        <tbody>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">RP 0012-00098211</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">17/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Distribuidora Herrafe SA</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">24</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#7c3aed;background:#f1eafc;border-radius:99px;padding:3px 9px">Foto IA</span></td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">A revisar</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Revisar y confirmar</button></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">RP 0003-00045102</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">16/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Pinturerías del Centro SRL</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">8</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#57534e;background:#f1efec;border-radius:99px;padding:3px 9px">Manual</span></td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Stock actualizado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+          <tr style-hover="background:#faf7f3"><td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-weight:600;font-variant-numeric:tabular-nums">RP 0008-00012377</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">15/07/26</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7">Eléctrica Pampeana</td><td style="padding:12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">12</td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#7c3aed;background:#f1eafc;border-radius:99px;padding:3px 9px">Foto IA</span></td><td style="padding:12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Stock actualizado</span></td><td style="padding:12px 20px 12px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ver</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:#fff;border:2px dashed #e0b083;border-radius:12px;padding:22px 20px;text-align:center">
+        <div style="width:44px;height:44px;border-radius:12px;background:#f1eafc;display:grid;place-items:center;margin:0 auto 10px;font-size:19px">📷</div>
+        <div style="font-size:14px;font-weight:700">Cargar remito con IA</div>
+        <div style="font-size:12.5px;color:#78716c;margin-top:5px;line-height:1.5">Sacale una foto al remito del proveedor. La IA lee los artículos, cantidades y los matchea con tu catálogo para actualizar el stock.</div>
+        <button style="margin-top:12px;background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer" style-hover="background:#d15607">Subir foto o PDF</button>
+        <div style="font-size:11.5px;color:#a8a29e;margin-top:8px">Siempre revisás antes de confirmar</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px">Carga manual</div>
+        <div style="font-size:12.5px;color:#78716c;line-height:1.5">Elegís el proveedor, escaneás o buscás cada artículo y cargás la cantidad recibida, como en una venta.</div>
+        <button style="margin-top:12px;width:100%;border:1px solid #e7e2dc;background:#fff;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#faf7f3">+ Nueva recepción manual</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isStockAlertas }}" hint-placeholder-val="{{ false }}">
+  <div style="display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:18px 20px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px">Reglas de alerta</div>
+        <div style="font-size:12px;color:#78716c;margin-bottom:14px">Se aplican a todo el catálogo; el mín/máx por artículo se define en su ficha</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Stock bajo mínimo</div><div style="font-size:11.5px;color:#a8a29e">Aviso en Inicio y por email</div></div><div style="width:36px;height:20px;border-radius:99px;background:#e86412;position:relative;flex:none;cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px"></div></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Stock sobre máximo</div><div style="font-size:11.5px;color:#a8a29e">Capital inmovilizado</div></div><div style="width:36px;height:20px;border-radius:99px;background:#e86412;position:relative;flex:none;cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px"></div></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Baja rotación</div><div style="font-size:11.5px;color:#a8a29e">Sin ventas en los últimos</div></div><select style="padding:7px 10px;border:1px solid #e7e2dc;border-radius:8px;font-size:12.5px;background:#fff;flex:none"><option>90 días</option><option>60 días</option><option>180 días</option></select></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-size:13px;font-weight:600">Alta rotación</div><div style="font-size:11.5px;color:#a8a29e">Se vende más rápido de lo que repone</div></div><div style="width:36px;height:20px;border-radius:99px;background:#e86412;position:relative;flex:none;cursor:pointer"><div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px"></div></div></div>
+        </div>
+        <button style="margin-top:16px;width:100%;background:#1c1917;color:#fff;border:none;border-radius:9px;padding:9px;font-size:12.5px;font-weight:700;cursor:pointer" style-hover="background:#000">Guardar reglas</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+        <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#b3261e">Bajo mínimo</div><div style="font-size:22px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums">9</div></div>
+        <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#b45309">Sobre máximo</div><div style="font-size:22px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums">17</div></div>
+        <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#78716c">Baja rotación</div><div style="font-size:22px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums">64</div></div>
+        <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:14px 18px"><div style="font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#3d8f5f">Alta rotación</div><div style="font-size:22px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums">31</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+        <div style="padding:16px 20px 10px;font-size:14.5px;font-weight:700">Alertas activas</div>
+        <table>
+          <thead><tr>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 20px">Artículo</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 12px">Alerta</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 12px">Stock</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 12px">Mín / Máx</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 12px">Vtas. 90d</th>
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:right;padding:8px 20px 8px 12px">Acción</th>
+          </tr></thead>
+          <tbody>
+            <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;border-top:1px solid #f0ece7"><div style="font-size:13px;font-weight:600">Disco corte 115mm</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">DIS-115</div></td><td style="padding:11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b3261e;background:#fbeae9;border-radius:99px;padding:3px 9px">Bajo mínimo</span></td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#b3261e">0</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">10 / 80</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">142</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Pedir</button></td></tr>
+            <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;border-top:1px solid #f0ece7"><div style="font-size:13px;font-weight:600">Guante nitrilo T9</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">GUA-N09</div></td><td style="padding:11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#3d8f5f;background:#e9f4ee;border-radius:99px;padding:3px 9px">Alta rotación</span></td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#b3261e">0</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">20 / 120</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">388</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:700;color:#c25510;cursor:pointer" style-hover="background:#fff8f2">Pedir</button></td></tr>
+            <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;border-top:1px solid #f0ece7"><div style="font-size:13px;font-weight:600">Pistola pintar HVLP</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">PIS-HVLP</div></td><td style="padding:11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#57534e;background:#f1efec;border-radius:99px;padding:3px 9px">Baja rotación</span></td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">14</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">2 / 10</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#b3261e;font-weight:600">1</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ofertar</button></td></tr>
+            <tr style-hover="background:#faf7f3"><td style="padding:11px 20px;border-top:1px solid #f0ece7"><div style="font-size:13px;font-weight:600">Membrana asfáltica 10m²</div><div style="font-size:11.5px;color:#a8a29e;font-variant-numeric:tabular-nums">MEM-10</div></td><td style="padding:11px 12px;border-top:1px solid #f0ece7"><span style="font-size:11.5px;font-weight:700;color:#b45309;background:#fdf3e4;border-radius:99px;padding:3px 9px">Sobre máximo</span></td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">86</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums;color:#78716c">10 / 50</td><td style="padding:11px 12px;font-size:13px;border-top:1px solid #f0ece7;text-align:right;font-variant-numeric:tabular-nums">12</td><td style="padding:11px 20px 11px 12px;border-top:1px solid #f0ece7;text-align:right"><button style="border:1px solid #e7e2dc;background:#fff;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600;color:#57534e;cursor:pointer" style-hover="background:#faf7f3">Ofertar</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+<sc-if value="{{ isConfig }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em">Configuración</h1>
+    <button style="background:#e86412;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:#d15607">+ Nuevo {{ configSingular }}</button>
+  </div>
+  <div style="display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:start">
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ configMenu }}" as="m" hint-placeholder-count="7">
+        <button onClick="{{ pickConfig }}" data-config="{{ m.id }}" style="border:none;text-align:left;cursor:pointer;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;background:{{ m.bg }};color:{{ m.color }}" style-hover="color:#1c1917">{{ m.label }}</button>
+      </sc-for>
+    </div>
+    <div style="background:#fff;border:1px solid #e7e2dc;border-radius:12px;overflow:hidden">
+      <div style="padding:16px 20px 10px;font-size:14.5px;font-weight:700">{{ configTitle }}</div>
+      <table>
+        <thead><tr>
+          <sc-for list="{{ configCols }}" as="c" hint-placeholder-count="4">
+            <th style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a8a29e;text-align:left;padding:8px 20px">{{ c }}</th>
+          </sc-for>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ configRows }}" as="row" hint-placeholder-count="4">
+            <tr style-hover="background:#faf7f3">
+              <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="4">
+                <td style="padding:12px 20px;font-size:13px;border-top:1px solid #f0ece7;font-variant-numeric:tabular-nums">{{ cell }}</td>
+              </sc-for>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+      <div style="padding:12px 20px;border-top:1px solid #f0ece7;font-size:12.5px;color:#78716c">{{ configFoot }}</div>
+    </div>
+  </div>
+</sc-if>
+
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;inicioLayout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Panorama&quot;,&quot;options&quot;:[&quot;Panorama&quot;,&quot;Operativo&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Variantes de layout&quot;},&quot;facturaLayout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Dos paneles&quot;,&quot;options&quot;:[&quot;Dos paneles&quot;,&quot;Resumen abajo&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Variantes de layout&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'inicio', ficha: false, comprasTab: 'fc', config: 'usuarios', buscando: false, stockTab: 'toma', listaProvId: 'herrafe', nuevoProveedor: false, sidebarOpen: true,
+    condVenta: 'ctacte', medioPago: 'efectivo', montoRecibido: '', clienteQuickOpen: false, buscarArticuloOpen: false, buscarClienteOpen: false,
+    nuevoProvMapeo: [
+      { columna: 'A', campo: 'Código de producto' },
+      { columna: 'B', campo: 'Descripción' },
+      { columna: 'C', campo: 'Precio de costo' }
+    ]
+  };
+  renderVals() {
+    const s = this.state;
+    const brand = '#c25510';
+    const icon = d => React.createElement('svg', { width: 19, height: 19, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' },
+      Array.isArray(d) ? d.map((p, i) => React.createElement('path', { key: i, d: p })) : React.createElement('path', { d }));
+    const ICONS = {
+      inicio: icon('M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10'),
+      facturacion: icon(['M6 3h9l3 3v15H6z', 'M9 8h6M9 12h6M9 16h4']),
+      presupuestos: icon(['M7 3h7l4 4v14H7z', 'M11 3v4h4', 'M9.5 14l1.5 1.5L14 12']),
+      pedidos: icon(['M9 4h6a1 1 0 011 1v1H8V5a1 1 0 011-1z', 'M7 6h10v15H7z', 'M9.5 11h5M9.5 14h5M9.5 17h3']),
+      remitos: icon(['M3 6h11v9H3z', 'M14 10h4l3 3v2h-7z', 'M6.5 19a1.7 1.7 0 100-3.4 1.7 1.7 0 000 3.4z', 'M17 19a1.7 1.7 0 100-3.4 1.7 1.7 0 000 3.4z']),
+      clientes: icon(['M15.5 11a3.5 3.5 0 10-3-5.5', 'M2 20c.5-3.5 3.5-6 6.5-6s6 2.5 6.5 6', 'M15 14.2c2.6.5 4.7 2.7 5 5.8']),
+      ctacte: icon(['M3 7h18v11H3z', 'M3 10h18', 'M6 15h4']),
+      articulos: icon(['M3 8l9-5 9 5-9 5-9-5z', 'M3 8v9l9 5 9-5V8', 'M12 13v9']),
+      inventario: icon(['M3 5h18v4H3z', 'M4 9v10h16V9', 'M10 13h4']),
+      compras: icon(['M6 8h12l-1.2 11H7.2z', 'M9 8V6a3 3 0 016 0v2']),
+      caja: icon(['M3 7h18v13H3z', 'M3 7l3-4h12l3 4', 'M12 12.2a2.3 2.3 0 100 4.6 2.3 2.3 0 000-4.6z']),
+      config: icon(['M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z', 'M19.4 13.9a7.6 7.6 0 000-3.8l2-1.5-2-3.4-2.3.9a7.7 7.7 0 00-3.3-1.9L13.4 2h-2.8l-.4 2.2a7.7 7.7 0 00-3.3 1.9l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 000 3.8l-2 1.5 2 3.4 2.3-.9a7.7 7.7 0 003.3 1.9l.4 2.2h2.8l.4-2.2a7.7 7.7 0 003.3-1.9l2.3.9 2-3.4-2-1.5z'])
+    };
+    const items = [
+      ['inicio', 'Inicio'], ['facturacion', 'Mostrador'], ['presupuestos', 'Presup.'],
+      ['pedidos', 'Pedidos'], ['remitos', 'Remitos'], ['clientes', 'Clientes'],
+      ['ctacte', 'Cta. cte.'], ['articulos', 'Artículos'], ['inventario', 'Stock'],
+      ['compras', 'Compras'], ['caja', 'Caja'], ['config', 'Config.']
+    ];
+    const navItems = items.map(([id, label]) => {
+      const active = s.screen === id;
+      return { id, label, icon: ICONS[id], bg: active ? 'rgba(232,100,18,.12)' : 'transparent', color: active ? brand : '#57534e' };
+    });
+    const dashPanorama = (this.props.inicioLayout ?? 'Panorama') === 'Panorama';
+    const factDosPaneles = (this.props.facturaLayout ?? 'Dos paneles') === 'Dos paneles';
+    const tabFc = s.comprasTab === 'fc';
+    const tabStyle = on => ({
+      bg: on ? '#fff' : 'transparent',
+      color: on ? '#1c1917' : '#78716c',
+      shadow: on ? '0 1px 2px rgba(0,0,0,.08)' : 'none'
+    });
+    const tabPc = s.comprasTab === 'pc';
+    const tabLi = s.comprasTab === 'li';
+    const tFc = tabStyle(tabFc), tPc = tabStyle(tabPc), tPr = tabStyle(s.comprasTab === 'pr'), tLi = tabStyle(tabLi);
+    const stockTabs = [['toma', 'Toma de inventario'], ['recepcion', 'Recepción de remitos'], ['alertas', 'Alertas de stock']].map(([id, label]) => {
+      const on = s.stockTab === id;
+      return { id, label, bg: on ? '#fff' : 'transparent', color: on ? '#1c1917' : '#78716c', shadow: on ? '0 1px 2px rgba(0,0,0,.08)' : 'none' };
+    });
+    const CONFIG = {
+      usuarios: { label: 'Usuarios', singular: 'usuario', cols: ['Nombre', 'Sector', 'Nivel', 'Sucursal', 'Email', 'Estado'], rows: [
+        ['Marcos Giménez', 'Ventas', 'Administrador', 'Central', 'mgimenez@ventas360.ar', 'Activo'],
+        ['Laura Paredes', 'Ventas', 'Vendedor', 'Central', 'lparedes@ventas360.ar', 'Activo'],
+        ['Griselda Otaño', 'Administración', 'Contable', 'Central', 'gotano@ventas360.ar', 'Activo'],
+        ['Raúl Funes', 'Depósito', 'Operario', 'Anexo', 'rfunes@ventas360.ar', 'Inactivo']
+      ]},
+      sucursales: { label: 'Sucursales', singular: 'sucursal', cols: ['Nombre', 'Código', 'Sector'], rows: [
+        ['Casa Central', 'CC-01', 'Ventas y administración'],
+        ['Anexo Depósito', 'DEP-02', 'Depósito'],
+        ['Corralón Ruta 1', 'COR-03', 'Corralón']
+      ]},
+      monedas: { label: 'Monedas', singular: 'moneda', cols: ['Moneda', 'Tipo', 'Cotización', 'Saldo'], rows: [
+        ['Peso argentino', 'Local', '1,00', '$ 2.105.620'],
+        ['Dólar oficial', 'Extranjera', '1.452,00', 'USD 3.240'],
+        ['Dólar MEP', 'Extranjera', '1.498,50', '—']
+      ]},
+      cotizaciones: { label: 'Cotizaciones', singular: 'cotización', cols: ['Fecha', 'Moneda', 'Cotización'], rows: [
+        ['17/07/26', 'Dólar oficial', '1.452,00'],
+        ['16/07/26', 'Dólar oficial', '1.448,50'],
+        ['15/07/26', 'Dólar oficial', '1.446,00'],
+        ['17/07/26', 'Dólar MEP', '1.498,50']
+      ]},
+      tarjetas: { label: 'Tarjetas', singular: 'tarjeta', cols: ['Tarjeta', 'Cta. contable', 'Cta. gastos', 'Proveedor'], rows: [
+        ['Visa Crédito', '1.1.03.01', '5.2.04.01', 'Prisma Medios de Pago'],
+        ['Mastercard', '1.1.03.02', '5.2.04.02', 'Fiserv'],
+        ['Visa Débito', '1.1.03.03', '5.2.04.01', 'Prisma Medios de Pago']
+      ]},
+      cobradores: { label: 'Cobradores', singular: 'cobrador', cols: ['Nombre', 'Localidad', 'Teléfono', '% Comisión', 'Estado'], rows: [
+        ['Hugo Benítez', 'Gral. Pico', '2302 66-4411', '2,0%', 'Activo'],
+        ['Sergio Maldonado', 'Metileo', '2302 61-2098', '2,5%', 'Activo']
+      ]},
+      grupos: { label: 'Grupos de artículos', singular: 'grupo', cols: ['Código', 'Descripción', 'Margen', 'Estado'], rows: [
+        ['HER', 'Herramientas', '45%', 'Activo'],
+        ['FIJ', 'Fijaciones', '60%', 'Activo'],
+        ['PIN', 'Pinturas', '38%', 'Activo'],
+        ['ELE', 'Electricidad', '42%', 'Activo'],
+        ['SEG', 'Seguridad industrial', '55%', 'Activo']
+      ]}
+    };
+    const LISTAS = {
+      herrafe: { nombre: 'Distribuidora Herrafe SA', archivo: 'lista_herrafe_julio.xlsx', fecha: '10/07/26', actualizados: 1182, nuevos: 46, sinMatch: 12, fila: 2,
+        mapeo: [{ campo: 'Código de producto', columna: 'Columna A' }, { campo: 'Descripción', columna: 'Columna B' }, { campo: 'Precio de costo', columna: 'Columna C' }],
+        cols: ['A → código', 'B → descripción', 'C → precio'],
+        rows: [['H-4402', 'Amoladora angular 750W 115mm', '61.900,00'], ['H-1180', 'Disco de corte 115×1.6mm acero', '1.480,00'], ['H-8501', 'Taladro percutor 13mm 650W', '52.400,00']] },
+      pinturerias: { nombre: 'Pinturerías del Centro SRL', archivo: 'precios_centro_07-26.xlsx', fecha: '02/07/26', actualizados: 468, nuevos: 9, sinMatch: 3, fila: 3,
+        mapeo: [{ campo: 'Código de producto', columna: 'Columna B' }, { campo: 'Descripción', columna: 'Columna C' }, { campo: 'Precio de costo', columna: 'Columna F' }],
+        cols: ['B → código', 'C → descripción', 'F → precio'],
+        rows: [['LAT-20B', 'Látex interior blanco 20L', '48.200,00'], ['ESM-1L', 'Esmalte sintético 1L', '9.600,00']] },
+      electrica: { nombre: 'Eléctrica Pampeana', archivo: 'Sin archivo importado aún', fecha: '—', actualizados: 0, nuevos: 0, sinMatch: 0, fila: 2,
+        mapeo: [{ campo: 'Código de producto', columna: 'Columna A' }, { campo: 'Descripción', columna: 'Columna B' }, { campo: 'Precio de costo', columna: 'Columna C' }],
+        cols: ['Sin datos'], rows: [] }
+    };
+    const lp = LISTAS[s.listaProvId];
+    const condBtn = active => ({ border: active ? '2px solid #e86412' : '1px solid #e7e2dc', bg: active ? '#fff8f2' : '#fff', color: active ? '#c25510' : '#57534e' });
+    const condStyles = { ctacte: condBtn(s.condVenta === 'ctacte'), contado: condBtn(s.condVenta === 'contado'), tarjeta: condBtn(s.condVenta === 'tarjeta'), cheque: condBtn(s.condVenta === 'cheque') };
+    const medioBtn = active => ({ border: active ? '2px solid #e86412' : '1px solid #e7e2dc', bg: active ? '#fff8f2' : '#fff', color: active ? '#c25510' : '#57534e' });
+    const medioStyles = { efectivo: medioBtn(s.medioPago === 'efectivo'), debito: medioBtn(s.medioPago === 'debito'), transferencia: medioBtn(s.medioPago === 'transferencia') };
+    const TOTAL_VENTA = 143515.08;
+    const montoNum = parseFloat(String(s.montoRecibido).replace(/\./g, '').replace(',', '.')) || 0;
+    const vuelto = montoNum - TOTAL_VENTA;
+    const fmt = n => n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const listaProveedores = Object.entries(LISTAS).map(([id, v]) => ({ id, nombre: v.nombre }));
+    const cfg = CONFIG[s.config];
+    const configMenu = Object.entries(CONFIG).map(([id, c]) => ({
+      id, label: c.label,
+      bg: s.config === id ? 'rgba(232,100,18,.12)' : 'transparent',
+      color: s.config === id ? brand : '#57534e'
+    }));
+    return {
+      navItems,
+      sidebarOpen: s.sidebarOpen,
+      sidebarWidth: s.sidebarOpen ? '224px' : '68px',
+      toggleSidebar: () => this.setState(st => ({ sidebarOpen: !st.sidebarOpen })),
+      go: e => this.setState({ screen: e.currentTarget.dataset.screen, ficha: false }),
+      goArticulos: () => this.setState({ screen: 'articulos', ficha: false }),
+      goFacturacion: () => this.setState({ screen: 'facturacion', ficha: false }),
+      buscando: s.buscando,
+      abrirBusqueda: () => this.setState({ buscando: true }),
+      cerrarBusqueda: () => this.setState({ buscando: false }),
+      elegirResultado: () => this.setState({ buscando: false }),
+      clearInput: e => { const wrap = e.currentTarget.parentElement; const input = wrap.querySelector('input'); if (input) { input.value = ''; input.focus(); } },
+      condStyles, medioStyles,
+      isCtacteCond: s.condVenta === 'ctacte',
+      isContado: s.condVenta === 'contado',
+      isEfectivo: s.condVenta === 'contado' && s.medioPago === 'efectivo',
+      pickCondVenta: e => this.setState({ condVenta: e.currentTarget.dataset.cond, medioPago: 'efectivo', montoRecibido: '' }),
+      pickMedioPago: e => this.setState({ medioPago: e.currentTarget.dataset.medio }),
+      montoRecibido: s.montoRecibido,
+      setMontoRecibido: e => this.setState({ montoRecibido: e.target.value }),
+      montoRecibidoFmt: fmt(montoNum),
+      vueltoLabel: vuelto >= 0 ? 'Vuelto' : 'Falta',
+      vueltoColor: vuelto >= 0 ? '#7fd9a3' : '#f3a3a3',
+      vueltoFmt: fmt(Math.abs(vuelto)),
+      clienteQuickOpen: s.clienteQuickOpen,
+      toggleClienteQuick: () => this.setState(st => ({ clienteQuickOpen: !st.clienteQuickOpen })),
+      elegirCliente: () => this.setState({ clienteQuickOpen: false, buscarClienteOpen: false }),
+      isBuscarCliente: s.buscarClienteOpen,
+      abrirBuscarCliente: () => this.setState({ buscarClienteOpen: true, clienteQuickOpen: false }),
+      cerrarBuscarCliente: () => this.setState({ buscarClienteOpen: false }),
+      isBuscarArticulo: s.buscarArticuloOpen,
+      abrirBuscarArticulo: () => this.setState({ buscarArticuloOpen: true }),
+      cerrarBuscarArticulo: () => this.setState({ buscarArticuloOpen: false }),
+      agregarDesdeModal: () => this.setState({ buscarArticuloOpen: false }),
+      goCtacte: () => this.setState({ screen: 'ctacte', ficha: false }),
+      verCliente: () => this.setState({ ficha: true }),
+      cerrarFicha: () => this.setState({ ficha: false }),
+      isInicio: s.screen === 'inicio',
+      isClientesLista: s.screen === 'clientes' && !s.ficha,
+      isFicha: s.screen === 'clientes' && s.ficha,
+      isArticulos: s.screen === 'articulos',
+      isFacturacion: s.screen === 'facturacion',
+      isPedidos: s.screen === 'pedidos',
+      isCtacte: s.screen === 'ctacte',
+      isCompras: s.screen === 'compras',
+      isCaja: s.screen === 'caja',
+      isPresupuestos: s.screen === 'presupuestos',
+      isRemitos: s.screen === 'remitos',
+      isInventario: s.screen === 'inventario',
+      isConfig: s.screen === 'config',
+      configMenu,
+      pickConfig: e => this.setState({ config: e.currentTarget.dataset.config }),
+      configTitle: cfg.label,
+      configSingular: cfg.singular,
+      configCols: cfg.cols,
+      configRows: cfg.rows.map(cells => ({ cells })),
+      configFoot: cfg.rows.length + ' registros',
+      dashCols: dashPanorama ? '1.4fr 1.4fr 1fr' : '1fr 1fr 1.4fr',
+      dashAreas: dashPanorama ? '"chart chart stock" "tabla tabla accesos"' : '"stock accesos chart" "tabla tabla tabla"',
+      factDir: factDosPaneles ? 'row' : 'column',
+      tabFacturas: () => this.setState({ comprasTab: 'fc' }),
+      tabPedidosC: () => this.setState({ comprasTab: 'pc' }),
+      tabProveedores: () => this.setState({ comprasTab: 'pr' }),
+      tabListas: () => this.setState({ comprasTab: 'li' }),
+      isTabFacturas: tabFc,
+      isTabPedidosC: tabPc,
+      isTabProveedores: s.comprasTab === 'pr',
+      isTabListas: tabLi,
+      tabFcBg: tFc.bg, tabFcColor: tFc.color, tabFcShadow: tFc.shadow,
+      tabPcBg: tPc.bg, tabPcColor: tPc.color, tabPcShadow: tPc.shadow,
+      tabPrBg: tPr.bg, tabPrColor: tPr.color, tabPrShadow: tPr.shadow,
+      tabLiBg: tLi.bg, tabLiColor: tLi.color, tabLiShadow: tLi.shadow,
+      stockTabs,
+      pickStockTab: e => this.setState({ stockTab: e.currentTarget.dataset.tab }),
+      isStockToma: s.stockTab === 'toma',
+      isStockRecepcion: s.stockTab === 'recepcion',
+      isStockAlertas: s.stockTab === 'alertas',
+      listaProveedores,
+      pickListaProveedor: e => this.setState({ listaProvId: e.currentTarget.value }),
+      listaProveedorNombre: lp.nombre,
+      listaArchivo: lp.archivo,
+      listaFecha: lp.fecha,
+      listaActualizados: lp.actualizados,
+      listaNuevos: lp.nuevos,
+      listaSinMatch: lp.sinMatch,
+      listaFilaInicio: lp.fila,
+      listaMapeo: lp.mapeo,
+      listaPreviewCols: lp.cols,
+      listaPreviewRows: lp.rows.map(cells => ({ cells })),
+      isNuevoProveedor: s.nuevoProveedor,
+      abrirNuevoProveedor: () => this.setState({ nuevoProveedor: true }),
+      cerrarNuevoProveedor: () => this.setState({ nuevoProveedor: false }),
+      nuevoProvMapeo: s.nuevoProvMapeo,
+      agregarFilaMapeo: () => this.setState(st => ({ nuevoProvMapeo: [...st.nuevoProvMapeo, { columna: 'D', campo: 'Precio de lista' }] })),
+      quitarFilaMapeo: e => { const i = +e.currentTarget.dataset.idx; this.setState(st => ({ nuevoProvMapeo: st.nuevoProvMapeo.filter((_, idx) => idx !== i) })); }
+    };
+  }
+}
+</script>
+</body>
+</html>

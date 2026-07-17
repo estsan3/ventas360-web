@@ -20,6 +20,7 @@ import { VentasService } from './ventas.service';
 @Injectable({ providedIn: 'root' })
 export class VentasStore {
   private readonly api = inject(VentasService);
+  private tipoCargado: string | undefined | null = null;
 
   private readonly _pedidos = signal<AsyncState<Pedido[]>>(asyncIdle());
   private readonly _clientesRef = signal<ClienteRef[]>([]);
@@ -31,15 +32,19 @@ export class VentasStore {
   readonly productosRef = this._productosRef.asReadonly();
   readonly depositosRef = this._depositosRef.asReadonly();
 
-  cargar(): void {
-    if (this._pedidos().status === 'loading') {
+  cargar(tipo?: string): void {
+    const clave = tipo ?? '';
+    if (this._pedidos().status === 'loading' && this.tipoCargado === clave) {
       return;
     }
-    const prev = this._pedidos().data;
+    const mismoTipo = this.tipoCargado === clave;
+    this.tipoCargado = clave;
+    // Al cambiar de tipo (pedido/remito/presupuesto) no reutilizar filas ajenas.
+    const prev = mismoTipo ? this._pedidos().data : undefined;
     this._pedidos.set({ ...asyncLoading(), data: prev });
-    this.api.listar().subscribe({
+    this.api.listar(tipo).subscribe({
       next: (items) => this._pedidos.set(asyncSuccess(items)),
-      error: (error: Error) => this._pedidos.set({ ...asyncError(error.message), data: prev }),
+      error: (error: Error) => this._pedidos.set(asyncError(error.message)),
     });
   }
 
@@ -70,10 +75,10 @@ export class VentasStore {
     return this.api.confirmarRemito(id).pipe(tap((actualizado) => this._reemplazar(actualizado)));
   }
 
-  facturarRemito(id: string): Observable<Pedido> {
+  facturarRemito(id: string, recargarTipo?: string): Observable<Pedido> {
     return this.api.facturarRemito(id).pipe(
       tap(() => {
-        this.cargar();
+        this.cargar(recargarTipo);
       }),
     );
   }

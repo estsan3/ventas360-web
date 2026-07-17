@@ -1,14 +1,27 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
-import { Icon } from '../../shared/ui/icon/icon';
+import { Logo } from '../../shared/ui/logo/logo';
 import { AuthStore } from '../state/auth.store';
 
+export interface TopbarNavItem {
+  id: string;
+  label: string;
+}
+
 /**
- * Header global: fecha, menú de perfil y cierre de sesión.
+ * Header global del mock DC: logo + nav horizontal + contexto + avatar.
  */
 @Component({
   selector: 'app-topbar',
-  imports: [Icon],
+  imports: [Logo],
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,33 +29,27 @@ import { AuthStore } from '../state/auth.store';
 export class Topbar {
   private readonly router = inject(Router);
 
+  readonly items = input<TopbarNavItem[]>([]);
+  readonly activeId = input<string | null>(null);
+  readonly itemSelected = output<string>();
+
   protected readonly authStore = inject(AuthStore);
   protected readonly menuPerfilAbierto = signal(false);
 
-  protected readonly fecha = (() => {
-    const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const MESES = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
-    ];
-    const hoy = new Date();
-    const dia = String(hoy.getDate()).padStart(2, '0');
-    return `${DIAS[hoy.getDay()]}, ${dia} de ${MESES[hoy.getMonth()]} del ${hoy.getFullYear()}`;
-  })();
+  protected readonly iniciales = computed(() => {
+    const nombre = this.authStore.user()?.nombre?.trim() ?? '';
+    if (!nombre) {
+      return 'U';
+    }
+    const partes = nombre.split(/\s+/).filter(Boolean);
+    if (partes.length === 1) {
+      return partes[0].slice(0, 2).toUpperCase();
+    }
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+  });
 
-  protected irAMiPerfil(): void {
-    this.menuPerfilAbierto.set(false);
-    this.router.navigate(['/configuracion']);
+  protected seleccionar(id: string): void {
+    this.itemSelected.emit(id);
   }
 
   protected irAConfiguracion(): void {

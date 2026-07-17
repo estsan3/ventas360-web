@@ -4,21 +4,50 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: t.$space-xs;
+  gap: 10px;
   font-family: ty.$font-family-base;
-  font-weight: ty.$font-weight-bold;
-  font-size: ty.$font-size-3xl;
   color: t.$color-text;
+  user-select: none;
 
-  &__chip {
+  &__mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
     background: t.$color-primary;
     color: #fff;
-    border-radius: t.$radius-md;
-    padding: 0 t.$space-sm;
-    line-height: 1.4;
+    display: grid;
+    place-items: center;
+    font-weight: ty.$font-weight-extrabold;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    font-weight: ty.$font-weight-bold;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  &__accent {
+    color: t.$color-primary;
   }
 
   &--sm {
-    font-size: ty.$font-size-lg;
+    gap: 8px;
+
+    .logo__mark {
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+    }
+
+    .logo__text {
+      font-size: 14px;
+    }
+  }
+
+  &--compact .logo__mark {
+    margin: 0;
   }
 }

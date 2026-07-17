@@ -1,0 +1,164 @@
+<section class="page pre">
+  <header class="pre__header">
+    <h1 class="pre__title">Presupuestos</h1>
+    <button type="button" class="pre__cta" (click)="irNuevo()">+ Nuevo presupuesto</button>
+  </header>
+
+  <div class="pre__filters">
+    <button
+      type="button"
+      class="pre__chip"
+      [class.pre__chip--on]="chip() === 'todos'"
+      (click)="setChip('todos')"
+    >
+      Todos ({{ contadores().todos }})
+    </button>
+    <button
+      type="button"
+      class="pre__chip"
+      [class.pre__chip--on]="chip() === 'vigente'"
+      (click)="setChip('vigente')"
+    >
+      Vigentes ({{ contadores().vigente }})
+    </button>
+    <button
+      type="button"
+      class="pre__chip"
+      [class.pre__chip--on]="chip() === 'aceptado'"
+      (click)="setChip('aceptado')"
+    >
+      Aceptados ({{ contadores().aceptado }})
+    </button>
+    <button
+      type="button"
+      class="pre__chip"
+      [class.pre__chip--on]="chip() === 'vencido'"
+      (click)="setChip('vencido')"
+    >
+      Vencidos ({{ contadores().vencido }})
+    </button>
+  </div>
+
+  <div class="pre__card">
+    @if (filas().length === 0) {
+      <div class="pre__empty">No hay presupuestos para mostrar</div>
+    } @else {
+      <table class="pre__table">
+        <thead>
+          <tr>
+            <th>Presupuesto</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Vendedor</th>
+            <th class="pre__th-right">Total</th>
+            <th>Validez</th>
+            <th>Estado</th>
+            <th class="pre__th-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filas(); track row.id) {
+            <tr>
+              <td class="pre__num">{{ row.numero }}</td>
+              <td>{{ row.fecha }}</td>
+              <td>{{ row.cliente }}</td>
+              <td>{{ row.vendedor }}</td>
+              <td class="pre__td-right pre__total">{{ row.total }}</td>
+              <td>{{ row.validez }}</td>
+              <td>
+                <span
+                  class="pre__badge"
+                  [class.pre__badge--vigente]="row.estado === 'Vigente'"
+                  [class.pre__badge--aceptado]="row.estado === 'Aceptado'"
+                  [class.pre__badge--vencido]="row.estado === 'Vencido'"
+                >
+                  {{ row.estado }}
+                </span>
+              </td>
+              <td class="pre__td-right">
+                <div class="pre__acciones">
+                  <button
+                    type="button"
+                    class="pre__accion pre__accion--muted"
+                    (click)="abrirDetalleDesdeFila(row.id)"
+                  >
+                    Ver
+                  </button>
+                  @if (row.accion !== 'Ver') {
+                    <button
+                      type="button"
+                      class="pre__accion"
+                      [class.pre__accion--primary]="row.accionTono === 'primary'"
+                      (click)="onAccion(row)"
+                    >
+                      {{ row.accion }}
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</section>
+
+@if (detalleVista(); as det) {
+  <div class="pre-modal" (click)="cerrarDetalle()">
+    <div class="pre-modal__panel" (click)="$event.stopPropagation()">
+      <div class="pre-modal__head">
+        <div>
+          <h2 class="pre-modal__title">{{ det.titulo }}</h2>
+          <p class="pre-modal__sub">{{ det.subtitulo }}</p>
+        </div>
+        <button type="button" class="pre-modal__close" (click)="cerrarDetalle()">✕</button>
+      </div>
+      <div class="pre-modal__kpis">
+        <div>
+          <div class="pre-modal__kpi-label">Neto</div>
+          <div class="pre-modal__kpi-value">{{ det.neto }}</div>
+        </div>
+        <div>
+          <div class="pre-modal__kpi-label">IVA</div>
+          <div class="pre-modal__kpi-value">{{ det.iva }}</div>
+        </div>
+        <div>
+          <div class="pre-modal__kpi-label">Total</div>
+          <div class="pre-modal__kpi-value">{{ det.total }}</div>
+        </div>
+      </div>
+      <div class="pre-modal__table-wrap">
+        <table class="pre__table">
+          <thead>
+            <tr>
+              <th>Artículo</th>
+              <th class="pre__th-right">Cant.</th>
+              <th class="pre__th-right">P. unit.</th>
+              <th class="pre__th-right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of det.lineas; track l.id) {
+              <tr>
+                <td class="pre__num">{{ l.descripcion }}</td>
+                <td class="pre__td-right">{{ l.cantidad }}</td>
+                <td class="pre__td-right">{{ l.precio }}</td>
+                <td class="pre__td-right pre__total">{{ l.subtotal }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="pre__empty">Sin líneas</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pre-modal__foot">
+        <button type="button" class="pre__accion pre__accion--muted" (click)="cerrarDetalle()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+}

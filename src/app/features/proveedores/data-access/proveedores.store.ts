@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import {
   AsyncState,
   asyncError,
@@ -6,7 +7,7 @@ import {
   asyncLoading,
   asyncSuccess,
 } from '../../../core/models/async-state';
-import { CrearProveedor, Proveedor } from './proveedor.model';
+import { ActualizarProveedor, CrearProveedor, Proveedor } from './proveedor.model';
 import { ProveedoresService } from './proveedores.service';
 
 @Injectable({ providedIn: 'root' })
@@ -25,7 +26,40 @@ export class ProveedoresStore {
     });
   }
 
-  crear(body: CrearProveedor) {
-    return this.api.crear(body);
+  crear(body: CrearProveedor): Observable<Proveedor> {
+    return this.api.crear(body).pipe(
+      tap((nuevo) => {
+        const actual = this._proveedores();
+        if (actual.status === 'success') {
+          this._proveedores.set(asyncSuccess([nuevo, ...(actual.data ?? [])]));
+        }
+      }),
+    );
+  }
+
+  actualizar(id: string, body: ActualizarProveedor): Observable<Proveedor> {
+    return this.api.actualizar(id, body).pipe(
+      tap((actualizado) => {
+        const actual = this._proveedores();
+        if (actual.status === 'success') {
+          this._proveedores.set(
+            asyncSuccess((actual.data ?? []).map((p) => (p.id === id ? actualizado : p))),
+          );
+        }
+      }),
+    );
+  }
+
+  desactivar(id: string): Observable<Proveedor> {
+    return this.api.desactivar(id).pipe(
+      tap((actualizado) => {
+        const actual = this._proveedores();
+        if (actual.status === 'success') {
+          this._proveedores.set(
+            asyncSuccess((actual.data ?? []).map((p) => (p.id === id ? actualizado : p))),
+          );
+        }
+      }),
+    );
   }
 }

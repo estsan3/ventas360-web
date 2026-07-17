@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Badge } from '../../shared/ui/badge/badge';
 import { Button } from '../../shared/ui/button/button';
@@ -19,7 +20,7 @@ import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
 import { TableCellDef } from '../../shared/ui/table/table-cell-def';
-import { CondicionIva } from './data-access/proveedor.model';
+import { CondicionIva, Proveedor } from './data-access/proveedor.model';
 import { ProveedoresStore } from './data-access/proveedores.store';
 
 @Component({
@@ -44,9 +45,11 @@ import { ProveedoresStore } from './data-access/proveedores.store';
 export class ProveedoresPage {
   private readonly fb = inject(FormBuilder);
   private readonly notifications = inject(NotificationStore);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly store = inject(ProveedoresStore);
 
   protected readonly drawerAbierto = signal(false);
+  protected readonly editandoId = signal<string | null>(null);
   protected readonly guardando = signal(false);
   protected readonly busqueda = signal('');
 
@@ -63,11 +66,13 @@ export class ProveedoresPage {
     { key: 'telefono', label: 'Teléfono', width: '140px' },
     { key: 'email', label: 'Email' },
     { key: 'estado', label: 'Estado', width: '110px' },
+    { key: 'acciones', label: '', width: '140px', align: 'right' },
   ];
 
   protected readonly estado = computed(() => this.store.proveedores());
   protected readonly filas = computed(() =>
     (this.estado().data ?? []).map((p) => ({
+      id: p.id,
       nombre: p.nombre,
       cuit: p.cuit || '—',
       telefono: p.telefono || '—',
@@ -75,6 +80,10 @@ export class ProveedoresPage {
       estado: p.activo ? 'Activo' : 'Inactivo',
       activo: p.activo,
     })),
+  );
+
+  protected readonly drawerTitulo = computed(() =>
+    this.editandoId() ? 'Editar proveedor' : 'Nuevo proveedor',
   );
 
   protected readonly form = this.fb.nonNullable.group({
@@ -94,6 +103,7 @@ export class ProveedoresPage {
   }
 
   protected abrirAlta(): void {
+    this.editandoId.set(null);
     this.form.reset({
       nombre: '',
       email: '',
@@ -105,20 +115,63 @@ export class ProveedoresPage {
     this.drawerAbierto.set(true);
   }
 
+  protected abrirEditar(id: string): void {
+    const p = (this.estado().data ?? []).find((x) => x.id === id);
+    if (!p) {
+      return;
+    }
+    this.editandoId.set(id);
+    this.form.reset({
+      nombre: p.nombre,
+      email: p.email,
+      telefono: p.telefono,
+      cuit: p.cuit,
+      condicionIva: p.condicionIva,
+      observaciones: p.observaciones,
+    });
+    this.drawerAbierto.set(true);
+  }
+
   protected guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    const body = this.form.getRawValue();
+    const id = this.editandoId();
     this.guardando.set(true);
-    this.store.crear(this.form.getRawValue()).subscribe({
+    const req = id ? this.store.actualizar(id, body) : this.store.crear(body);
+    req.subscribe({
       next: () => {
-        this.notifications.success('Proveedor creado', 'Alta registrada');
+        this.notifications.success(
+          id ? 'Proveedor actualizado' : 'Proveedor creado',
+          'Cambios guardados',
+        );
         this.drawerAbierto.set(false);
+        this.editandoId.set(null);
         this.guardando.set(false);
         this.store.cargar(this.busqueda());
       },
       error: () => this.guardando.set(false),
+    });
+  }
+
+  protected async desactivar(id: string): Promise<void> {
+    const p = (this.estado().data ?? []).find((x) => x.id === id) as Proveedor | undefined;
+    if (!p?.activo) {
+      return;
+    }
+    const ok = await this.confirmDialog.abrir({
+      titulo: 'Desactivar proveedor',
+      mensaje: `¿Desactivar a ${p.nombre}?`,
+      textoConfirmar: 'Desactivar',
+      variant: 'danger',
+    });
+    if (!ok) {
+      return;
+    }
+    this.store.desactivar(id).subscribe((prov) => {
+      this.notifications.warning('Proveedor desactivado', prov.nombre);
     });
   }
 }

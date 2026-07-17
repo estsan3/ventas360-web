@@ -1,459 +1,885 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
-  FormArray,
-  FormBuilder,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  EMPTY,
+  finalize,
+  map,
+  of,
+  Subject,
+  switchMap,
+} from 'rxjs';
 import { NotificationStore } from '../../notifications/state/notification.store';
-import { Badge, BadgeVariant } from '../../shared/ui/badge/badge';
-import { Button } from '../../shared/ui/button/button';
-import { Icon } from '../../shared/ui/icon/icon';
-import { TextInput } from '../../shared/ui/input/text-input';
-import { Modal } from '../../shared/ui/modal/modal';
-import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
-import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
-import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
-import { Table, TableColumn } from '../../shared/ui/table/table';
-import { TableCellDef } from '../../shared/ui/table/table-cell-def';
 import {
-  ETIQUETAS_ESTADO,
-  ETIQUETAS_TIPO,
-  EstadoPedido,
-  FiltroEstado,
-  FiltroTipo,
-  Pedido,
+  ClienteRef,
+  MedioCobro,
+  ProductoRef,
+  SaldoClienteRef,
   TipoComprobante,
-  TRANSICIONES,
+  UsuarioRef,
+  ZonaRef,
 } from './data-access/pedido.model';
+import { VentasService } from './data-access/ventas.service';
 import { VentasStore } from './data-access/ventas.store';
 
-const COLUMNAS: TableColumn[] = [
-  { key: 'fecha', label: 'Fecha', width: '110px' },
-  { key: 'tipoLabel', label: 'Tipo', width: '90px' },
-  { key: 'cliente', label: 'Cliente' },
-  { key: 'totalFmt', label: 'Total', align: 'right', width: '120px' },
-  { key: 'lineasCount', label: 'Líneas', align: 'right', width: '80px' },
-  { key: 'estadoLabel', label: 'Estado', width: '120px' },
-  { key: 'acciones', label: 'Acciones', align: 'right', width: '96px' },
-];
+type CondicionVenta = 'ctacte' | 'contado' | 'tarjeta' | 'cheque';
+type ModoEmisionMostrador = 'remito_ctacte' | 'remito_pago' | 'factura_fiscal';
 
-const COLUMNAS_LINEAS: TableColumn[] = [
-  { key: 'producto', label: 'Producto' },
-  { key: 'cantidad', label: 'Cant.', align: 'right', width: '70px' },
-  { key: 'precioFmt', label: 'P. unit.', align: 'right', width: '110px' },
-  { key: 'subtotalFmt', label: 'Subtotal', align: 'right', width: '120px' },
-];
-
-function formatearPrecio(valor: number): string {
-  return new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    maximumFractionDigits: 0,
-  }).format(valor);
+export interface LineaFactura {
+  productoId: string;
+  codigo: string;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  dto: string;
+  stockDisponible: number;
 }
 
-function badgeEstado(estado: EstadoPedido): BadgeVariant {
-  switch (estado) {
-    case 'borrador':
-      return 'warning';
-    case 'confirmado':
-      return 'info';
-    case 'entregado':
-    case 'facturado':
-      return 'success';
-    case 'cancelado':
-      return 'danger';
+function etiquetaStock(stock: number): { label: string; tono: 'ok' | 'warn' | 'danger' } {
+  if (stock <= 0) {
+    return { label: 'Sin stock', tono: 'danger' };
   }
+  if (stock <= 5) {
+    return { label: `${stock} disp.`, tono: 'warn' };
+  }
+  return { label: `${stock} disp.`, tono: 'ok' };
 }
 
+const TITULOS: Record<TipoComprobante, string> = {
+  factura: 'Mostrador',
+  presupuesto: 'Nuevo presupuesto',
+  pedido: 'Nuevo pedido',
+  remito: 'Nuevo remito',
+};
+
+const PREFIJOS: Record<TipoComprobante, string> = {
+  factura: 'FAC A',
+  presupuesto: 'PRE',
+  pedido: 'PED',
+  remito: 'REM',
+};
+
+const IVA_LABEL: Record<string, string> = {
+  responsable_inscripto: 'RI',
+  monotributo: 'Monotributo',
+  exento: 'Exento',
+  consumidor_final: 'Consumidor final',
+};
+
+function formatearMonto(n: number): string {
+  return n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function parseTipo(raw: unknown): TipoComprobante {
+  if (raw === 'presupuesto' || raw === 'pedido' || raw === 'remito' || raw === 'factura') {
+    return raw;
+  }
+  return 'factura';
+}
+
+function metaCliente(c: ClienteRef, zonaNombre?: string | null): string {
+  const cuit = c.cuit?.trim() || 'Sin CUIT';
+  const iva = IVA_LABEL[c.condicionIva] ?? c.condicionIva;
+  const zona = zonaNombre?.trim() || null;
+  return zona ? `${cuit} · ${iva} · ${zona}` : `${cuit} · ${iva}`;
+}
+
+/**
+ * Alta de comprobantes (factura / presupuesto / pedido / remito).
+ * El tipo viene de la ruta (`/ventas`, `/ventas/presupuesto`, …).
+ */
 @Component({
   selector: 'app-ventas-page',
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    Badge,
-    Button,
-    Icon,
-    TextInput,
-    Modal,
-    SelectInput,
-    SideDrawer,
-    StateWrapper,
-    Table,
-    TableCellDef,
-  ],
+  imports: [RouterLink],
   templateUrl: './ventas-page.html',
   styleUrl: './ventas-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VentasPage {
-  private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly store = inject(VentasStore);
+  private readonly api = inject(VentasService);
   private readonly notifications = inject(NotificationStore);
-  private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly columnas = COLUMNAS;
-  protected readonly columnasLineas = COLUMNAS_LINEAS;
-  protected readonly estado = this.store.pedidos;
+  private readonly clienteAutocomplete$ = new Subject<string>();
+  private readonly modalBusqueda$ = new Subject<void>();
+
+  protected readonly tipo = toSignal(this.route.data.pipe(map((d) => parseTipo(d['tipo']))), {
+    initialValue: parseTipo(this.route.snapshot.data['tipo']),
+  });
+
+  protected readonly titulo = computed(() => TITULOS[this.tipo()]);
+  protected readonly esFactura = computed(() => this.tipo() === 'factura');
+
+  protected readonly buscando = signal(false);
   protected readonly busqueda = signal('');
-  protected readonly filtro = signal<FiltroEstado>('todos');
-  protected readonly filtroTipo = signal<FiltroTipo>('todos');
-  protected readonly drawerCrear = signal(false);
-  protected readonly configModalAbierto = signal(false);
-  protected readonly pedidoSeleccionado = signal<Pedido | null>(null);
-  protected readonly formDirty = signal(false);
+  protected readonly cantidadAgregar = signal(1);
+  protected readonly condicion = signal<CondicionVenta>('ctacte');
+  protected readonly medioPago = signal<'efectivo' | 'debito' | 'transferencia'>('efectivo');
+  protected readonly montoRecibido = signal('');
+  protected readonly lineas = signal<LineaFactura[]>([]);
   protected readonly guardando = signal(false);
-  protected readonly cambiandoEstado = signal(false);
+  protected readonly emitirOpcionesOpen = signal(false);
 
-  protected readonly filtroOptions: SelectOption[] = [
-    { value: 'todos', label: 'Todos los estados' },
-    { value: 'borrador', label: 'Borrador' },
-    { value: 'confirmado', label: 'Confirmado' },
-    { value: 'entregado', label: 'Entregado' },
-    { value: 'facturado', label: 'Facturado' },
-    { value: 'cancelado', label: 'Cancelado' },
-  ];
+  protected readonly clienteId = signal<string | null>(null);
+  protected readonly clienteNombre = signal('Consumidor final');
+  protected readonly clienteMeta = signal('Sin CUIT · Consumidor final · Lista 1');
+  protected readonly clienteBloqueado = signal(false);
+  protected readonly clienteInput = signal('');
+  protected readonly clienteQuickOpen = signal(false);
+  protected readonly clienteBuscando = signal(false);
+  protected readonly clientesAutocomplete = signal<ClienteRef[]>([]);
+  protected readonly clienteSaldo = signal<SaldoClienteRef | null>(null);
+  protected readonly clienteSaldoCargando = signal(false);
 
-  protected readonly filtroTipoOptions: SelectOption[] = [
-    { value: 'todos', label: 'Todos los tipos' },
-    { value: 'pedido', label: 'Pedidos' },
-    { value: 'remito', label: 'Remitos' },
-    { value: 'factura', label: 'Facturas' },
-  ];
+  protected readonly cobroOpen = signal(false);
+  protected readonly cobroMonto = signal('');
+  protected readonly cobroMedio = signal<MedioCobro>('efectivo');
+  protected readonly cobroObs = signal('');
+  protected readonly cobroGuardando = signal(false);
 
-  protected readonly tipoOptions: SelectOption[] = [
-    { value: 'pedido', label: 'Pedido' },
-    { value: 'remito', label: 'Remito' },
-    { value: 'factura', label: 'Factura' },
-  ];
+  protected readonly buscarClienteOpen = signal(false);
+  protected readonly buscarArticuloOpen = signal(false);
+  protected readonly modalQ = signal('');
+  protected readonly modalZonaId = signal('');
+  protected readonly modalEstado = signal<'activos' | 'todos' | 'bloqueados'>('activos');
+  protected readonly modalVendedorId = signal('');
+  protected readonly modalBuscando = signal(false);
+  protected readonly modalResultados = signal<ClienteRef[]>([]);
+  protected readonly zonasRef = signal<ZonaRef[]>([]);
+  protected readonly usuariosRef = signal<UsuarioRef[]>([]);
 
-  protected readonly form = this.fb.nonNullable.group({
-    tipo: ['pedido' as TipoComprobante, Validators.required],
-    clienteId: ['', Validators.required],
-    depositoId: [''],
-    fecha: [''],
-    lineas: this.fb.array([this.nuevaLinea()]),
+  protected readonly clientesRef = this.store.clientesRef;
+  protected readonly productosRef = this.store.productosRef;
+  protected readonly depositosRef = this.store.depositosRef;
+
+  protected readonly zonaPorId = computed(() => {
+    const mapZ = new Map<string, string>();
+    for (const z of this.zonasRef()) {
+      mapZ.set(z.id, z.nombre);
+    }
+    return mapZ;
   });
 
-  protected readonly esRemito = computed(() => this.form.controls.tipo.value === 'remito');
-
-  protected readonly clienteOptions = computed<SelectOption[]>(() =>
-    this.store
-      .clientesRef()
-      .filter((c) => c.activo)
-      .map((c) => ({ value: c.id, label: c.nombre })),
-  );
-
-  protected readonly productoOptions = computed<SelectOption[]>(() =>
-    this.store
-      .productosRef()
-      .filter((p) => p.activo)
-      .map((p) => ({
-        value: p.id,
-        label: `${p.sku} · ${p.nombre}`,
-      })),
-  );
-
-  protected readonly depositoOptions = computed<SelectOption[]>(() =>
-    this.store
-      .depositosRef()
-      .filter((d) => d.activo)
-      .map((d) => ({ value: d.id, label: `${d.codigo} · ${d.nombre}` })),
-  );
-
-  private readonly mapaClientes = computed(() => {
-    const map = new Map<string, string>();
-    for (const c of this.store.clientesRef()) {
-      map.set(c.id, c.nombre);
-    }
-    return map;
-  });
-
-  private readonly mapaProductos = computed(() => {
-    const map = new Map<string, string>();
-    for (const p of this.store.productosRef()) {
-      map.set(p.id, `${p.sku} · ${p.nombre}`);
-    }
-    return map;
-  });
-
-  protected readonly filas = computed(() => {
-    let items = this.estado().data ?? [];
-    if (this.filtro() !== 'todos') {
-      items = items.filter((p) => p.estado === this.filtro());
-    }
-    if (this.filtroTipo() !== 'todos') {
-      items = items.filter((p) => p.tipo === this.filtroTipo());
-    }
+  protected readonly resultados = computed(() => {
     const q = this.busqueda().trim().toLowerCase();
-    if (q) {
-      const clientes = this.mapaClientes();
-      items = items.filter((p) => {
-        const nombre = clientes.get(p.clienteId) ?? '';
-        return (
-          nombre.toLowerCase().includes(q) ||
-          p.id.toLowerCase().includes(q) ||
-          p.estado.toLowerCase().includes(q) ||
-          p.tipo.toLowerCase().includes(q)
-        );
+    const items = this.productosRef().filter((p) => p.activo);
+    const filtrados = q
+      ? items.filter((p) => p.nombre.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q))
+      : items;
+    return filtrados.slice(0, 8).map((p) => {
+      const enTicket = this.lineas().find((l) => l.productoId === p.id)?.cantidad ?? 0;
+      const disponible = Math.max(0, p.stock - enTicket);
+      const stock = etiquetaStock(disponible);
+      return {
+        producto: p,
+        nombre: p.nombre,
+        detalle: p.sku,
+        precio: `$ ${formatearMonto(p.precio)}`,
+        stockLabel: stock.label,
+        stockTono: stock.tono,
+      };
+    });
+  });
+
+  protected readonly articulosModal = computed(() => {
+    const q = this.busqueda().trim().toLowerCase();
+    return this.productosRef()
+      .filter((p) => p.activo)
+      .filter((p) => !q || p.nombre.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q))
+      .slice(0, 40)
+      .map((p) => {
+        const enTicket = this.lineas().find((l) => l.productoId === p.id)?.cantidad ?? 0;
+        const disponible = Math.max(0, p.stock - enTicket);
+        const stock = etiquetaStock(disponible);
+        return {
+          producto: p,
+          nombre: p.nombre,
+          detalle: p.sku,
+          precio: `$ ${formatearMonto(p.precio)}`,
+          stockLabel: stock.label,
+          stockTono: stock.tono,
+          stockDisponible: disponible,
+        };
       });
-    }
-    const clientes = this.mapaClientes();
-    return items.map(
-      (p) =>
-        ({
-          ...p,
-          cliente: clientes.get(p.clienteId) ?? p.clienteId,
-          tipoLabel: ETIQUETAS_TIPO[p.tipo],
-          totalFmt: formatearPrecio(p.total),
-          lineasCount: p.lineas.length,
-          estadoLabel: ETIQUETAS_ESTADO[p.estado],
-          badge: badgeEstado(p.estado),
-        }) as Record<string, unknown>,
-    );
   });
 
-  protected readonly lineasDetalle = computed(() => {
-    const pedido = this.pedidoSeleccionado();
-    if (!pedido) {
-      return [];
+  protected readonly clienteSaldoVista = computed(() => {
+    const s = this.clienteSaldo();
+    if (!this.clienteId() || !s) {
+      return null;
     }
-    const productos = this.mapaProductos();
-    return pedido.lineas.map(
-      (l) =>
-        ({
-          ...l,
-          producto: l.descripcion || productos.get(l.productoId) || l.productoId,
-          precioFmt: formatearPrecio(l.precioUnitario),
-          subtotalFmt: formatearPrecio(l.cantidad * l.precioUnitario),
-        }) as Record<string, unknown>,
-    );
+    if (s.saldo > 0) {
+      return {
+        tono: 'debe' as const,
+        label: 'Debe',
+        monto: `$ ${formatearMonto(s.saldo)}`,
+        flecha: '↓' as const,
+      };
+    }
+    if (s.saldo < 0) {
+      return {
+        tono: 'favor' as const,
+        label: 'A favor',
+        monto: `$ ${formatearMonto(Math.abs(s.saldo))}`,
+        flecha: '↑' as const,
+      };
+    }
+    return {
+      tono: 'ok' as const,
+      label: 'Al día',
+      monto: '$ 0,00',
+      flecha: null,
+    };
   });
 
-  protected readonly transicionesDisponibles = computed(() => {
-    const pedido = this.pedidoSeleccionado();
-    if (!pedido) {
-      return [];
-    }
-    return (TRANSICIONES[pedido.tipo][pedido.estado] ?? []).map((estado) => ({
-      estado,
-      label:
-        pedido.tipo === 'remito' && estado === 'facturado'
-          ? 'Facturar'
-          : pedido.tipo === 'remito' && estado === 'confirmado'
-            ? 'Confirmar (descuento stock)'
-            : ETIQUETAS_ESTADO[estado],
-      danger: estado === 'cancelado',
-    }));
+  protected readonly isContado = computed(() => this.condicion() === 'contado');
+  protected readonly isCtaCte = computed(() => this.condicion() === 'ctacte');
+  protected readonly isPagoInmediato = computed(() => this.condicion() !== 'ctacte');
+  protected readonly isEfectivo = computed(
+    () => this.condicion() === 'contado' && this.medioPago() === 'efectivo',
+  );
+
+  protected readonly subtotal = computed(() =>
+    this.lineas().reduce((acc, l) => {
+      const bruto = l.cantidad * l.precioUnitario;
+      const dto = l.dto.endsWith('%') ? Number(l.dto.replace('%', '')) || 0 : 0;
+      return acc + bruto * (1 - dto / 100);
+    }, 0),
+  );
+
+  protected readonly neto = computed(() => this.subtotal() / 1.21);
+  protected readonly iva = computed(() => this.subtotal() - this.neto());
+  protected readonly total = computed(() => this.subtotal());
+
+  protected readonly subtotalFmt = computed(() => formatearMonto(this.subtotal()));
+  protected readonly netoFmt = computed(() => formatearMonto(this.neto()));
+  protected readonly ivaFmt = computed(() => formatearMonto(this.iva()));
+  protected readonly totalFmt = computed(() => formatearMonto(this.total()));
+
+  protected readonly montoNum = computed(() => {
+    const raw = this.montoRecibido().replace(/\./g, '').replace(',', '.');
+    return parseFloat(raw) || 0;
   });
 
-  protected readonly clienteDetalle = computed(() => {
-    const pedido = this.pedidoSeleccionado();
-    if (!pedido) {
-      return '';
-    }
-    return this.mapaClientes().get(pedido.clienteId) ?? pedido.clienteId;
+  protected readonly vuelto = computed(() => this.montoNum() - this.total());
+  protected readonly montoRecibidoFmt = computed(() => formatearMonto(this.montoNum()));
+  protected readonly vueltoFmt = computed(() => formatearMonto(Math.abs(this.vuelto())));
+  protected readonly vueltoLabel = computed(() => (this.vuelto() >= 0 ? 'Vuelto' : 'Falta'));
+  protected readonly vueltoOk = computed(() => this.vuelto() >= 0);
+
+  protected readonly metaComprobante = computed(() => {
+    const hoy = new Date();
+    const d = String(hoy.getDate()).padStart(2, '0');
+    const m = String(hoy.getMonth() + 1).padStart(2, '0');
+    const y = hoy.getFullYear();
+    return `${PREFIJOS[this.tipo()]} · ${d}/${m}/${y}`;
   });
 
-  protected readonly configModalTitulo = computed(() => {
-    const pedido = this.pedidoSeleccionado();
-    if (!pedido) {
-      return 'Configuración';
+  protected readonly ctaPrincipal = computed(() => {
+    switch (this.tipo()) {
+      case 'presupuesto':
+        return 'Guardar presupuesto';
+      case 'pedido':
+        return 'Guardar pedido';
+      case 'remito':
+        return 'Guardar remito';
+      default:
+        return this.isCtaCte() ? 'Generar remito' : 'Emitir comprobante';
     }
-    return `Configuración · ${ETIQUETAS_TIPO[pedido.tipo]} ${pedido.fecha}`;
   });
 
-  protected get lineas(): FormArray {
-    return this.form.controls.lineas;
-  }
+  protected readonly listadoTrasGuardar = computed(() => {
+    switch (this.tipo()) {
+      case 'presupuesto':
+        return '/presupuestos';
+      case 'pedido':
+        return '/pedidos';
+      case 'remito':
+        return '/remitos';
+      default:
+        return '/ventas';
+    }
+  });
 
   constructor() {
-    this.store.cargar();
     this.store.cargarReferencias();
-    this.form.valueChanges.subscribe(() => {
-      if (this.drawerCrear()) {
-        this.formDirty.set(true);
+    this.api
+      .listarZonasRef()
+      .pipe(catchError(() => of([] as ZonaRef[])))
+      .subscribe((z) => this.zonasRef.set(z));
+    this.api
+      .listarUsuariosRef()
+      .pipe(catchError(() => of([] as UsuarioRef[])))
+      .subscribe((u) => this.usuariosRef.set(u));
+
+    this.clienteAutocomplete$
+      .pipe(
+        debounceTime(280),
+        distinctUntilChanged(),
+        switchMap((raw) => {
+          const q = raw.trim();
+          if (q.length < 3) {
+            this.clientesAutocomplete.set([]);
+            this.clienteBuscando.set(false);
+            return EMPTY;
+          }
+          this.clienteBuscando.set(true);
+          return this.api.buscarClientes(q, { activo: true, pageSize: 12 }).pipe(
+            catchError(() => of([] as ClienteRef[])),
+            finalize(() => this.clienteBuscando.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((items) => {
+        this.clientesAutocomplete.set(items);
+        this.clienteQuickOpen.set(true);
+      });
+
+    this.modalBusqueda$
+      .pipe(
+        debounceTime(280),
+        switchMap(() => {
+          if (!this.buscarClienteOpen()) {
+            return EMPTY;
+          }
+          this.modalBuscando.set(true);
+          const estado = this.modalEstado();
+          const activo = estado === 'activos' ? true : estado === 'todos' ? null : true;
+          return this.api.buscarClientes(this.modalQ(), { activo, pageSize: 100 }).pipe(
+            catchError(() => of([] as ClienteRef[])),
+            finalize(() => this.modalBuscando.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((items) => {
+        this.modalResultados.set(this.filtrarModalLocal(items));
+      });
+  }
+
+  protected formatearPrecio(n: number): string {
+    return formatearMonto(n);
+  }
+
+  protected importeLinea(l: LineaFactura): string {
+    const bruto = l.cantidad * l.precioUnitario;
+    const dto = l.dto.endsWith('%') ? Number(l.dto.replace('%', '')) || 0 : 0;
+    return formatearMonto(bruto * (1 - dto / 100));
+  }
+
+  protected metaDeCliente(c: ClienteRef): string {
+    const zona = c.zonaId ? this.zonaPorId().get(c.zonaId) : null;
+    return metaCliente(c, zona);
+  }
+
+  protected setCondicion(c: CondicionVenta): void {
+    this.condicion.set(c);
+    this.medioPago.set('efectivo');
+    this.montoRecibido.set('');
+  }
+
+  protected abrirBusqueda(): void {
+    this.buscando.set(true);
+  }
+
+  protected cerrarBusqueda(): void {
+    setTimeout(() => this.buscando.set(false), 150);
+  }
+
+  protected elegirProducto(p: ProductoRef): void {
+    this.agregarProducto(p, this.cantidadAgregar());
+    this.buscando.set(false);
+    this.busqueda.set('');
+  }
+
+  protected onClienteInput(value: string): void {
+    this.clienteInput.set(value);
+    this.clienteQuickOpen.set(true);
+    this.clienteAutocomplete$.next(value);
+  }
+
+  protected onClienteFocus(): void {
+    this.clienteQuickOpen.set(true);
+  }
+
+  protected cerrarClienteQuick(): void {
+    setTimeout(() => this.clienteQuickOpen.set(false), 180);
+  }
+
+  protected elegirCliente(id: string | null, nombre: string, meta?: string): void {
+    if (!id) {
+      this.clienteId.set(null);
+      this.clienteNombre.set(nombre);
+      this.clienteInput.set(nombre);
+      this.clienteMeta.set(meta ?? 'Sin CUIT · Consumidor final · Lista 1');
+      this.clienteBloqueado.set(false);
+      this.clienteSaldo.set(null);
+      this.clienteQuickOpen.set(false);
+      this.buscarClienteOpen.set(false);
+      this.clientesAutocomplete.set([]);
+      return;
+    }
+    const ref =
+      this.clientesAutocomplete().find((c) => c.id === id) ??
+      this.modalResultados().find((c) => c.id === id) ??
+      this.clientesRef().find((c) => c.id === id);
+    if (ref) {
+      this.elegirClienteRef(ref);
+      return;
+    }
+    this.clienteId.set(id);
+    this.clienteNombre.set(nombre);
+    this.clienteInput.set(nombre);
+    this.clienteMeta.set(meta ?? `Cliente · ${nombre}`);
+    this.clienteBloqueado.set(false);
+    this.clienteQuickOpen.set(false);
+    this.buscarClienteOpen.set(false);
+    this.cargarSaldo(id);
+  }
+
+  protected elegirClienteRef(c: ClienteRef): void {
+    this.clienteId.set(c.id);
+    this.clienteNombre.set(c.nombre);
+    this.clienteInput.set(c.nombre);
+    this.clienteMeta.set(this.metaDeCliente(c));
+    this.clienteBloqueado.set(c.bloqueado);
+    this.clienteQuickOpen.set(false);
+    this.buscarClienteOpen.set(false);
+    this.clientesAutocomplete.set([]);
+    this.cargarSaldo(c.id);
+  }
+
+  protected abrirBuscarCliente(): void {
+    this.clienteQuickOpen.set(false);
+    this.modalQ.set(this.clienteInput().trim().length >= 3 ? this.clienteInput().trim() : '');
+    this.modalZonaId.set('');
+    this.modalEstado.set('activos');
+    this.modalVendedorId.set('');
+    this.buscarClienteOpen.set(true);
+    this.modalBusqueda$.next();
+  }
+
+  protected cerrarBuscarCliente(): void {
+    this.buscarClienteOpen.set(false);
+  }
+
+  protected onModalQ(value: string): void {
+    this.modalQ.set(value);
+    this.modalBusqueda$.next();
+  }
+
+  protected onModalZona(value: string): void {
+    this.modalZonaId.set(value);
+    this.modalBusqueda$.next();
+  }
+
+  protected onModalEstado(value: string): void {
+    if (value === 'activos' || value === 'todos' || value === 'bloqueados') {
+      this.modalEstado.set(value);
+      this.modalBusqueda$.next();
+    }
+  }
+
+  protected onModalVendedor(value: string): void {
+    this.modalVendedorId.set(value);
+    this.modalBusqueda$.next();
+  }
+
+  protected abrirBuscarArticulo(): void {
+    this.buscarArticuloOpen.set(true);
+  }
+
+  protected clearInput(event: Event): void {
+    const wrap = (event.currentTarget as HTMLElement).parentElement;
+    const input = wrap?.querySelector('input');
+    if (input) {
+      input.value = '';
+      input.focus();
+      if (input.classList.contains('fact__search--cliente')) {
+        this.clienteInput.set('');
+        this.clientesAutocomplete.set([]);
+        this.clienteAutocomplete$.next('');
+      } else if (input.classList.contains('fact-modal__input')) {
+        this.onModalQ('');
+      } else {
+        this.busqueda.set('');
       }
+    }
+  }
+
+  protected agregarProducto(p: ProductoRef, cantidad = 1): void {
+    const qty = Math.max(1, cantidad);
+    const enTicket = this.lineas().find((l) => l.productoId === p.id)?.cantidad ?? 0;
+    const disponible = Math.max(0, p.stock - enTicket);
+    if (disponible <= 0) {
+      this.notifications.warning('Sin stock', `${p.nombre}: no hay unidades disponibles`);
+      return;
+    }
+    if (qty > disponible) {
+      this.notifications.warning(
+        'Stock insuficiente',
+        `${p.nombre}: solo hay ${disponible} disponible(s)`,
+      );
+    }
+    const qtyFinal = Math.min(qty, Math.max(1, disponible));
+    this.lineas.update((rows) => {
+      const existente = rows.find((r) => r.productoId === p.id);
+      if (existente) {
+        return rows.map((r) =>
+          r.productoId === p.id
+            ? { ...r, cantidad: r.cantidad + qtyFinal, stockDisponible: p.stock }
+            : r,
+        );
+      }
+      return [
+        ...rows,
+        {
+          productoId: p.id,
+          codigo: p.sku,
+          descripcion: p.nombre,
+          cantidad: qtyFinal,
+          precioUnitario: p.precio,
+          dto: '—',
+          stockDisponible: p.stock,
+        },
+      ];
+    });
+    this.buscarArticuloOpen.set(false);
+  }
+
+  protected eliminarLinea(productoId: string): void {
+    this.lineas.update((rows) => rows.filter((r) => r.productoId !== productoId));
+  }
+
+  protected setCantidad(productoId: string, value: string): void {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 0) {
+      return;
+    }
+    this.lineas.update((rows) =>
+      rows.map((r) => (r.productoId === productoId ? { ...r, cantidad: n } : r)),
+    );
+  }
+
+  /** En Mostrador: guarda un presupuesto con las líneas actuales. */
+  protected guardarPresupuesto(): void {
+    this.persistir('presupuesto', '/presupuestos');
+  }
+
+  /** CTA principal según el tipo de pantalla. */
+  protected guardarPrincipal(): void {
+    const tipo = this.tipo();
+    if (tipo === 'factura') {
+      if (this.isCtaCte()) {
+        this.emitirMostrador('remito_ctacte');
+        return;
+      }
+      this.emitirOpcionesOpen.set(true);
+      return;
+    }
+    this.persistir(tipo, this.listadoTrasGuardar());
+  }
+
+  protected cerrarEmitirOpciones(): void {
+    if (this.guardando()) {
+      return;
+    }
+    this.emitirOpcionesOpen.set(false);
+  }
+
+  protected elegirEmision(modo: 'factura_fiscal' | 'remito_pago'): void {
+    this.emitirOpcionesOpen.set(false);
+    this.emitirMostrador(modo);
+  }
+
+  private filtrarModalLocal(items: ClienteRef[]): ClienteRef[] {
+    let out = items;
+    if (this.modalEstado() === 'bloqueados') {
+      out = out.filter((c) => c.bloqueado);
+    }
+    const zona = this.modalZonaId();
+    if (zona) {
+      out = out.filter((c) => c.zonaId === zona);
+    }
+    const vend = this.modalVendedorId();
+    if (vend) {
+      out = out.filter((c) => c.vendedorId === vend);
+    }
+    return out;
+  }
+
+  protected abrirCobro(): void {
+    const id = this.clienteId();
+    const saldo = this.clienteSaldo();
+    if (!id || !saldo || saldo.saldo <= 0) {
+      this.notifications.error('Sin deuda', 'El cliente no tiene saldo deudor para cobrar');
+      return;
+    }
+    this.cobroMonto.set(
+      saldo.saldo.toLocaleString('es-AR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    );
+    this.cobroMedio.set('efectivo');
+    this.cobroObs.set('');
+    this.cobroOpen.set(true);
+  }
+
+  protected cerrarCobro(): void {
+    if (this.cobroGuardando()) {
+      return;
+    }
+    this.cobroOpen.set(false);
+  }
+
+  protected confirmarCobro(): void {
+    if (this.cobroGuardando()) {
+      return;
+    }
+    const clienteId = this.clienteId();
+    if (!clienteId) {
+      return;
+    }
+    const raw = this.cobroMonto().trim();
+    const monto = Number(raw.replace(/\./g, '').replace(',', '.'));
+    if (!Number.isFinite(monto) || monto <= 0) {
+      this.notifications.error('Monto inválido', 'Ingresá un monto mayor a cero');
+      return;
+    }
+    this.cobroGuardando.set(true);
+    this.api
+      .registrarCobroACuenta({
+        clienteId,
+        monto,
+        medio: this.cobroMedio(),
+        observacion: this.cobroObs().trim() || undefined,
+      })
+      .subscribe({
+        next: (recibo) => {
+          this.cobroGuardando.set(false);
+          this.cobroOpen.set(false);
+          this.notifications.success(
+            'Cobro registrado',
+            `$ ${formatearMonto(recibo.monto)} · ${recibo.medio}`,
+          );
+          this.cargarSaldo(clienteId);
+        },
+        error: (err: Error) => {
+          this.cobroGuardando.set(false);
+          this.notifications.error('No se pudo registrar el cobro', err.message || 'Error');
+        },
+      });
+  }
+
+  private cargarSaldo(clienteId: string): void {
+    this.clienteSaldoCargando.set(true);
+    this.clienteSaldo.set(null);
+    this.api.obtenerSaldoCliente(clienteId).subscribe({
+      next: (s) => {
+        this.clienteSaldo.set(s);
+        this.clienteSaldoCargando.set(false);
+      },
+      error: () => {
+        this.clienteSaldo.set(null);
+        this.clienteSaldoCargando.set(false);
+      },
     });
   }
 
-  protected badgeDe(estado: EstadoPedido): BadgeVariant {
-    return badgeEstado(estado);
-  }
-
-  protected etiquetaEstado(estado: EstadoPedido): string {
-    return ETIQUETAS_ESTADO[estado];
-  }
-
-  protected etiquetaTipo(tipo: TipoComprobante): string {
-    return ETIQUETAS_TIPO[tipo];
-  }
-
-  protected formatearTotal(valor: number): string {
-    return formatearPrecio(valor);
-  }
-
-  protected abrirCrear(): void {
-    this.store.cargarReferencias();
-    this.form.reset({ tipo: 'remito', clienteId: '', depositoId: '', fecha: '' });
-    this.lineas.clear();
-    this.lineas.push(this.nuevaLinea());
-    this.formDirty.set(false);
-    this.drawerCrear.set(true);
-  }
-
-  protected agregarLinea(): void {
-    this.lineas.push(this.nuevaLinea());
-    this.formDirty.set(true);
-  }
-
-  protected quitarLinea(index: number): void {
-    if (this.lineas.length <= 1) {
+  private emitirMostrador(modo: ModoEmisionMostrador): void {
+    if (this.guardando()) {
       return;
     }
-    this.lineas.removeAt(index);
-    this.formDirty.set(true);
-  }
-
-  protected async cerrarCrear(): Promise<void> {
-    if (this.formDirty()) {
-      const ok = await this.confirmDialog.confirmarCierreSinGuardar();
-      if (!ok) {
-        return;
-      }
-    }
-    this.drawerCrear.set(false);
-    this.formDirty.set(false);
-  }
-
-  protected guardarPedido(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-    const raw = this.form.getRawValue();
-    if (raw.tipo === 'remito' && !raw.depositoId) {
-      this.notifications.error('Depósito requerido', 'Elegí un depósito para el remito');
-      return;
-    }
-    const lineas = raw.lineas
-      .map((l) => ({
-        productoId: l.productoId,
-        cantidad: Number(l.cantidad),
-      }))
-      .filter((l) => l.productoId && l.cantidad > 0);
-
+    const lineas = this.lineas().filter((l) => l.cantidad > 0 && l.productoId);
     if (lineas.length === 0) {
-      this.notifications.error('Comprobante incompleto', 'Agregá al menos una línea válida');
+      this.notifications.error('Sin artículos', 'Agregá al menos un artículo a la lista');
+      return;
+    }
+
+    const clienteId = this.resolverClienteId();
+    if (!clienteId) {
+      return;
+    }
+
+    const esRemito = modo === 'remito_ctacte' || modo === 'remito_pago';
+    const conCobro = modo === 'remito_pago' || modo === 'factura_fiscal';
+    const dep = this.depositosRef().find((d) => d.activo) ?? this.depositosRef()[0];
+    if (esRemito && !dep) {
+      this.notifications.error('Sin depósito', 'Configurá un depósito para emitir remitos');
       return;
     }
 
     this.guardando.set(true);
+    const tipo: TipoComprobante = esRemito ? 'remito' : 'factura';
     this.store
       .crear({
-        tipo: raw.tipo,
-        clienteId: raw.clienteId,
-        depositoId: raw.tipo === 'remito' ? raw.depositoId : null,
-        fecha: raw.fecha || null,
-        lineas,
+        clienteId,
+        tipo,
+        depositoId: dep?.id ?? null,
+        lineas: lineas.map((l) => ({ productoId: l.productoId, cantidad: l.cantidad })),
       })
+      .pipe(
+        switchMap((creado) =>
+          esRemito
+            ? this.store.confirmarRemito(creado.id)
+            : this.store.cambiarEstado(creado.id, 'confirmado'),
+        ),
+        switchMap((confirmado) => {
+          if (!conCobro) {
+            return of(confirmado);
+          }
+          return this.api
+            .registrarCobroACuenta({
+              clienteId,
+              monto: confirmado.total,
+              medio: this.medioCobroDesdeCondicion(),
+              observacion: this.obsCobroDesdeCondicion(),
+            })
+            .pipe(map(() => confirmado));
+        }),
+      )
       .subscribe({
-        next: (pedido) => {
-          this.notifications.success(
-            `${ETIQUETAS_TIPO[pedido.tipo]} creado`,
-            `Total ${formatearPrecio(pedido.total)}`,
-          );
+        next: () => {
+          const titulo =
+            modo === 'factura_fiscal'
+              ? 'Factura fiscal emitida'
+              : modo === 'remito_ctacte'
+                ? 'Remito a cuenta corriente'
+                : 'Remito emitido (sin factura fiscal)';
+          const detalle = conCobro
+            ? `${lineas.length} artículo(s) · cobrado · ${this.clienteNombre()}`
+            : `${lineas.length} artículo(s) · saldo en cta. cte. · ${this.clienteNombre()}`;
+          this.notifications.success(titulo, detalle);
           this.guardando.set(false);
-          this.drawerCrear.set(false);
-          this.formDirty.set(false);
-          this.abrirConfig(pedido);
+          this.lineas.set([]);
+          this.montoRecibido.set('');
+          this.cargarSaldo(clienteId);
         },
         error: () => this.guardando.set(false),
       });
   }
 
-  protected abrirConfig(pedido: Pedido): void {
-    const actual = (this.estado().data ?? []).find((p) => p.id === pedido.id) ?? pedido;
-    this.pedidoSeleccionado.set(actual);
-    this.configModalAbierto.set(true);
+  private medioCobroDesdeCondicion(): MedioCobro {
+    const cond = this.condicion();
+    if (cond === 'tarjeta') {
+      return 'tarjeta';
+    }
+    if (cond === 'contado' && this.medioPago() === 'transferencia') {
+      return 'transferencia';
+    }
+    if (cond === 'contado' && this.medioPago() === 'debito') {
+      return 'tarjeta';
+    }
+    // efectivo, cheque u otros → caja efectivo (cheque se aclara en observación)
+    return 'efectivo';
   }
 
-  protected cerrarConfigModal(): void {
-    this.configModalAbierto.set(false);
-    this.pedidoSeleccionado.set(null);
+  private obsCobroDesdeCondicion(): string {
+    const cond = this.condicion();
+    if (cond === 'cheque') {
+      return 'Cobro con cheque (mostrador)';
+    }
+    if (cond === 'tarjeta') {
+      return 'Cobro con tarjeta (mostrador)';
+    }
+    if (cond === 'contado') {
+      const medio = this.medioPago();
+      if (medio === 'transferencia') {
+        return 'Cobro por transferencia (mostrador)';
+      }
+      if (medio === 'debito') {
+        return 'Cobro con débito (mostrador)';
+      }
+      return 'Cobro en efectivo (mostrador)';
+    }
+    return 'Cobro mostrador';
   }
 
-  protected async cambiarEstado(estado: EstadoPedido): Promise<void> {
-    const pedido = this.pedidoSeleccionado();
-    if (!pedido) {
+  private resolverClienteId(): string | null {
+    const clienteId = this.clienteId();
+    if (clienteId) {
+      return clienteId;
+    }
+    const primero = this.clientesRef().find((c) => c.activo);
+    if (!primero) {
+      this.notifications.error(
+        'Sin cliente',
+        'No hay clientes cargados. Creá un cliente o elegí uno de la lista.',
+      );
+      return null;
+    }
+    this.clienteId.set(primero.id);
+    this.clienteNombre.set(primero.nombre);
+    return primero.id;
+  }
+
+  private persistir(tipo: TipoComprobante, destino: string): void {
+    if (this.guardando()) {
       return;
     }
-    if (estado === 'cancelado') {
-      const ok = await this.confirmDialog.abrir({
-        titulo: 'Cancelar comprobante',
-        mensaje: '¿Confirmás la cancelación?',
-        textoConfirmar: 'Cancelar',
-        variant: 'danger',
-      });
-      if (!ok) {
-        return;
-      }
-    }
-    if (pedido.tipo === 'remito' && estado === 'confirmado') {
-      const ok = await this.confirmDialog.abrir({
-        titulo: 'Confirmar remito',
-        mensaje: 'Se descontará stock del depósito. ¿Continuar?',
-        textoConfirmar: 'Confirmar',
-        variant: 'default',
-      });
-      if (!ok) {
-        return;
-      }
-    }
-    if (pedido.tipo === 'remito' && estado === 'facturado') {
-      const ok = await this.confirmDialog.abrir({
-        titulo: 'Facturar remito',
-        mensaje: 'Se generará una factura a partir de este remito.',
-        textoConfirmar: 'Facturar',
-        variant: 'default',
-      });
-      if (!ok) {
-        return;
-      }
+    const lineas = this.lineas().filter((l) => l.cantidad > 0 && l.productoId);
+    if (lineas.length === 0) {
+      this.notifications.error('Sin artículos', 'Agregá al menos un artículo a la lista');
+      return;
     }
 
-    this.cambiandoEstado.set(true);
-    const req =
-      pedido.tipo === 'remito' && estado === 'confirmado'
-        ? this.store.confirmarRemito(pedido.id)
-        : pedido.tipo === 'remito' && estado === 'facturado'
-          ? this.store.facturarRemito(pedido.id)
-          : this.store.cambiarEstado(pedido.id, estado);
+    const clienteId = this.resolverClienteId();
+    if (!clienteId) {
+      return;
+    }
 
-    req.subscribe({
-      next: (actualizado) => {
-        this.pedidoSeleccionado.set(actualizado);
-        const msg =
-          actualizado.tipo === 'factura' && actualizado.origenId
-            ? 'Factura generada'
-            : 'Estado actualizado';
-        this.notifications.success(msg, ETIQUETAS_ESTADO[actualizado.estado]);
-        this.cambiandoEstado.set(false);
-        if (actualizado.tipo === 'factura' && actualizado.origenId) {
-          this.store.cargar();
-        }
-      },
-      error: () => this.cambiandoEstado.set(false),
-    });
-  }
+    let depositoId: string | null = null;
+    if (tipo === 'remito' || tipo === 'factura' || tipo === 'pedido') {
+      const dep = this.depositosRef().find((d) => d.activo) ?? this.depositosRef()[0];
+      if (tipo === 'remito' && !dep) {
+        this.notifications.error('Sin depósito', 'Configurá un depósito para emitir remitos');
+        return;
+      }
+      depositoId = dep?.id ?? null;
+    }
 
-  private nuevaLinea() {
-    return this.fb.nonNullable.group({
-      productoId: ['', Validators.required],
-      cantidad: ['1', [Validators.required]],
-    });
+    this.guardando.set(true);
+    this.store
+      .crear({
+        clienteId,
+        tipo,
+        depositoId,
+        lineas: lineas.map((l) => ({ productoId: l.productoId, cantidad: l.cantidad })),
+      })
+      .subscribe({
+        next: () => {
+          const labels: Record<TipoComprobante, string> = {
+            factura: 'Factura creada',
+            presupuesto: 'Presupuesto guardado',
+            pedido: 'Pedido guardado',
+            remito: 'Remito guardado',
+          };
+          this.notifications.success(
+            labels[tipo],
+            `${lineas.length} artículo(s) · ${this.clienteNombre()}`,
+          );
+          this.guardando.set(false);
+          this.lineas.set([]);
+          if (destino !== '/ventas') {
+            this.router.navigate([destino]);
+          }
+        },
+        error: () => this.guardando.set(false),
+      });
   }
 }

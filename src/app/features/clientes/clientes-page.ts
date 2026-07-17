@@ -8,20 +8,19 @@ import {
   untracked,
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { AuthStore } from '../../core/state/auth.store';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Badge } from '../../shared/ui/badge/badge';
 import { Button } from '../../shared/ui/button/button';
 import { Icon } from '../../shared/ui/icon/icon';
-import { CatalogToolbar } from '../../shared/ui/catalog-toolbar/catalog-toolbar';
 import { TextInput } from '../../shared/ui/input/text-input';
 import { Modal } from '../../shared/ui/modal/modal';
 import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
-import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
-import { TableCellDef } from '../../shared/ui/table/table-cell-def';
+import { ZonasStore } from '../zonas/data-access/zonas.store';
 import { Cliente, CondicionIva, FiltroActivo } from './data-access/cliente.model';
 import { ClientesStore } from './data-access/clientes.store';
 
@@ -32,21 +31,12 @@ const ETIQUETAS_ESTADO: Record<string, string> = {
   cancelado: 'Cancelado',
 };
 
-const ETIQUETAS_IVA: Record<CondicionIva, string> = {
-  responsable_inscripto: 'RI',
+const ETIQUETAS_CONDICION: Record<CondicionIva, string> = {
+  consumidor_final: 'Consumidor final',
+  responsable_inscripto: 'Resp. Inscripto',
   monotributo: 'Monotributo',
   exento: 'Exento',
-  consumidor_final: 'CF',
 };
-
-const COLUMNAS: TableColumn[] = [
-  { key: 'nombre', label: 'Nombre' },
-  { key: 'cuit', label: 'CUIT', width: '120px' },
-  { key: 'condicionLabel', label: 'IVA', width: '110px' },
-  { key: 'telefono', label: 'Teléfono', width: '140px' },
-  { key: 'estado', label: 'Estado', width: '100px' },
-  { key: 'acciones', label: 'Acciones', align: 'right', width: '96px' },
-];
 
 const PEDIDOS_COLUMNS: TableColumn[] = [
   { key: 'fecha', label: 'Fecha', width: '110px' },
@@ -54,6 +44,19 @@ const PEDIDOS_COLUMNS: TableColumn[] = [
   { key: 'totalFmt', label: 'Total', align: 'right', width: '120px' },
   { key: 'lineasCount', label: 'Líneas', align: 'right', width: '80px' },
 ];
+
+interface FilaClienteVista {
+  id: string;
+  nombre: string;
+  fantasia: string;
+  cuit: string;
+  localidad: string;
+  zona: string;
+  condicionLabel: string;
+  saldo: string;
+  saldoTono: 'normal' | 'danger' | 'muted';
+  estado: 'Activo' | 'Bloqueado' | 'Inactivo';
+}
 
 function formatearPrecio(valor: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -68,17 +71,15 @@ function formatearPrecio(valor: number): string {
   imports: [
     FormsModule,
     ReactiveFormsModule,
+    RouterLink,
     Badge,
     Button,
     Icon,
-    CatalogToolbar,
     TextInput,
     SelectInput,
     Modal,
     SideDrawer,
-    StateWrapper,
     Table,
-    TableCellDef,
   ],
   templateUrl: './clientes-page.html',
   styleUrl: './clientes-page.scss',
@@ -87,17 +88,19 @@ function formatearPrecio(valor: number): string {
 export class ClientesPage {
   private readonly fb = inject(FormBuilder);
   private readonly store = inject(ClientesStore);
+  private readonly zonasStore = inject(ZonasStore);
   private readonly auth = inject(AuthStore);
   private readonly notifications = inject(NotificationStore);
   private readonly confirmDialog = inject(ConfirmDialogService);
 
-  protected readonly columnas = COLUMNAS;
   protected readonly pedidosColumns = PEDIDOS_COLUMNS;
   protected readonly estado = this.store.clientes;
-  protected readonly total = this.store.total;
   protected readonly busqueda = signal('');
-  protected readonly filtro = signal<FiltroActivo>('activos');
+  protected readonly filtro = signal<FiltroActivo>('todos');
+  protected readonly filtroZona = signal('');
+  protected readonly filtroVendedor = signal('');
   protected readonly drawerAbierto = signal(false);
+  protected readonly fichaAbierta = signal(false);
   protected readonly configModalAbierto = signal(false);
   protected readonly seleccionadoId = signal<string | null>(null);
   protected readonly masterDirty = signal(false);
@@ -106,11 +109,19 @@ export class ClientesPage {
 
   protected readonly esAdmin = computed(() => this.auth.user()?.rol === 'administrador');
 
-  protected readonly filtroOptions: SelectOption[] = [
-    { value: 'activos', label: 'Solo activos' },
-    { value: 'inactivos', label: 'Solo inactivos' },
-    { value: 'todos', label: 'Todos' },
-  ];
+  protected readonly zonasOptions = computed(() =>
+    (this.zonasStore.zonas().data ?? [])
+      .filter((z) => z.activo)
+      .map((z) => ({ id: z.id, nombre: z.nombre })),
+  );
+
+  protected readonly mapaZonas = computed(() => {
+    const map = new Map<string, string>();
+    for (const z of this.zonasStore.zonas().data ?? []) {
+      map.set(z.id, z.nombre);
+    }
+    return map;
+  });
 
   protected readonly condicionIvaOptions: SelectOption[] = [
     { value: 'consumidor_final', label: 'Consumidor final' },
@@ -129,16 +140,56 @@ export class ClientesPage {
     observaciones: ['', Validators.maxLength(2000)],
   });
 
-  protected readonly filas = computed(() =>
-    (this.estado().data ?? []).map(
-      (c) =>
-        ({
-          ...c,
-          condicionLabel: ETIQUETAS_IVA[c.condicionIva] ?? c.condicionIva,
-          estado: c.bloqueado ? 'Bloqueado' : c.activo ? 'Activo' : 'Inactivo',
-        }) as Record<string, unknown>,
-    ),
-  );
+  protected readonly filasVista = computed(() => {
+    const clientes = this.estado().data ?? [];
+    const q = this.busqueda().trim().toLowerCase();
+    const zonaId = this.filtroZona();
+    const zonas = this.mapaZonas();
+
+    return clientes
+      .filter((c) => {
+        if (zonaId && c.zonaId !== zonaId) {
+          return false;
+        }
+        if (!q) {
+          return true;
+        }
+        return (
+          c.nombre.toLowerCase().includes(q) ||
+          c.email.toLowerCase().includes(q) ||
+          c.cuit.toLowerCase().includes(q)
+        );
+      })
+      .map((c): FilaClienteVista => {
+        const limite = c.limiteCredito;
+        let saldoTono: FilaClienteVista['saldoTono'] = 'normal';
+        if (!c.activo || limite === 0) {
+          saldoTono = 'muted';
+        } else if (c.bloqueado) {
+          saldoTono = 'danger';
+        }
+        let estado: FilaClienteVista['estado'] = 'Activo';
+        if (!c.activo) {
+          estado = 'Inactivo';
+        } else if (c.bloqueado) {
+          estado = 'Bloqueado';
+        }
+        return {
+          id: c.id,
+          nombre: c.nombre,
+          fantasia: c.email || '—',
+          cuit: c.cuit || '—',
+          localidad: '—',
+          zona: (c.zonaId && zonas.get(c.zonaId)) || '—',
+          condicionLabel: ETIQUETAS_CONDICION[c.condicionIva] ?? c.condicionIva,
+          saldo: formatearPrecio(limite),
+          saldoTono,
+          estado,
+        };
+      });
+  });
+
+  protected readonly total = computed(() => this.store.total());
 
   protected readonly detalle = computed(() => {
     const id = this.seleccionadoId();
@@ -150,7 +201,40 @@ export class ClientesPage {
 
   protected readonly configModalTitulo = computed(() => {
     const det = this.detalle();
-    return det ? `Configuración · ${det.nombre}` : 'Configuración';
+    return det ? `Editar · ${det.nombre}` : 'Editar cliente';
+  });
+
+  protected readonly iniciales = computed(() => {
+    const n = this.detalle()?.nombre ?? '';
+    const parts = n.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return n.slice(0, 2).toUpperCase() || '—';
+  });
+
+  protected readonly creditoDisponible = computed(() => {
+    const det = this.detalle();
+    if (!det) {
+      return formatearPrecio(0);
+    }
+    return formatearPrecio(Math.max(0, det.limiteCredito));
+  });
+
+  protected readonly zonaNombre = computed(() => {
+    const det = this.detalle();
+    if (!det?.zonaId) {
+      return '—';
+    }
+    return this.mapaZonas().get(det.zonaId) ?? '—';
+  });
+
+  protected readonly condicionLabel = computed(() => {
+    const det = this.detalle();
+    if (!det) {
+      return '—';
+    }
+    return ETIQUETAS_CONDICION[det.condicionIva] ?? det.condicionIva;
   });
 
   protected readonly pedidosDelCliente = computed(() =>
@@ -166,8 +250,7 @@ export class ClientesPage {
   );
 
   constructor() {
-    // untracked: evitar que lecturas del store dentro de cargar()
-    // re-disparen el effect (loop infinito de HTTP).
+    this.zonasStore.cargar({ filtro: 'activos' });
     effect(() => {
       const q = this.busqueda();
       const filtro = this.filtro();
@@ -197,12 +280,32 @@ export class ClientesPage {
     this.drawerAbierto.set(true);
   }
 
-  protected abrirConfig(id: string): void {
+  protected formatearLimite(valor: number): string {
+    return formatearPrecio(valor);
+  }
+
+  protected abrirFicha(id: string): void {
     const cliente = (this.estado().data ?? []).find((c) => c.id === id);
     if (!cliente) {
       return;
     }
     this.seleccionadoId.set(id);
+    this.fichaAbierta.set(true);
+    this.store.cargarPedidosDelCliente(id);
+  }
+
+  protected cerrarFicha(): void {
+    this.fichaAbierta.set(false);
+    this.seleccionadoId.set(null);
+  }
+
+  protected abrirConfig(id?: string): void {
+    const sid = id ?? this.seleccionadoId();
+    const cliente = (this.estado().data ?? []).find((c) => c.id === sid);
+    if (!cliente || !sid) {
+      return;
+    }
+    this.seleccionadoId.set(sid);
     this.form.enable();
     this.form.reset({
       nombre: cliente.nombre,
@@ -218,7 +321,6 @@ export class ClientesPage {
     }
     this.masterDirty.set(false);
     this.configModalAbierto.set(true);
-    this.store.cargarPedidosDelCliente(id);
   }
 
   protected async cerrarConfigModal(): Promise<void> {
@@ -229,7 +331,9 @@ export class ClientesPage {
       }
     }
     this.configModalAbierto.set(false);
-    this.seleccionadoId.set(null);
+    if (!this.fichaAbierta()) {
+      this.seleccionadoId.set(null);
+    }
     this.masterDirty.set(false);
     this.form.enable();
   }

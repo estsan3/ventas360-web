@@ -1,76 +1,78 @@
 // ============================================================
-// Design tokens — fuente de verdad: Figma "Ventas360"
-// (kits: Componentes 720:12535 / UI Kit Gestión 720:13276)
-//
-// Colores extraídos por muestreo de los rellenos planos de los
-// kits (los fills planos conservan el color exacto). Los marcados
-// como "aprox." son colores de texto antialiasado — validar contra
-// Figma cuando el MCP vuelva a estar disponible.
+// Design tokens — mock DC Ventas360 (naranja / warm stone)
 // ============================================================
 
-// --- Breakpoints (PC + tablet, enfoque desktop-first) ---
+// --- Breakpoints ---
 $breakpoint-tablet: 768px;
 $breakpoint-desktop: 1280px;
 
-// --- Marca / primario (verde Ventas360) ---
-$color-primary: #00a63e; // botones, header de tabla
-$color-primary-dark: #007c2e; // hover / pressed
-$color-primary-deep: #1a4d2e; // card KPI oscura (recaudación)
-$color-primary-light: #e2f6d2; // fondo de badges/labels verdes
-$color-primary-surface: #e5f7de; // fondo sidebar / paneles suaves
-$color-accent-green: #4ade80; // barras de progreso, chips positivos
-$color-teal: #37b38d; // toggle / chip alternativo
+// --- Marca / primario (naranja mock) ---
+$color-primary: #e86412;
+$color-primary-dark: #d15607;
+$color-primary-deep: #c25510;
+$color-primary-light: #fff8f2;
+$color-primary-surface: #f5efe8;
+$color-accent-green: #3d8f5f;
+$color-teal: #37b38d;
 
 // --- Semánticos: success ---
-$color-success: #00a63e;
-$color-success-bg: #e2f6d2;
+$color-success: #3d8f5f;
+$color-success-bg: #e9f4ee;
 $color-toast-success-bg: #ecfcf3;
 
 // --- Semánticos: danger ---
-$color-danger: #d4183d; // botón "Dar de Baja"
-$color-danger-strong: #dc2626;
-$color-danger-text: #ef4444; // texto badge "Retrasado"
-$color-danger-bg: #ffe8e9;
+$color-danger: #b3261e;
+$color-danger-strong: #b3261e;
+$color-danger-text: #b3261e;
+$color-danger-bg: #fbeae9;
 $color-toast-error-bg: #fff0f0;
 
 // --- Semánticos: warning ---
-$color-warning-bg: #fef9c2; // fondo badge "Pendiente"
-$color-warning-surface: #fffbeb;
+$color-warning-bg: #fdf3e4;
+$color-warning-surface: #fff8f2;
 $color-toast-warning-bg: #fffcf0;
-$color-warning-text: #a16207; // aprox. — validar contra Figma
+$color-warning-text: #b45309;
 
 // --- Semánticos: info ---
-$color-info-bg: #dcedff; // fondo badge "En viaje"
+$color-info-bg: #e8eefc;
 $color-info-border: #bed8ff;
-$color-info-text: #2563eb; // aprox. — validar contra Figma
+$color-info-text: #1d4ed8;
 
-// --- Neutrales ---
-$color-text: #1f2937; // aprox. — validar contra Figma
-$color-text-muted: #6b7280; // aprox. — validar contra Figma
-$color-border: #eaecef;
+// --- Neutrales (stone / warm) ---
+$color-text: #1c1917;
+$color-text-muted: #78716c;
+$color-text-subtle: #a8a29e;
+$color-border: #e7e2dc;
+$color-border-soft: #f0ece7;
 $color-surface: #ffffff;
-$color-background: #f9fafb;
-$color-background-alt: #f3f4f6;
+$color-background: #faf9f7;
+$color-background-alt: #faf7f3;
+$color-hover-row: #faf7f3;
 
-// --- Charts (categóricos, orden fijo — validados con dataviz/validate_palette) ---
-$chart-1: #007c2e;
-$chart-2: #2563eb;
-$chart-3: #d97706;
-$chart-4: #37b38d;
+// --- Charts ---
+$chart-1: #e86412;
+$chart-2: #f0b585;
+$chart-3: #f3d9c3;
+$chart-4: #3d8f5f;
 
 // --- Spacing ---
-$space-xs: 0.25rem; // 4px
-$space-sm: 0.5rem; // 8px
-$space-md: 1rem; // 16px
-$space-lg: 1.5rem; // 24px
-$space-xl: 2rem; // 32px
+$space-xs: 0.25rem;
+$space-sm: 0.5rem;
+$space-md: 1rem;
+$space-lg: 1.5rem;
+$space-xl: 2rem;
 
-// --- Radios ---
-$radius-sm: 0.25rem;
-$radius-md: 0.5rem;
-$radius-lg: 1rem;
-$radius-full: 9999px; // badges/labels pill
+// --- Radios (mock: 7–12px) ---
+$radius-sm: 0.4375rem; // 7px
+$radius-md: 0.5625rem; // 9px
+$radius-lg: 0.75rem; // 12px
+$radius-full: 9999px;
 
 // --- Sombras ---
-$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+$shadow-sm: 0 1px 2px rgba(232, 100, 18, 0.35);
+$shadow-md: 0 4px 12px rgba(28, 25, 23, 0.08);
+$shadow-lg: 0 12px 32px rgba(28, 25, 23, 0.14);
+
+// --- Layout ---
+$content-max-width: 1360px;
+$header-height: 60px;

@@ -4,27 +4,27 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px t.$space-sm + t.$space-xs;
+  padding: 3px 9px;
   border-radius: t.$radius-full;
   font-family: ty.$font-family-base;
-  font-size: ty.$font-size-sm;
-  font-weight: ty.$font-weight-medium;
+  font-size: 11.5px;
+  font-weight: ty.$font-weight-bold;
   line-height: ty.$line-height-base;
   white-space: nowrap;
 
   &--md {
-    font-size: ty.$font-size-md;
-    padding: 4px t.$space-md;
+    font-size: ty.$font-size-sm;
+    padding: 4px 10px;
   }
 
   &--success {
     background: t.$color-success-bg;
-    color: t.$color-primary-dark;
+    color: t.$color-success;
   }
 
   &--danger {
     background: t.$color-danger-bg;
-    color: t.$color-danger-text;
+    color: t.$color-danger;
   }
 
   &--info {
@@ -38,7 +38,7 @@
   }
 
   &--neutral {
-    background: t.$color-background-alt;
-    color: t.$color-text-muted;
+    background: #f1efec;
+    color: #57534e;
   }
 }

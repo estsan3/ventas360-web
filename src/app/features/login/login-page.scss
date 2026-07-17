@@ -19,22 +19,21 @@
     overflow: hidden;
     background: t.$color-surface;
     border: 1px solid t.$color-border;
-    box-shadow: t.$shadow-md;
+    box-shadow: 0 4px 12px rgba(28, 25, 23, 0.08);
 
     @media (max-width: t.$breakpoint-tablet) {
       grid-template-columns: 1fr;
     }
   }
 
-  // --- Panel promocional: asset del camión (overlay verde ya incluido) ---
-  // Degradado sutil solo para legibilidad del texto sobre la foto
+  // Panel promocional de la versión anterior (foto + overlay legible)
   &__promo {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: t.$space-xl;
     background:
-      linear-gradient(rgba(0, 90, 35, 0.15), rgba(0, 70, 28, 0.35)),
+      linear-gradient(rgba(194, 85, 16, 0.35), rgba(28, 25, 23, 0.55)),
       url('/assets/login-truck.png') center / cover no-repeat;
     color: #fff;
 
@@ -53,14 +52,32 @@
   }
 
   &__logo {
-    display: inline-block;
-    padding: t.$space-sm t.$space-lg;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: t.$space-sm t.$space-md;
     border-radius: t.$radius-md;
-    background: t.$color-primary;
+    background: rgba(255, 255, 255, 0.14);
     border: 1px solid rgba(255, 255, 255, 0.35);
     font-size: ty.$font-size-2xl;
     font-weight: ty.$font-weight-bold;
     color: #fff;
+    backdrop-filter: blur(4px);
+  }
+
+  &__logo-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: t.$color-primary;
+    display: grid;
+    place-items: center;
+    font-size: 15px;
+    font-weight: ty.$font-weight-extrabold;
+  }
+
+  &__logo-accent {
+    color: #ffd4b0;
   }
 
   &__features {
@@ -101,7 +118,6 @@
     flex-shrink: 0;
   }
 
-  // --- Formulario ---
   &__panel {
     display: flex;
     align-items: center;

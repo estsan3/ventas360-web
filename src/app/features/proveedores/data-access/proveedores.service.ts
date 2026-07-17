@@ -3,8 +3,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { CrearProveedorDto, ProveedorDto, ProveedoresPaginaDto } from './proveedor.dto';
-import { crearProveedorToDto, proveedorToModel } from './proveedor.mapper';
-import { CrearProveedor, Proveedor } from './proveedor.model';
+import {
+  actualizarProveedorToDto,
+  crearProveedorToDto,
+  proveedorToModel,
+} from './proveedor.mapper';
+import { ActualizarProveedor, CrearProveedor, Proveedor } from './proveedor.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProveedoresService {
@@ -30,6 +34,18 @@ export class ProveedoresService {
   crear(body: CrearProveedor): Observable<Proveedor> {
     return this.http
       .post<ProveedorDto>(this.base, crearProveedorToDto(body) as CrearProveedorDto)
+      .pipe(map(proveedorToModel));
+  }
+
+  actualizar(id: string, body: ActualizarProveedor): Observable<Proveedor> {
+    return this.http
+      .put<ProveedorDto>(`${this.base}/${id}`, actualizarProveedorToDto(body))
+      .pipe(map(proveedorToModel));
+  }
+
+  desactivar(id: string): Observable<Proveedor> {
+    return this.http
+      .patch<ProveedorDto>(`${this.base}/${id}/desactivar`, {})
       .pipe(map(proveedorToModel));
   }
 }

@@ -1,77 +1,475 @@
-<section class="page">
-  <header class="page__header">
-    <div>
-      <h1>Compras</h1>
-      <p class="page__subtitle">Remitos y facturas de compra → ingreso de stock y CxP</p>
+<section class="page lst">
+  <header class="lst__header">
+    <h1 class="lst__title">Compras</h1>
+    <div class="lst__actions">
+      @if (tab() === 'proveedores') {
+        <button
+          type="button"
+          class="lst__btn lst__btn--ghost"
+          (click)="nuevoProveedorOpen.set(true)"
+        >
+          + Nuevo proveedor
+        </button>
+      }
+      @if (tab() !== 'listas') {
+        <button type="button" class="lst__cta" (click)="abrirAlta()">+ Remito / factura</button>
+      }
     </div>
-    <app-button variant="primary" size="md" (clicked)="abrirAlta()">
-      <app-icon name="plus" />
-      Nueva compra
-    </app-button>
   </header>
 
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filas().length === 0"
-    emptyMessage="No hay compras. Creá un remito o factura de compra."
-  >
-    <div class="tabla-scroll">
-      <app-table [columns]="columnas" [rows]="filas()" headerVariant="soft" [striped]="true">
-        <ng-template appTableCell="estado" let-row>
-          <app-badge
-            [variant]="
-              $any(row)['estado'] === 'confirmado'
-                ? 'success'
-                : $any(row)['estado'] === 'facturado'
-                  ? 'info'
-                  : 'warning'
-            "
-          >
-            {{ $any(row)['estado'] }}
-          </app-badge>
-        </ng-template>
-        <ng-template appTableCell="acciones" let-row>
-          <div class="fila-acciones">
-            @if ($any(row)['puedeConfirmar']) {
-              <app-button variant="outline" size="sm" (clicked)="confirmar($any(row)['id'])">
-                Confirmar
-              </app-button>
-            }
-            @if ($any(row)['puedeFacturar']) {
-              <app-button variant="primary" size="sm" (clicked)="facturar($any(row)['id'])">
-                Facturar
-              </app-button>
-            }
-          </div>
-        </ng-template>
-      </app-table>
-    </div>
-  </app-state-wrapper>
+  <div class="lst__seg">
+    <button
+      type="button"
+      class="lst__seg-btn"
+      [class.lst__seg-btn--on]="tab() === 'facturas'"
+      (click)="tab.set('facturas')"
+    >
+      Remitos y facturas
+    </button>
+    <button
+      type="button"
+      class="lst__seg-btn"
+      [class.lst__seg-btn--on]="tab() === 'pedidos'"
+      (click)="tab.set('pedidos')"
+    >
+      Pedidos de compra
+    </button>
+    <button
+      type="button"
+      class="lst__seg-btn"
+      [class.lst__seg-btn--on]="tab() === 'proveedores'"
+      (click)="tab.set('proveedores')"
+    >
+      Proveedores
+    </button>
+    <button
+      type="button"
+      class="lst__seg-btn"
+      [class.lst__seg-btn--on]="tab() === 'listas'"
+      (click)="tab.set('listas')"
+    >
+      Listas de precios
+    </button>
+  </div>
 
-  <app-side-drawer
-    [abierto]="drawerAbierto()"
-    titulo="Nueva compra"
-    (cerrar)="drawerAbierto.set(false)"
-  >
-    <form class="form-drawer" [formGroup]="form">
-      <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
-      <app-select-input
-        label="Proveedor"
-        [options]="proveedoresOpts()"
-        formControlName="proveedorId"
-      />
-      <app-select-input label="Depósito" [options]="depositosOpts()" formControlName="depositoId" />
-      <app-select-input label="Producto" [options]="productosOpts()" formControlName="productoId" />
-      <app-text-input label="Cantidad" type="number" formControlName="cantidad" />
-    </form>
-    <div class="form-drawer__actions">
-      <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
-        Cancelar
-      </app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
-        Crear borrador
-      </app-button>
+  @if (tab() === 'facturas') {
+    <div class="lst__card">
+      @if (estado().status === 'error') {
+        <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
+      } @else if (filasFacturas().length === 0) {
+        <div class="lst__empty">
+          {{
+            estado().status === 'loading'
+              ? 'Cargando compras…'
+              : 'No hay remitos ni facturas. Cargá un remito de mercadería para ingresar stock.'
+          }}
+        </div>
+      } @else {
+        <table class="lst__table">
+          <thead>
+            <tr>
+              <th>Comprobante</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th class="lst__th-right">Total</th>
+              <th>Estado</th>
+              <th class="lst__th-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filasFacturas(); track row.id) {
+              <tr>
+                <td class="lst__strong">{{ row.comprobante }}</td>
+                <td>{{ row.fecha }}</td>
+                <td>{{ row.proveedor }}</td>
+                <td class="lst__td-right lst__strong">{{ row.total }}</td>
+                <td>
+                  <span
+                    class="lst__badge"
+                    [class.lst__badge--warn]="row.estadoTone === 'warn'"
+                    [class.lst__badge--ok]="row.estadoTone === 'ok'"
+                    [class.lst__badge--danger]="row.estadoTone === 'danger'"
+                    [class.lst__badge--info]="row.estadoTone === 'info'"
+                    [class.lst__badge--neutral]="row.estadoTone === 'neutral'"
+                  >
+                    {{ row.estadoLabel }}
+                  </span>
+                </td>
+                <td class="lst__td-right">
+                  <div class="lst__acciones">
+                    @if (row.puedeConfirmar) {
+                      <button
+                        type="button"
+                        class="lst__accion lst__accion--primary"
+                        (click)="confirmar(row.id)"
+                      >
+                        Confirmar
+                      </button>
+                    }
+                    @if (row.puedeFacturar) {
+                      <button
+                        type="button"
+                        class="lst__accion lst__accion--primary"
+                        (click)="facturar(row.id)"
+                      >
+                        Facturar
+                      </button>
+                    }
+                    @if (!row.puedeConfirmar && !row.puedeFacturar) {
+                      <span class="lst__muted">—</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
-  </app-side-drawer>
+  }
+
+  @if (tab() === 'pedidos') {
+    <div class="lst__card">
+      <div class="lst__empty">
+        Aún no hay pedidos de compra. Usá remitos de mercadería para ingresar stock con el costo de
+        la lista del proveedor.
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'proveedores') {
+    <div class="lst__card">
+      @if (filasProveedores().length === 0) {
+        <div class="lst__empty">No hay proveedores. Creá uno para importar su lista.</div>
+      } @else {
+        <table class="lst__table">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>CUIT</th>
+              <th>Rubro</th>
+              <th>Contacto</th>
+              <th class="lst__th-right">Saldo a pagar</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filasProveedores(); track row.id) {
+              <tr>
+                <td>
+                  <div class="lst__name">{{ row.nombre }}</div>
+                </td>
+                <td>{{ row.cuit || '—' }}</td>
+                <td>{{ row.rubro }}</td>
+                <td>{{ row.contacto }}</td>
+                <td class="lst__td-right">{{ row.saldo }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+
+  @if (tab() === 'listas') {
+    @let lp = listaActiva();
+    <div class="lst__lista-bar">
+      <div class="lst__lista-label">Actualizar precios del proveedor</div>
+      <select
+        class="lst__select"
+        [ngModel]="listaProvId()"
+        (ngModelChange)="seleccionarProveedorLista($event)"
+      >
+        @for (p of proveedores(); track p.id) {
+          <option [value]="p.id">{{ p.nombre }}</option>
+        }
+      </select>
+      <div class="lst__lista-spacer"></div>
+      <label class="lst__btn lst__btn--ghost lst__file">
+        📎 Cargar archivo Excel…
+        <input type="file" accept=".xlsx,.xlsm" (change)="onArchivo($event)" hidden />
+      </label>
+    </div>
+
+    @if (!lp) {
+      <div class="lst__card">
+        <div class="lst__empty">Creá un proveedor para importar su lista de precios.</div>
+      </div>
+    } @else {
+      <div class="lst__lista-grid">
+        <div class="lst__card lst__card--scroll">
+          <div class="lst__card-head">
+            <div class="lst__card-title">Vista previa · {{ lp.nombre }}</div>
+            <div class="lst__card-sub">
+              {{
+                archivoSeleccionado()?.name ||
+                  lp.ultimaImportacionArchivo ||
+                  'Sin archivo seleccionado'
+              }}
+            </div>
+          </div>
+          <table class="lst__table">
+            <thead>
+              <tr>
+                @for (c of preview()?.previewCols ?? []; track c) {
+                  <th class="lst__th-map">{{ c }}</th>
+                } @empty {
+                  <th class="lst__th-map">Cargá un Excel para ver la vista previa</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of preview()?.previewRows ?? []; track $index) {
+                <tr>
+                  @for (cell of row; track $index) {
+                    <td>{{ cell }}</td>
+                  }
+                </tr>
+              } @empty {
+                <tr>
+                  <td class="lst__empty-cell">Sin datos de preview</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="lst__lista-foot">
+            <div class="lst__lista-foot-title">
+              @if (preview() && !preview()!.dryRun) {
+                Última importación · {{ lp.nombre }} · ahora
+              } @else if (lp.ultimaImportacionFecha) {
+                Última importación · {{ lp.nombre }} ·
+                {{ lp.ultimaImportacionFecha | slice: 0 : 10 }}
+              } @else {
+                Sin importaciones previas · {{ lp.nombre }}
+              }
+            </div>
+            <div class="lst__lista-stats">
+              <span>
+                <b class="lst__ok">{{
+                  preview()?.actualizados ?? lp.ultimaImportacionActualizados
+                }}</b>
+                precios actualizados
+              </span>
+              <span>
+                <b class="lst__warn">{{ preview()?.nuevos ?? lp.ultimaImportacionNuevos }}</b>
+                artículos nuevos
+              </span>
+              <span>
+                <b class="lst__danger">{{ preview()?.sinMatch ?? lp.ultimaImportacionSinMatch }}</b>
+                códigos sin coincidencia
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="lst__mapeo">
+          <div class="lst__mapeo-head">
+            <div class="lst__card-title">Mapeo de columnas</div>
+            <span class="lst__pill-warn">Solo esta importación</span>
+          </div>
+          <div class="lst__mapeo-hint">
+            Tomado del alta de {{ lp.nombre }}. Podés corregirlo para este archivo puntual.
+          </div>
+          <div class="lst__mapeo-rows">
+            @for (m of mapeoImport(); track $index) {
+              <div class="lst__mapeo-row">
+                <div class="lst__mapeo-campo">{{ etiquetaCampo(m.campo) }}</div>
+                <select
+                  class="lst__select lst__select--flex"
+                  [ngModel]="m.columna"
+                  (ngModelChange)="actualizarMapeoColumna($index, $event)"
+                >
+                  @for (col of columnasExcel; track col) {
+                    <option [value]="col">Columna {{ col }}</option>
+                  }
+                </select>
+              </div>
+            }
+            <div class="lst__mapeo-row">
+              <div class="lst__mapeo-campo">Empieza en fila</div>
+              <input
+                class="lst__input"
+                type="number"
+                min="1"
+                [ngModel]="filaInicio()"
+                (ngModelChange)="filaInicio.set(+$event || 2)"
+              />
+            </div>
+          </div>
+          <div class="lst__mapeo-row lst__mapeo-row--mt">
+            <div class="lst__mapeo-campo lst__mapeo-campo--wide">Actualizar precio de venta</div>
+            <select
+              class="lst__select"
+              [ngModel]="politicaVenta()"
+              (ngModelChange)="politicaVenta.set($event)"
+            >
+              @for (o of politicaOpts; track o.value) {
+                <option [value]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+          @if (politicaVenta() === 'margen_fijo') {
+            <div class="lst__mapeo-row">
+              <div class="lst__mapeo-campo">Margen %</div>
+              <input
+                class="lst__input"
+                type="number"
+                min="0"
+                [ngModel]="margenPct()"
+                (ngModelChange)="margenPct.set(+$event || 0)"
+              />
+            </div>
+          }
+          <button
+            type="button"
+            class="lst__cta lst__cta--full"
+            [disabled]="importando() || !archivoSeleccionado()"
+            (click)="importarLista()"
+          >
+            {{ importando() ? 'Importando…' : 'Importar con este mapeo' }}
+          </button>
+        </div>
+      </div>
+    }
+  }
 </section>
+
+@if (nuevoProveedorOpen()) {
+  <div class="comp-modal" (click)="nuevoProveedorOpen.set(false)">
+    <div class="comp-modal__panel" (click)="$event.stopPropagation()">
+      <div class="comp-modal__head">
+        <h2 class="comp-modal__title">Nuevo proveedor</h2>
+        <button type="button" class="comp-modal__close" (click)="nuevoProveedorOpen.set(false)">
+          ✕
+        </button>
+      </div>
+      <div class="comp-modal__form">
+        <div>
+          <div class="comp-modal__label">Razón social</div>
+          <input
+            class="comp-modal__input"
+            placeholder="Distribuidora Herrafe SA"
+            [ngModel]="nuevoNombre()"
+            (ngModelChange)="nuevoNombre.set($event)"
+          />
+        </div>
+        <div>
+          <div class="comp-modal__label">CUIT</div>
+          <input
+            class="comp-modal__input"
+            placeholder="30-00000000-0"
+            [ngModel]="nuevoCuit()"
+            (ngModelChange)="nuevoCuit.set($event)"
+          />
+        </div>
+        <div>
+          <div class="comp-modal__label">Rubro / observaciones</div>
+          <input
+            class="comp-modal__input"
+            placeholder="Herramientas y fijaciones"
+            [ngModel]="nuevoRubro()"
+            (ngModelChange)="nuevoRubro.set($event)"
+          />
+        </div>
+      </div>
+      <div class="comp-modal__mapeo">
+        <div class="comp-modal__mapeo-title">Formato de la lista de precios (Excel)</div>
+        <div class="comp-modal__hint">
+          Este mapeo queda guardado en el proveedor: define qué columna del Excel corresponde a cada
+          dato de tu base.
+        </div>
+        <div class="comp-modal__mapeo-table">
+          <div class="comp-modal__mapeo-head-row">
+            <div>Columna Excel</div>
+            <div>Concepto en mi base de datos</div>
+            <div></div>
+          </div>
+          @for (m of nuevoProvMapeo(); track $index) {
+            <div class="comp-modal__mapeo-row">
+              <select
+                class="comp-modal__select"
+                [ngModel]="m.columna"
+                (ngModelChange)="actualizarNuevoMapeo($index, 'columna', $event)"
+              >
+                @for (col of columnasExcel; track col) {
+                  <option [value]="col">{{ col }}</option>
+                }
+              </select>
+              <select
+                class="comp-modal__select"
+                [ngModel]="m.campo"
+                (ngModelChange)="actualizarNuevoMapeo($index, 'campo', $event)"
+              >
+                @for (c of camposMapeoOpts; track c.value) {
+                  <option [value]="c.value">{{ c.label }}</option>
+                }
+              </select>
+              <button
+                type="button"
+                class="comp-modal__del"
+                (click)="quitarFilaMapeoNuevo($index)"
+                title="Quitar"
+              >
+                ✕
+              </button>
+            </div>
+          }
+        </div>
+        <button type="button" class="comp-modal__add" (click)="agregarFilaMapeoNuevo()">
+          + Agregar columna
+        </button>
+        <div class="comp-modal__fila">
+          <div class="comp-modal__fila-label">La lista empieza en la fila</div>
+          <input
+            class="comp-modal__fila-input"
+            type="number"
+            min="1"
+            [ngModel]="nuevoFilaInicio()"
+            (ngModelChange)="nuevoFilaInicio.set(+$event || 2)"
+          />
+        </div>
+      </div>
+      <div class="comp-modal__foot">
+        <button
+          type="button"
+          class="lst__btn lst__btn--ghost"
+          (click)="nuevoProveedorOpen.set(false)"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="lst__cta"
+          [disabled]="guardando()"
+          (click)="guardarProveedor()"
+        >
+          Guardar proveedor
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-side-drawer
+  [abierto]="drawerAbierto()"
+  titulo="Nueva compra"
+  (cerrar)="drawerAbierto.set(false)"
+>
+  <form class="form-drawer" [formGroup]="form">
+    <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
+    <app-select-input
+      label="Proveedor"
+      [options]="proveedoresOpts()"
+      formControlName="proveedorId"
+    />
+    <app-select-input label="Depósito" [options]="depositosOpts()" formControlName="depositoId" />
+    <app-select-input label="Producto" [options]="productosOpts()" formControlName="productoId" />
+    <app-text-input label="Cantidad" type="number" formControlName="cantidad" />
+  </form>
+  <div class="form-drawer__actions">
+    <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
+      Cancelar
+    </app-button>
+    <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
+      Crear borrador
+    </app-button>
+  </div>
+</app-side-drawer>

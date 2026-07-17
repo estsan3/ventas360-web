@@ -1,0 +1,157 @@
+@use 'dc-list' as dc;
+
+.lst {
+  @include dc.dc-list-page;
+
+  &__header {
+    @include dc.dc-list-header;
+  }
+
+  &__title {
+    @include dc.dc-list-title;
+  }
+
+  &__cta {
+    @include dc.dc-list-cta;
+  }
+
+  &__filters {
+    @include dc.dc-list-filters;
+  }
+
+  &__chip {
+    @include dc.dc-list-chip;
+  }
+
+  &__card {
+    @include dc.dc-list-card;
+  }
+
+  &__table {
+    @include dc.dc-list-table;
+  }
+
+  &__th-right,
+  &__td-right {
+    text-align: right;
+  }
+
+  &__strong {
+    font-weight: 600;
+  }
+
+  &__badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 3px 9px;
+    white-space: nowrap;
+
+    &--warn {
+      color: dc.$dc-warn;
+      background: dc.$dc-warn-bg;
+    }
+
+    &--info {
+      color: dc.$dc-info;
+      background: dc.$dc-info-bg;
+    }
+
+    &--ok {
+      color: dc.$dc-ok;
+      background: dc.$dc-ok-bg;
+    }
+
+    &--danger {
+      color: dc.$dc-danger;
+      background: dc.$dc-danger-bg;
+    }
+  }
+
+  &__accion {
+    &--primary {
+      @include dc.dc-list-accion-primary;
+    }
+
+    &--muted {
+      @include dc.dc-list-accion-muted;
+    }
+  }
+
+  &__empty {
+    padding: 40px 20px;
+    text-align: center;
+    font-size: 13.5px;
+    color: dc.$dc-muted;
+  }
+
+  &__acciones {
+    display: inline-flex;
+    gap: 6px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
+.lst-modal {
+  @include dc.dc-list-modal;
+
+  &__panel {
+    @include dc.dc-list-modal-panel;
+  }
+
+  &__head {
+    @include dc.dc-list-modal-head;
+  }
+
+  &__title {
+    @include dc.dc-list-modal-title;
+  }
+
+  &__sub {
+    @include dc.dc-list-modal-sub;
+  }
+
+  &__close {
+    @include dc.dc-list-modal-close;
+  }
+
+  &__kpis {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid dc.$dc-border;
+    border-radius: 10px;
+    background: #fffcf9;
+  }
+
+  &__kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: dc.$dc-subtle;
+  }
+
+  &__kpi-value {
+    margin-top: 3px;
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__table-wrap {
+    border: 1px solid dc.$dc-border;
+    border-radius: 10px;
+    overflow: auto;
+    max-height: min(50vh, 420px);
+  }
+
+  &__foot {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+}

@@ -34,11 +34,31 @@ export const routes: Routes = [
         loadChildren: () => import('./features/ventas/ventas.routes').then((m) => m.VENTAS_ROUTES),
       },
       {
+        path: 'presupuestos',
+        loadChildren: () =>
+          import('./features/presupuestos/presupuestos.routes').then((m) => m.PRESUPUESTOS_ROUTES),
+      },
+      {
+        path: 'pedidos',
+        loadChildren: () =>
+          import('./features/pedidos/pedidos.routes').then((m) => m.PEDIDOS_ROUTES),
+      },
+      {
+        path: 'remitos',
+        loadChildren: () =>
+          import('./features/remitos/remitos.routes').then((m) => m.REMITOS_ROUTES),
+      },
+      {
         path: 'cuenta-corriente',
         loadChildren: () =>
           import('./features/cuenta-corriente/cuenta-corriente.routes').then(
             (m) => m.CUENTA_CORRIENTE_ROUTES,
           ),
+      },
+      {
+        path: 'inventario',
+        loadChildren: () =>
+          import('./features/inventario/inventario.routes').then((m) => m.INVENTARIO_ROUTES),
       },
       {
         path: 'proveedores',

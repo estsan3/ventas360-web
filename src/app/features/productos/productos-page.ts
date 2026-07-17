@@ -14,27 +14,12 @@ import { NotificationStore } from '../../notifications/state/notification.store'
 import { Badge } from '../../shared/ui/badge/badge';
 import { Button } from '../../shared/ui/button/button';
 import { Icon } from '../../shared/ui/icon/icon';
-import { CatalogToolbar } from '../../shared/ui/catalog-toolbar/catalog-toolbar';
 import { TextInput } from '../../shared/ui/input/text-input';
 import { Modal } from '../../shared/ui/modal/modal';
-import { SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
-import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
-import { TableCellDef } from '../../shared/ui/table/table-cell-def';
-import { CrearProducto, FiltroActivo, Producto } from './data-access/producto.model';
+import { CrearProducto, Producto } from './data-access/producto.model';
 import { ProductosStore } from './data-access/productos.store';
-
-const COLUMNAS: TableColumn[] = [
-  { key: 'sku', label: 'SKU', width: '100px' },
-  { key: 'nombre', label: 'Nombre' },
-  { key: 'marca', label: 'Marca', width: '110px' },
-  { key: 'rubro', label: 'Rubro', width: '110px' },
-  { key: 'precioFmt', label: 'Precio', align: 'right', width: '120px' },
-  { key: 'stock', label: 'Stock', align: 'right', width: '80px' },
-  { key: 'estado', label: 'Estado', width: '100px' },
-  { key: 'acciones', label: 'Acciones', align: 'right', width: '96px' },
-];
 
 const PEDIDOS_COLUMNS: TableColumn[] = [
   { key: 'fecha', label: 'Fecha', width: '110px' },
@@ -43,12 +28,43 @@ const PEDIDOS_COLUMNS: TableColumn[] = [
   { key: 'cantidad', label: 'Cant.', align: 'right', width: '70px' },
 ];
 
+const STOCK_BAJO = 5;
+
+type ChipFiltro = 'todos' | 'bajo_minimo' | string;
+
+interface FilaProductoVista {
+  id: string;
+  sku: string;
+  nombre: string;
+  rubro: string;
+  marca: string;
+  stock: number;
+  stockTone: 'normal' | 'warn' | 'danger';
+  costoFmt: string;
+  precio1Fmt: string;
+  precio2Fmt: string;
+}
+
 function formatearPrecio(valor: number): string {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
     maximumFractionDigits: 0,
   }).format(valor);
+}
+
+function esBajoMinimo(stock: number): boolean {
+  return stock === 0 || stock < STOCK_BAJO;
+}
+
+function tonoStock(stock: number): 'normal' | 'warn' | 'danger' {
+  if (stock === 0) {
+    return 'danger';
+  }
+  if (stock < STOCK_BAJO) {
+    return 'warn';
+  }
+  return 'normal';
 }
 
 @Component({
@@ -59,13 +75,10 @@ function formatearPrecio(valor: number): string {
     Badge,
     Button,
     Icon,
-    CatalogToolbar,
     TextInput,
     Modal,
     SideDrawer,
-    StateWrapper,
     Table,
-    TableCellDef,
   ],
   templateUrl: './productos-page.html',
   styleUrl: './productos-page.scss',
@@ -78,12 +91,11 @@ export class ProductosPage {
   private readonly notifications = inject(NotificationStore);
   private readonly confirmDialog = inject(ConfirmDialogService);
 
-  protected readonly columnas = COLUMNAS;
   protected readonly pedidosColumns = PEDIDOS_COLUMNS;
   protected readonly estado = this.store.productos;
   protected readonly total = this.store.total;
   protected readonly busqueda = signal('');
-  protected readonly filtro = signal<FiltroActivo>('activos');
+  protected readonly chip = signal<ChipFiltro>('todos');
   protected readonly drawerAbierto = signal(false);
   protected readonly configModalAbierto = signal(false);
   protected readonly seleccionadoId = signal<string | null>(null);
@@ -92,12 +104,6 @@ export class ProductosPage {
   protected readonly guardando = signal(false);
 
   protected readonly esAdmin = computed(() => this.auth.user()?.rol === 'administrador');
-
-  protected readonly filtroOptions: SelectOption[] = [
-    { value: 'activos', label: 'Solo activos' },
-    { value: 'inactivos', label: 'Solo inactivos' },
-    { value: 'todos', label: 'Todos' },
-  ];
 
   protected readonly form = this.fb.nonNullable.group({
     sku: ['', [Validators.required, Validators.maxLength(40)]],
@@ -110,16 +116,46 @@ export class ProductosPage {
     stock: ['0', [Validators.required]],
   });
 
-  protected readonly filas = computed(() =>
-    (this.estado().data ?? []).map(
-      (p) =>
-        ({
-          ...p,
-          precioFmt: formatearPrecio(p.precio),
-          estado: p.activo ? 'Activo' : 'Inactivo',
-        }) as Record<string, unknown>,
-    ),
+  protected readonly rubros = computed(() => {
+    const set = new Set<string>();
+    for (const p of this.estado().data ?? []) {
+      const r = p.rubro?.trim();
+      if (r) {
+        set.add(r);
+      }
+    }
+    return [...set].sort((a, b) => a.localeCompare(b, 'es'));
+  });
+
+  protected readonly bajoMinimoCount = computed(
+    () => (this.estado().data ?? []).filter((p) => esBajoMinimo(p.stock)).length,
   );
+
+  protected readonly filasVista = computed((): FilaProductoVista[] => {
+    const chip = this.chip();
+    return (this.estado().data ?? [])
+      .filter((p) => {
+        if (chip === 'todos') {
+          return true;
+        }
+        if (chip === 'bajo_minimo') {
+          return esBajoMinimo(p.stock);
+        }
+        return (p.rubro?.trim() ?? '') === chip;
+      })
+      .map((p) => ({
+        id: p.id,
+        sku: p.sku,
+        nombre: p.nombre,
+        rubro: p.rubro,
+        marca: p.marca,
+        stock: p.stock,
+        stockTone: tonoStock(p.stock),
+        costoFmt: formatearPrecio(p.costo),
+        precio1Fmt: formatearPrecio(p.precio),
+        precio2Fmt: formatearPrecio(Math.round(p.precio * 0.92)),
+      }));
+  });
 
   protected readonly detalle = computed(() => {
     const id = this.seleccionadoId();
@@ -143,8 +179,7 @@ export class ProductosPage {
     // re-disparen el effect (loop infinito de HTTP).
     effect(() => {
       const q = this.busqueda();
-      const filtro = this.filtro();
-      untracked(() => this.store.cargar({ q, filtro, page: 1 }));
+      untracked(() => this.store.cargar({ q, filtro: 'activos', page: 1 }));
     });
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {

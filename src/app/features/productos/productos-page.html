@@ -1,71 +1,107 @@
-<section class="page">
-  <header class="page__header">
-    <p class="page__subtitle">Catálogo, precios y stock disponible</p>
+<section class="page lst">
+  <header class="lst__header">
+    <h1 class="lst__title">Artículos y stock</h1>
     @if (esAdmin()) {
-      <app-button variant="primary" size="md" (clicked)="abrirCrear()">
-        <app-icon name="plus" />
-        Nuevo producto
-      </app-button>
+      <div class="lst__actions">
+        <button type="button" class="lst__btn lst__btn--ghost">Actualizar precios</button>
+        <button type="button" class="lst__cta" (click)="abrirCrear()">+ Nuevo artículo</button>
+      </div>
     }
   </header>
 
-  <app-catalog-toolbar
-    [busqueda]="busqueda()"
-    [filtro]="filtro()"
-    [filtroOptions]="filtroOptions"
-    placeholderBusqueda="SKU, nombre, marca o código de barras…"
-    (busquedaChange)="busqueda.set($event)"
-    (filtroChange)="filtro.set($any($event))"
-  />
-
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filas().length === 0"
-    emptyMessage="No hay productos para mostrar"
-    [skeletonRows]="4"
-  >
-    <div class="tabla-scroll">
-      <app-table
-        [columns]="columnas"
-        [rows]="filas()"
-        headerVariant="soft"
-        [striped]="true"
-        [compact]="true"
+  <div class="lst__toolbar">
+    <input
+      class="lst__search"
+      type="search"
+      placeholder="Buscar por código, descripción o código de barras…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+    />
+    <div class="lst__filters">
+      <button
+        type="button"
+        class="lst__chip"
+        [class.lst__chip--on]="chip() === 'todos'"
+        (click)="chip.set('todos')"
       >
-        <ng-template appTableCell="estado" let-row>
-          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
-            {{ $any(row)['estado'] }}
-          </app-badge>
-        </ng-template>
-        <ng-template appTableCell="acciones" let-row>
-          <div class="fila-acciones">
-            <button
-              type="button"
-              class="fila-acciones__btn fila-acciones__btn--config"
-              title="Configurar producto"
-              aria-label="Configurar producto"
-              (click)="abrirConfig($any(row)['id'])"
-            >
-              <app-icon name="settings" />
-            </button>
-            @if (esAdmin()) {
-              <button
-                type="button"
-                class="fila-acciones__btn"
-                [class.fila-acciones__btn--on]="!$any(row)['activo']"
-                [title]="$any(row)['activo'] ? 'Desactivar' : 'Activar'"
-                [attr.aria-label]="$any(row)['activo'] ? 'Desactivar' : 'Activar'"
-                (click)="toggleActivo($any(row))"
-              >
-                <app-icon [name]="$any(row)['activo'] ? 'alert-circle' : 'check-circle'" />
-              </button>
-            }
-          </div>
-        </ng-template>
-      </app-table>
+        Todos
+      </button>
+      @for (rubro of rubros(); track rubro) {
+        <button
+          type="button"
+          class="lst__chip"
+          [class.lst__chip--on]="chip() === rubro"
+          (click)="chip.set(rubro)"
+        >
+          {{ rubro }}
+        </button>
+      }
+      <button
+        type="button"
+        class="lst__chip lst__chip--danger"
+        [class.lst__chip--on]="chip() === 'bajo_minimo'"
+        (click)="chip.set('bajo_minimo')"
+      >
+        ⚠ Bajo mínimo ({{ bajoMinimoCount() }})
+      </button>
     </div>
-  </app-state-wrapper>
+  </div>
+
+  <div class="lst__card">
+    @if (estado().status === 'error') {
+      <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
+    } @else if (filasVista().length === 0) {
+      <div class="lst__empty">
+        {{
+          estado().status === 'loading' ? 'Cargando artículos…' : 'No hay productos para mostrar'
+        }}
+      </div>
+    } @else {
+      <table class="lst__table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>Rubro</th>
+            <th>Marca</th>
+            <th class="lst__th-right">Stock</th>
+            <th class="lst__th-right">Costo</th>
+            <th class="lst__th-right">Precio 1</th>
+            <th class="lst__th-right">Precio 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filasVista(); track row.id) {
+            <tr class="lst__row" (click)="abrirConfig(row.id)">
+              <td class="lst__sku">{{ row.sku }}</td>
+              <td class="lst__name">{{ row.nombre }}</td>
+              <td>{{ row.rubro || '—' }}</td>
+              <td>{{ row.marca || '—' }}</td>
+              <td class="lst__td-right">
+                @if (row.stockTone === 'danger' || row.stockTone === 'warn') {
+                  <span
+                    class="lst__badge"
+                    [class.lst__badge--danger]="row.stockTone === 'danger'"
+                    [class.lst__badge--warn]="row.stockTone === 'warn'"
+                  >
+                    {{ row.stock }}
+                  </span>
+                } @else {
+                  <span class="lst__strong">{{ row.stock }}</span>
+                }
+              </td>
+              <td class="lst__td-right lst__muted">{{ row.costoFmt }}</td>
+              <td class="lst__td-right lst__strong">{{ row.precio1Fmt }}</td>
+              <td class="lst__td-right">{{ row.precio2Fmt }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="lst__footer">
+        {{ total() }} artículos activos · mostrando 1–{{ filasVista().length }}
+      </div>
+    }
+  </div>
 </section>
 
 <app-modal

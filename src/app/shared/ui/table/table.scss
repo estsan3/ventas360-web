@@ -2,44 +2,60 @@
 @use 'typography' as ty;
 
 .table-wrap {
-  // Responsive tablet: la tabla scrollea dentro de su contenedor,
-  // nunca desborda la página
   overflow-x: auto;
-  border-radius: t.$radius-md;
+  border-radius: t.$radius-lg;
   border: 1px solid t.$color-border;
+  background: t.$color-surface;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   font-family: ty.$font-family-base;
-  font-size: ty.$font-size-md-sm;
+  font-size: 13px;
   background: t.$color-surface;
 
   th {
-    background: t.$color-primary;
-    color: #fff;
-    font-size: ty.$font-size-sm;
+    background: t.$color-surface;
+    color: t.$color-text-subtle;
+    font-size: 11px;
     font-weight: ty.$font-weight-semibold;
-    padding: t.$space-sm t.$space-md;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 12px;
     white-space: nowrap;
+    text-align: left;
+    border-bottom: 1px solid t.$color-border-soft;
+
+    &:first-child {
+      padding-left: 20px;
+    }
+
+    &:last-child {
+      padding-right: 20px;
+    }
   }
 
   td {
-    padding: t.$space-sm t.$space-md;
-    border-bottom: 1px solid t.$color-border;
+    padding: 12px;
+    border-top: 1px solid t.$color-border-soft;
     color: t.$color-text;
+    font-variant-numeric: tabular-nums;
+
+    &:first-child {
+      padding-left: 20px;
+    }
+
+    &:last-child {
+      padding-right: 20px;
+    }
   }
 
   tbody tr {
     transition: background-color 0.1s ease;
 
     &:hover {
-      background: t.$color-background;
-    }
-
-    &:last-child td {
-      border-bottom: none;
+      background: t.$color-hover-row;
     }
   }
 
@@ -55,35 +71,36 @@
   }
 
   &--soft th {
-    background: #f0faec;
-    color: t.$color-primary-dark;
-    font-weight: ty.$font-weight-semibold;
+    background: t.$color-surface;
+    color: t.$color-text-subtle;
   }
 
   &--striped tbody tr:nth-child(even) td {
-    background: #f3f8f2;
-  }
-
-  &--striped tbody tr:hover {
     background: transparent;
-  }
-
-  &--striped tbody tr:hover td {
-    background: #eaf3e8;
   }
 
   &--compact {
     th,
     td {
-      padding: 6px t.$space-md;
+      padding: 8px 12px;
+    }
+
+    th:first-child,
+    td:first-child {
+      padding-left: 20px;
+    }
+
+    th:last-child,
+    td:last-child {
+      padding-right: 20px;
     }
   }
 
   &--dense {
     th,
     td {
-      padding: 3px 8px;
-      font-size: 12px;
+      padding: 8px 12px;
+      font-size: 12.5px;
       line-height: 1.25;
     }
 
@@ -93,15 +110,15 @@
   }
 
   .row--danger td {
-    background: t.$color-toast-error-bg;
+    background: t.$color-danger-bg;
   }
 
   .row--warning td {
-    background: t.$color-toast-warning-bg;
+    background: t.$color-warning-bg;
   }
 
   .row--success td {
-    background: t.$color-toast-success-bg;
+    background: t.$color-success-bg;
   }
 
   &__empty {

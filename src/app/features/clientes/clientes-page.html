@@ -1,71 +1,219 @@
-<section class="page">
-  <header class="page__header">
-    <p class="page__subtitle">Altas, contacto y estado de la cartera de clientes</p>
-    @if (esAdmin()) {
-      <app-button variant="primary" size="md" (clicked)="abrirCrear()">
-        <app-icon name="plus" />
-        Nuevo cliente
-      </app-button>
-    }
-  </header>
+@if (!fichaAbierta()) {
+  <section class="page lst">
+    <header class="lst__header">
+      <h1 class="lst__title">Clientes</h1>
+      @if (esAdmin()) {
+        <button type="button" class="lst__cta" (click)="abrirCrear()">+ Nuevo cliente</button>
+      }
+    </header>
 
-  <app-catalog-toolbar
-    [busqueda]="busqueda()"
-    [filtro]="filtro()"
-    [filtroOptions]="filtroOptions"
-    placeholderBusqueda="Nombre, email, teléfono o CUIT…"
-    (busquedaChange)="busqueda.set($event)"
-    (filtroChange)="filtro.set($any($event))"
-  />
-
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filas().length === 0"
-    emptyMessage="No hay clientes para mostrar"
-    [skeletonRows]="4"
-  >
-    <div class="tabla-scroll">
-      <app-table
-        [columns]="columnas"
-        [rows]="filas()"
-        headerVariant="soft"
-        [striped]="true"
-        [compact]="true"
+    <div class="lst__toolbar">
+      <input
+        class="lst__search"
+        type="search"
+        placeholder="Buscar por nombre, fantasía o CUIT…"
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+      />
+      <select class="lst__select" [ngModel]="filtroZona()" (ngModelChange)="filtroZona.set($event)">
+        <option value="">Zona: todas</option>
+        @for (z of zonasOptions(); track z.id) {
+          <option [value]="z.id">{{ z.nombre }}</option>
+        }
+      </select>
+      <select class="lst__select" [ngModel]="filtro()" (ngModelChange)="filtro.set($any($event))">
+        <option value="todos">Estado: todos</option>
+        <option value="activos">Estado: activos</option>
+        <option value="inactivos">Bloqueados / inactivos</option>
+      </select>
+      <select
+        class="lst__select"
+        [ngModel]="filtroVendedor()"
+        (ngModelChange)="filtroVendedor.set($event)"
       >
-        <ng-template appTableCell="estado" let-row>
-          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
-            {{ $any(row)['estado'] }}
-          </app-badge>
-        </ng-template>
-        <ng-template appTableCell="acciones" let-row>
-          <div class="fila-acciones">
-            <button
-              type="button"
-              class="fila-acciones__btn fila-acciones__btn--config"
-              title="Configurar cliente"
-              aria-label="Configurar cliente"
-              (click)="abrirConfig($any(row)['id'])"
-            >
-              <app-icon name="settings" />
-            </button>
-            @if (esAdmin() && $any(row)['activo']) {
-              <button
-                type="button"
-                class="fila-acciones__btn fila-acciones__btn--danger"
-                title="Desactivar"
-                aria-label="Desactivar cliente"
-                (click)="desactivar($any(row))"
-              >
-                <app-icon name="alert-circle" />
-              </button>
-            }
-          </div>
-        </ng-template>
-      </app-table>
+        <option value="">Vendedor: todos</option>
+      </select>
     </div>
-  </app-state-wrapper>
-</section>
+
+    <div class="lst__card">
+      @if (filasVista().length === 0) {
+        <div class="lst__empty">No hay clientes para mostrar</div>
+      } @else {
+        <table class="lst__table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>CUIT</th>
+              <th>Localidad</th>
+              <th>Zona</th>
+              <th>Cond. IVA</th>
+              <th class="lst__th-right">Saldo cta. cte.</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filasVista(); track row.id) {
+              <tr class="lst__row" (click)="abrirFicha(row.id)">
+                <td>
+                  <div class="lst__name">{{ row.nombre }}</div>
+                  <div class="lst__sub">{{ row.fantasia }}</div>
+                </td>
+                <td>{{ row.cuit }}</td>
+                <td>{{ row.localidad }}</td>
+                <td>{{ row.zona }}</td>
+                <td>{{ row.condicionLabel }}</td>
+                <td
+                  class="lst__td-right lst__strong"
+                  [class.lst__danger]="row.saldoTono === 'danger'"
+                  [class.lst__muted]="row.saldoTono === 'muted'"
+                >
+                  {{ row.saldo }}
+                </td>
+                <td>
+                  <span
+                    class="lst__badge"
+                    [class.lst__badge--ok]="row.estado === 'Activo'"
+                    [class.lst__badge--danger]="row.estado === 'Bloqueado'"
+                    [class.lst__badge--neutral]="row.estado === 'Inactivo'"
+                  >
+                    {{ row.estado }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="lst__footer">
+          <div>{{ total() }} clientes · mostrando 1–{{ filasVista().length }}</div>
+          <div class="lst__pager">
+            <button type="button" class="lst__page-btn lst__page-btn--muted" disabled>
+              ‹ Anterior
+            </button>
+            <button type="button" class="lst__page-btn">Siguiente ›</button>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+} @else if (detalle(); as det) {
+  <section class="page ficha">
+    <div class="ficha__back">
+      <button type="button" class="ficha__back-btn" (click)="cerrarFicha()">
+        ← Volver a clientes
+      </button>
+    </div>
+
+    <div class="ficha__hero">
+      <div class="ficha__hero-left">
+        <div class="ficha__avatar">{{ iniciales() }}</div>
+        <div>
+          <div class="ficha__name-row">
+            <h1 class="ficha__title">{{ det.nombre }}</h1>
+            <span
+              class="lst__badge"
+              [class.lst__badge--ok]="det.activo && !det.bloqueado"
+              [class.lst__badge--danger]="det.bloqueado"
+              [class.lst__badge--neutral]="!det.activo"
+            >
+              {{ det.bloqueado ? 'Bloqueado' : det.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          <div class="ficha__meta">
+            {{ det.email || '—' }} · CUIT {{ det.cuit || '—' }} · {{ condicionLabel() }} · Zona
+            {{ zonaNombre() }}
+          </div>
+        </div>
+      </div>
+      <div class="ficha__hero-actions">
+        @if (esAdmin()) {
+          <button type="button" class="ficha__btn ficha__btn--ghost" (click)="abrirConfig()">
+            Editar
+          </button>
+        }
+        <a routerLink="/ventas" class="ficha__btn ficha__btn--primary">+ Nueva venta</a>
+      </div>
+    </div>
+
+    <div class="ficha__grid">
+      <div class="ficha__col">
+        <div class="ficha__card">
+          <div class="ficha__card-label">Contacto</div>
+          <div class="ficha__fields">
+            <div>
+              <div class="ficha__field-label">Email</div>
+              {{ det.email || '—' }}
+            </div>
+            <div>
+              <div class="ficha__field-label">Teléfono</div>
+              {{ det.telefono || '—' }}
+            </div>
+            <div>
+              <div class="ficha__field-label">CUIT</div>
+              {{ det.cuit || '—' }}
+            </div>
+            <div>
+              <div class="ficha__field-label">Observaciones</div>
+              {{ det.observaciones || '—' }}
+            </div>
+          </div>
+        </div>
+        <div class="ficha__card">
+          <div class="ficha__card-label">Condiciones comerciales</div>
+          <div class="ficha__kv">
+            <div class="ficha__kv-row">
+              <span>Cond. IVA</span><b>{{ condicionLabel() }}</b>
+            </div>
+            <div class="ficha__kv-row">
+              <span>Límite de crédito</span><b>{{ formatearLimite(det.limiteCredito) }}</b>
+            </div>
+            <div class="ficha__kv-row">
+              <span>Zona</span><b>{{ zonaNombre() }}</b>
+            </div>
+            <div class="ficha__kv-row">
+              <span>Estado</span>
+              <b>{{ det.bloqueado ? 'Bloqueado' : det.activo ? 'Activo' : 'Inactivo' }}</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ficha__col ficha__col--wide">
+        <div class="ficha__kpis">
+          <div class="ficha__kpi">
+            <div class="ficha__kpi-label">Límite de crédito</div>
+            <div class="ficha__kpi-val">{{ formatearLimite(det.limiteCredito) }}</div>
+          </div>
+          <div class="ficha__kpi">
+            <div class="ficha__kpi-label">Crédito disponible</div>
+            <div class="ficha__kpi-val ficha__kpi-val--ok">{{ creditoDisponible() }}</div>
+          </div>
+          <div class="ficha__kpi">
+            <div class="ficha__kpi-label">Pedidos</div>
+            <div class="ficha__kpi-val">{{ pedidosDelCliente().length }}</div>
+          </div>
+        </div>
+
+        <div class="ficha__card ficha__card--table">
+          <div class="ficha__card-head">
+            <div class="ficha__card-title">Últimos movimientos</div>
+            <a routerLink="/cuenta-corriente" class="ficha__link">Ver cuenta corriente</a>
+          </div>
+          @if (pedidosDelCliente().length === 0) {
+            <p class="ficha__empty">Este cliente aún no tiene pedidos.</p>
+          } @else {
+            <app-table
+              [columns]="pedidosColumns"
+              [rows]="pedidosDelCliente()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            />
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+}
 
 <app-modal
   [abierto]="configModalAbierto()"

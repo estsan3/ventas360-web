@@ -4,113 +4,152 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 84px;
-  height: 100%;
-  min-height: 480px;
-  padding: t.$space-md t.$space-sm;
-  background: t.$color-primary-surface;
-  border-radius: t.$radius-lg;
-  transition: width 0.2s ease;
+  flex: none;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: t.$color-surface;
+  border-right: 1px solid t.$color-border;
+  overflow: hidden;
+  z-index: 20;
+  transition: width 0.15s ease;
   font-family: ty.$font-family-base;
+  box-sizing: border-box;
 
-  &--expandida {
-    width: 280px;
-    align-items: stretch;
-    padding: t.$space-md;
-
-    .sidebar__section {
-      align-items: stretch;
-    }
-
-    .sidebar__item {
-      width: 100%;
-      justify-content: flex-start;
-      gap: t.$space-md;
-      padding: 0 t.$space-md;
-    }
-  }
-
-  // Fila superior tipo header: hamburguesa + logo grande
-  &__top {
+  &__brand {
     display: flex;
     align-items: center;
-    gap: t.$space-md;
-    min-height: 64px;
-    margin-bottom: t.$space-lg;
+    gap: 10px;
+    padding: 16px;
+    min-height: 60px;
+    box-sizing: border-box;
   }
 
   &__hamburguesa {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 52px;
-    height: 52px;
+    width: 32px;
+    height: 32px;
     border: none;
-    border-radius: t.$radius-md;
-    background: rgba(0, 166, 62, 0.14);
-    color: t.$color-primary-dark;
-    font-size: 24px;
+    border-radius: 8px;
+    background: none;
+    color: #57534e;
+    font-size: 20px;
     cursor: pointer;
-    flex-shrink: 0;
+    flex: none;
+    padding: 6px;
 
     &:hover {
-      background: rgba(0, 166, 62, 0.24);
+      background: #f1efec;
     }
   }
 
-  // Logo grande junto a la hamburguesa (como la referencia)
-  &__marca ::ng-deep .logo {
-    font-size: 28px;
+  &__marca {
+    white-space: nowrap;
+    min-width: 0;
   }
 
-  &__subtitle {
-    margin: -#{t.$space-sm} 0 t.$space-md;
-    padding-left: 4px;
-    font-size: ty.$font-size-sm;
-    color: t.$color-text-muted;
+  &__nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
   }
 
   &__section {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: t.$space-sm;
+    gap: 2px;
+    padding: 0 10px;
 
     &--bottom {
       margin-top: auto;
+      padding-bottom: 8px;
     }
   }
 
   &__item {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 52px;
     border: none;
-    border-radius: t.$radius-md;
-    background: transparent;
-    color: t.$color-text;
-    font-size: 22px;
     cursor: pointer;
+    padding: 10px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    font-weight: 600;
     white-space: nowrap;
-    transition:
-      background-color 0.15s ease,
-      color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    color: #57534e;
+    font-family: inherit;
+    width: 100%;
+    text-align: left;
 
     &:hover {
-      background: rgba(0, 166, 62, 0.12);
+      color: t.$color-text;
+      background: t.$color-background-alt;
     }
 
     &--active {
-      background: t.$color-primary;
-      color: #fff;
+      background: rgba(232, 100, 18, 0.12);
+      color: t.$color-primary-deep;
     }
   }
 
+  &__icon {
+    flex: none;
+    display: flex;
+    font-size: 19px;
+    line-height: 1;
+  }
+
   &__label {
-    font-size: 20px; // fijo: no escala con la raíz (quedaba muy grande)
-    font-weight: ty.$font-weight-medium;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__footer {
+    border-top: 1px solid t.$color-border-soft;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 56px;
+    box-sizing: border-box;
+  }
+
+  &__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f5efe8;
+    border: 1px solid t.$color-border;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: t.$color-primary-deep;
+    flex: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+
+    &:hover {
+      background: #f0e6d8;
+    }
+  }
+
+  &__pie-texto {
+    font-size: 12px;
+    color: t.$color-text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 }

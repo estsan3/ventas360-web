@@ -1,0 +1,345 @@
+<section class="page inv">
+  <header class="inv__header">
+    <h1 class="inv__title">Stock</h1>
+  </header>
+
+  <div class="inv__tabs">
+    <button
+      type="button"
+      class="inv__tab"
+      [class.inv__tab--on]="tab() === 'toma'"
+      (click)="setTab('toma')"
+    >
+      Toma de inventario
+    </button>
+    <button
+      type="button"
+      class="inv__tab"
+      [class.inv__tab--on]="tab() === 'recepcion'"
+      (click)="setTab('recepcion')"
+    >
+      Recepción de remitos
+    </button>
+    <button
+      type="button"
+      class="inv__tab"
+      [class.inv__tab--on]="tab() === 'alertas'"
+      (click)="setTab('alertas')"
+    >
+      Alertas de stock
+    </button>
+  </div>
+
+  @if (tab() === 'toma') {
+    <div class="inv__toma-head">
+      <div class="inv__subtitle">Toma en curso · iniciada hoy · {{ depositoActivoNombre() }}</div>
+      <div class="inv__actions">
+        <button type="button" class="inv__btn inv__btn--ghost">Exportar valorizado</button>
+        <button type="button" class="inv__btn inv__btn--dark">Cerrar toma y ajustar</button>
+      </div>
+    </div>
+
+    <div class="inv__deps">
+      @for (dep of depositos(); track dep.id) {
+        <button
+          type="button"
+          class="inv__dep"
+          [class.inv__dep--active]="depActivo() === dep.id"
+          (click)="setDep(dep.id)"
+        >
+          <div class="inv__dep-label">{{ dep.nombre }}</div>
+          <div class="inv__dep-val">{{ dep.codigo }}</div>
+          <div class="inv__dep-meta">
+            {{ depActivo() === dep.id ? filas().length + ' artículos' : 'Cambiar depósito' }}
+          </div>
+        </button>
+      } @empty {
+        <div class="inv__dep inv__dep--total">
+          <div class="inv__dep-label">Sin depósitos</div>
+          <div class="inv__dep-val">—</div>
+          <div class="inv__dep-meta">Creá depósitos en Configuración</div>
+        </div>
+      }
+    </div>
+
+    <div class="inv__card">
+      <div class="inv__toolbar">
+        <input
+          class="inv__search"
+          type="search"
+          placeholder="Escaneá o buscá el artículo a contar…"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+        />
+        <span class="inv__progress">
+          @if (cargando()) {
+            Cargando inventario…
+          } @else {
+            Contados {{ contados() }} de {{ filas().length }} ·
+            <b>{{ conDiferencia() }} con diferencia</b>
+          }
+        </span>
+      </div>
+
+      @if (!cargando() && filas().length === 0) {
+        <div class="inv__empty">
+          No hay artículos en el catálogo. Importá una lista de proveedor o cargá productos en
+          Artículos.
+        </div>
+      }
+
+      <table class="inv__table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Artículo</th>
+            <th>Depósito</th>
+            <th class="inv__th-right">Sistema</th>
+            <th class="inv__th-right">Conteo</th>
+            <th class="inv__th-right">Diferencia</th>
+            <th class="inv__th-right">Valor dif.</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filasVista(); track row.articuloId) {
+            @let dif = diferencia(row);
+            @let val = valorDif(row);
+            <tr [class.inv__row--alerta]="row.alerta || (tieneDif(row) && dif.tono === 'neg')">
+              <td class="inv__codigo">{{ row.codigo }}</td>
+              <td class="inv__articulo">{{ row.articulo }}</td>
+              <td>{{ row.ubicacion }}</td>
+              <td class="inv__td-right">{{ row.sistema }}</td>
+              <td class="inv__td-right">
+                <input
+                  class="inv__conteo"
+                  [class.inv__conteo--warn]="dif.tono === 'neg'"
+                  type="text"
+                  inputmode="numeric"
+                  [placeholder]="'—'"
+                  [ngModel]="row.conteo"
+                  (ngModelChange)="actualizarConteo(row.codigo, $event)"
+                />
+              </td>
+              <td
+                class="inv__td-right"
+                [class.inv__ok]="dif.tono === 'ok'"
+                [class.inv__neg]="dif.tono === 'neg'"
+                [class.inv__pos]="dif.tono === 'pos'"
+                [class.inv__muted]="dif.tono === 'muted'"
+                [class.inv__strong]="dif.tono === 'neg' || dif.tono === 'ok' || dif.tono === 'pos'"
+              >
+                {{ dif.texto }}
+              </td>
+              <td
+                class="inv__td-right"
+                [class.inv__neg]="val.tono === 'neg'"
+                [class.inv__pos]="val.tono === 'pos'"
+                [class.inv__muted]="val.tono === 'muted'"
+              >
+                {{ val.texto }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (tab() === 'recepcion') {
+    <div class="inv__recepcion">
+      <div class="inv__card inv__card--scroll">
+        <div class="inv__card-head">
+          <div class="inv__card-title">Remitos de proveedor recibidos</div>
+          <div class="inv__card-sub">Al confirmar, el stock se actualiza</div>
+        </div>
+        <table class="inv__table">
+          <thead>
+            <tr>
+              <th>Remito</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th class="inv__th-right">Renglones</th>
+              <th>Carga</th>
+              <th>Estado</th>
+              <th class="inv__th-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of remitos(); track r.id) {
+              <tr>
+                <td class="inv__strong">{{ r.remito }}</td>
+                <td>{{ r.fecha }}</td>
+                <td>{{ r.proveedor }}</td>
+                <td class="inv__td-right">{{ r.renglones }}</td>
+                <td>
+                  <span class="inv__pill inv__pill--neutral">Manual</span>
+                </td>
+                <td>
+                  <span
+                    class="inv__pill"
+                    [class.inv__pill--warn]="r.estadoTone === 'warn'"
+                    [class.inv__pill--ok]="r.estadoTone === 'ok'"
+                  >
+                    {{ r.estado }}
+                  </span>
+                </td>
+                <td class="inv__td-right">
+                  @if (r.puedeConfirmar) {
+                    <button
+                      type="button"
+                      class="inv__accion inv__accion--primary"
+                      (click)="confirmarRemito(r.id)"
+                    >
+                      Confirmar → stock
+                    </button>
+                  } @else {
+                    <span class="inv__muted">—</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="inv__empty-cell">
+                  No hay remitos de compra. Crealos en Compras.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="inv__side-panels">
+        <div class="inv__card inv__card--pad">
+          <div class="inv__card-title">Recepción de mercadería</div>
+          <div class="inv__ia-text">
+            Importá la lista del proveedor (artículos + costo), luego cargá un remito de compra y
+            confirmalo para ingresar stock al depósito.
+          </div>
+          <button type="button" class="inv__btn inv__btn--outline-full" (click)="irCompras()">
+            Ir a Compras
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (tab() === 'alertas') {
+    <div class="inv__alertas">
+      <div class="inv__card inv__card--pad">
+        <div class="inv__card-title">Reglas de alerta</div>
+        <div class="inv__ia-text inv__ia-text--mb">
+          Se aplican a todo el catálogo; el mín/máx por artículo se define en su ficha
+        </div>
+        <div class="inv__reglas">
+          <div class="inv__regla">
+            <div>
+              <div class="inv__regla-name">Stock bajo mínimo</div>
+              <div class="inv__regla-sub">Aviso en Inicio y por email</div>
+            </div>
+            <div class="inv__toggle inv__toggle--on"><span></span></div>
+          </div>
+          <div class="inv__regla">
+            <div>
+              <div class="inv__regla-name">Stock sobre máximo</div>
+              <div class="inv__regla-sub">Capital inmovilizado</div>
+            </div>
+            <div class="inv__toggle inv__toggle--on"><span></span></div>
+          </div>
+          <div class="inv__regla">
+            <div>
+              <div class="inv__regla-name">Baja rotación</div>
+              <div class="inv__regla-sub">Sin ventas en los últimos</div>
+            </div>
+            <select class="inv__select-sm">
+              <option>90 días</option>
+              <option>60 días</option>
+              <option>180 días</option>
+            </select>
+          </div>
+          <div class="inv__regla">
+            <div>
+              <div class="inv__regla-name">Alta rotación</div>
+              <div class="inv__regla-sub">Se vende más rápido de lo que repone</div>
+            </div>
+            <div class="inv__toggle inv__toggle--on"><span></span></div>
+          </div>
+        </div>
+        <button type="button" class="inv__btn inv__btn--dark inv__btn--full">Guardar reglas</button>
+      </div>
+
+      <div class="inv__alertas-main">
+        <div class="inv__alertas-kpis">
+          <div class="inv__kpi">
+            <div class="inv__kpi-label inv__kpi-label--danger">Sin stock</div>
+            <div class="inv__kpi-val">{{ kpisAlertas().sinStock }}</div>
+          </div>
+          <div class="inv__kpi">
+            <div class="inv__kpi-label inv__kpi-label--warn">Bajo mínimo (≤{{ 5 }})</div>
+            <div class="inv__kpi-val">{{ kpisAlertas().bajoMinimo }}</div>
+          </div>
+          <div class="inv__kpi">
+            <div class="inv__kpi-label">Alertas activas</div>
+            <div class="inv__kpi-val">{{ kpisAlertas().total }}</div>
+          </div>
+        </div>
+
+        <div class="inv__card inv__card--scroll">
+          <div class="inv__card-head">
+            <div class="inv__card-title">Alertas activas · {{ depositoActivoNombre() }}</div>
+          </div>
+          <table class="inv__table">
+            <thead>
+              <tr>
+                <th>Artículo</th>
+                <th>Alerta</th>
+                <th class="inv__th-right">Stock</th>
+                <th class="inv__th-right">Mín / Máx</th>
+                <th class="inv__th-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of alertas(); track a.codigo) {
+                <tr>
+                  <td>
+                    <div class="inv__articulo">{{ a.articulo }}</div>
+                    <div class="inv__codigo">{{ a.codigo }}</div>
+                  </td>
+                  <td>
+                    <span
+                      class="inv__pill"
+                      [class.inv__pill--danger]="a.alertaTone === 'danger'"
+                      [class.inv__pill--ok]="a.alertaTone === 'ok'"
+                      [class.inv__pill--warn]="a.alertaTone === 'warn'"
+                      [class.inv__pill--neutral]="a.alertaTone === 'neutral'"
+                    >
+                      {{ a.alerta }}
+                    </span>
+                  </td>
+                  <td class="inv__td-right inv__strong" [class.inv__neg]="a.stock === 0">
+                    {{ a.stock }}
+                  </td>
+                  <td class="inv__td-right inv__muted">{{ a.minMax }}</td>
+                  <td class="inv__td-right">
+                    <button
+                      type="button"
+                      class="inv__accion inv__accion--primary"
+                      (click)="irCompras()"
+                    >
+                      {{ a.accion }}
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="inv__empty-cell">
+                    Sin alertas: todos los artículos tienen stock por encima del mínimo.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</section>

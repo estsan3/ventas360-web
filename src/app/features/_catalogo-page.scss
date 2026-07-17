@@ -1,25 +1,9 @@
 @use 'tokens' as t;
 @use 'typography' as ty;
 
-// Patrón compartido de listados (mismo layout que Agro360 transportistas/productores).
+// Patrón compartido de listados — padding/título vienen de styles.scss .page
 .page {
-  display: flex;
-  flex-direction: column;
-  gap: t.$space-lg;
-  padding: t.$space-lg;
   font-family: ty.$font-family-base;
-
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: t.$space-md;
-  }
-
-  &__subtitle {
-    margin: 0;
-    color: t.$color-text-muted;
-  }
 }
 
 .card {
@@ -42,6 +26,15 @@
 
 .tabla-scroll {
   overflow-x: auto;
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$color-border;
+  background: t.$color-surface;
+
+  // Evita doble borde con app-table
+  ::ng-deep .table-wrap {
+    border: none;
+    border-radius: 0;
+  }
 }
 
 .paginacion {
@@ -49,10 +42,10 @@
   align-items: center;
   justify-content: space-between;
   gap: t.$space-md;
-  margin-top: t.$space-md;
-  padding-top: t.$space-sm;
-  border-top: 1px solid t.$color-border;
-  font-size: ty.$font-size-sm;
+  margin-top: 0;
+  padding: 12px 20px;
+  border-top: 1px solid t.$color-border-soft;
+  font-size: 12.5px;
   color: t.$color-text-muted;
 
   &__controles {
@@ -93,22 +86,22 @@
 
     &:hover {
       background: t.$color-primary-light;
-      color: t.$color-primary-dark;
+      color: t.$color-primary-deep;
     }
 
     &--config:hover {
       background: t.$color-primary-light;
-      color: t.$color-primary-dark;
+      color: t.$color-primary-deep;
     }
 
     &--on:hover {
       background: t.$color-success-bg;
-      color: t.$color-primary-dark;
+      color: t.$color-success;
     }
 
     &--danger:hover {
       background: t.$color-danger-bg;
-      color: t.$color-danger-strong;
+      color: t.$color-danger;
     }
 
     &:disabled {

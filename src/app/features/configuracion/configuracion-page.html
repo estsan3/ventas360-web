@@ -1,137 +1,459 @@
-<section class="config page">
-  <header class="page__header">
+<section class="page config">
+  <header class="config__header">
     <div>
-      <h1>Configuración</h1>
-      <p class="page__subtitle">Negocio, sucursal, condiciones de pago y talonarios</p>
+      <h1 class="config__title">Configuración</h1>
+      <p class="config__subtitle">Negocio, catálogos operativos y usuarios</p>
     </div>
+    <app-button variant="outline" size="md" (clicked)="cerrarSesion()">
+      <app-icon name="log-out" />
+      Cerrar sesión
+    </app-button>
   </header>
 
-  @if (authStore.user(); as user) {
-    <div class="config__card">
-      <div class="config__avatar"><app-icon name="user" /></div>
-      <div class="config__info">
-        <h2>{{ user.nombre }}</h2>
-        <p>{{ user.email }}</p>
-        <span class="config__rol">
-          {{ user.rol === 'administrador' ? 'Administrador' : 'Vendedor' }}
-        </span>
-      </div>
-    </div>
-  }
+  <div class="config__layout">
+    <nav class="config__nav" aria-label="Secciones de configuración">
+      @for (item of menuItems; track item.id) {
+        <button
+          type="button"
+          class="config__nav-item"
+          [class.config__nav-item--on]="seccion() === item.id"
+          (click)="seleccionar(item.id)"
+        >
+          {{ item.label }}
+        </button>
+      }
+    </nav>
 
-  @if (esAdmin()) {
-    <section class="config__panel">
-      <h3>Parámetros de negocio</h3>
-      <form class="config__form" [formGroup]="formNegocio">
-        <app-text-input label="IVA %" type="number" formControlName="ivaPorcentaje" />
-        <app-select-input label="Moneda" [options]="monedaOptions" formControlName="moneda" />
-      </form>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarNegocio()">
-        Guardar negocio
-      </app-button>
-    </section>
+    <div class="config__content">
+      @if (authStore.user(); as user) {
+        @if (seccion() === 'negocio') {
+          <div class="config__card">
+            <div class="config__avatar"><app-icon name="user" /></div>
+            <div class="config__info">
+              <h2>{{ user.nombre }}</h2>
+              <p>{{ user.email }}</p>
+              <span class="config__rol">
+                {{ user.rol === 'administrador' ? 'Administrador' : 'Vendedor' }}
+              </span>
+            </div>
+          </div>
+        }
+      }
 
-    <section class="config__panel">
-      <h3>Sucursal y condiciones de pago</h3>
-      <p class="config__hint">
-        Sucursal default única (Fase A). Las condiciones se usan al operar ventas/cobranzas.
-      </p>
-      <form class="config__form" [formGroup]="formOperativos">
-        <app-text-input label="Código sucursal" formControlName="sucursalCodigo" />
-        <app-text-input label="Nombre sucursal" formControlName="sucursalNombre" />
-        <app-text-input
-          label="Condiciones (separadas por coma)"
-          formControlName="condicionesPago"
-        />
-      </form>
-      <app-button
-        variant="primary"
-        size="md"
-        [disabled]="guardando()"
-        (clicked)="guardarOperativos()"
-      >
-        Guardar operativos
-      </app-button>
-    </section>
+      @if (!esAdmin() && seccion() !== 'negocio') {
+        <p class="config__hint">Solo un administrador puede editar esta sección.</p>
+      }
 
-    <section class="config__panel">
-      <div class="config__panel-head">
-        <div>
-          <h3>Talonarios</h3>
-          <p class="config__hint">Numeradores por tipo de comprobante (pedido, remito, factura).</p>
-        </div>
-        <app-button variant="outline" size="sm" (clicked)="nuevoTalonario()">
-          <app-icon name="plus" />
-          Nuevo / editar
-        </app-button>
-      </div>
+      @if (seccion() === 'negocio') {
+        @if (esAdmin()) {
+          <section class="config__panel">
+            <h3>Parámetros de negocio</h3>
+            <form class="config__form" [formGroup]="formNegocio">
+              <app-text-input label="IVA %" type="number" formControlName="ivaPorcentaje" />
+              <app-select-input label="Moneda" [options]="monedaOptions" formControlName="moneda" />
+            </form>
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="guardarNegocio()"
+            >
+              Guardar negocio
+            </app-button>
+          </section>
 
-      @if (talonarios().length === 0) {
-        <p class="config__hint">No hay talonarios. Creá uno o ejecutá el seed de demo.</p>
-      } @else {
-        <div class="tabla-scroll">
-          <app-table
-            [columns]="columnasTalonarios"
-            [rows]="filasTalonarios()"
-            headerVariant="soft"
-            [striped]="true"
-            [compact]="true"
-          >
-            <ng-template appTableCell="tipo" let-row>
-              {{ $any(row)['tipoLabel'] }}
-            </ng-template>
-            <ng-template appTableCell="estado" let-row>
-              <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
-                {{ $any(row)['estado'] }}
-              </app-badge>
-            </ng-template>
-            <ng-template appTableCell="acciones" let-row>
-              <button
-                type="button"
-                class="config__icon-btn"
-                title="Editar talonario"
-                aria-label="Editar talonario"
-                (click)="editarTalonario($any(row)['tipoComprobante'])"
+          <section class="config__panel">
+            <h3>Sucursal y condiciones de pago</h3>
+            <p class="config__hint">
+              Sucursal default única. Las condiciones se usan al operar ventas/cobranzas.
+            </p>
+            <form class="config__form" [formGroup]="formOperativos">
+              <app-text-input label="Código sucursal" formControlName="sucursalCodigo" />
+              <app-text-input label="Nombre sucursal" formControlName="sucursalNombre" />
+              <app-text-input
+                label="Condiciones (separadas por coma)"
+                formControlName="condicionesPago"
+              />
+            </form>
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="guardarOperativos()"
+            >
+              Guardar operativos
+            </app-button>
+          </section>
+        } @else {
+          <p class="config__hint">Solo un administrador puede editar parámetros de negocio.</p>
+        }
+      }
+
+      @if (seccion() === 'talonarios' && esAdmin()) {
+        <section class="config__panel">
+          <div class="config__panel-head">
+            <div>
+              <h3>Talonarios</h3>
+              <p class="config__hint">Numeradores por tipo de comprobante.</p>
+            </div>
+            <app-button variant="outline" size="sm" (clicked)="nuevoTalonario()">
+              <app-icon name="plus" />
+              Nuevo / editar
+            </app-button>
+          </div>
+
+          @if (talonarios().length === 0) {
+            <p class="config__hint">No hay talonarios. Creá uno o ejecutá el seed de demo.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <app-table
+                [columns]="columnasTalonarios"
+                [rows]="filasTalonarios()"
+                headerVariant="soft"
+                [striped]="true"
+                [compact]="true"
               >
-                <app-icon name="settings" />
-              </button>
-            </ng-template>
-          </app-table>
-        </div>
+                <ng-template appTableCell="tipo" let-row>
+                  {{ $any(row)['tipoLabel'] }}
+                </ng-template>
+                <ng-template appTableCell="estado" let-row>
+                  <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+                    {{ $any(row)['estado'] }}
+                  </app-badge>
+                </ng-template>
+                <ng-template appTableCell="acciones" let-row>
+                  <button
+                    type="button"
+                    class="config__icon-btn"
+                    title="Editar talonario"
+                    (click)="editarTalonario($any(row)['tipoComprobante'])"
+                  >
+                    <app-icon name="settings" />
+                  </button>
+                </ng-template>
+              </app-table>
+            </div>
+          }
+
+          @if (editandoTipo(); as tipo) {
+            <form class="config__form config__form--talonario" [formGroup]="formTalonario">
+              <app-select-input
+                label="Tipo"
+                [options]="tipoTalonarioOptions"
+                formControlName="tipoComprobante"
+              />
+              <app-text-input label="Prefijo" formControlName="prefijo" />
+              <app-text-input
+                label="Próximo número"
+                type="number"
+                formControlName="proximoNumero"
+              />
+              <app-select-input label="Estado" [options]="activoOptions" formControlName="activo" />
+            </form>
+            <div class="config__acciones">
+              <app-button variant="outline" size="md" (clicked)="cancelarTalonario()">
+                Cancelar
+              </app-button>
+              <app-button
+                variant="primary"
+                size="md"
+                [disabled]="guardando()"
+                (clicked)="guardarTalonario()"
+              >
+                Guardar talonario {{ etiquetaTipo(tipo) }}
+              </app-button>
+            </div>
+          }
+        </section>
       }
 
-      @if (editandoTipo(); as tipo) {
-        <form class="config__form config__form--talonario" [formGroup]="formTalonario">
-          <app-select-input
-            label="Tipo"
-            [options]="tipoTalonarioOptions"
-            formControlName="tipoComprobante"
-          />
-          <app-text-input label="Prefijo" formControlName="prefijo" />
-          <app-text-input label="Próximo número" type="number" formControlName="proximoNumero" />
-          <app-select-input label="Estado" [options]="activoOptions" formControlName="activo" />
-        </form>
-        <div class="config__acciones">
-          <app-button variant="outline" size="md" (clicked)="cancelarTalonario()"
-            >Cancelar</app-button
-          >
-          <app-button
-            variant="primary"
-            size="md"
-            [disabled]="guardando()"
-            (clicked)="guardarTalonario()"
-          >
-            Guardar talonario {{ etiquetaTipo(tipo) }}
-          </app-button>
-        </div>
-      }
-    </section>
-  } @else {
-    <p class="config__hint">Solo un administrador puede editar parámetros de negocio.</p>
-  }
+      @if (seccion() === 'zonas' && esAdmin()) {
+        <section class="config__panel">
+          <div class="config__panel-head">
+            <div>
+              <h3>Zonas</h3>
+              <p class="config__hint">Zonas comerciales para clientes y filtros.</p>
+            </div>
+            <app-button variant="outline" size="sm" (clicked)="nuevaZona()">
+              <app-icon name="plus" />
+              Nueva zona
+            </app-button>
+          </div>
 
-  <app-button variant="outline" size="md" (clicked)="cerrarSesion()">
-    <app-icon name="log-out" />
-    Cerrar sesión
-  </app-button>
+          <form class="config__form" [formGroup]="formZona">
+            <app-text-input label="Nombre" formControlName="nombre" />
+            <app-text-input label="Código" formControlName="codigo" />
+          </form>
+          <div class="config__acciones">
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="guardarZona()"
+            >
+              {{ editandoZonaId() ? 'Actualizar zona' : 'Crear zona' }}
+            </app-button>
+          </div>
+
+          <div class="tabla-scroll">
+            <app-table
+              [columns]="columnasZonas"
+              [rows]="filasZonas()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            >
+              <ng-template appTableCell="estado" let-row>
+                <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+                  {{ $any(row)['estado'] }}
+                </app-badge>
+              </ng-template>
+              <ng-template appTableCell="acciones" let-row>
+                <div class="config__row-actions">
+                  <button
+                    type="button"
+                    class="config__icon-btn"
+                    title="Editar"
+                    (click)="editarZona($any(row)['id'])"
+                  >
+                    <app-icon name="settings" />
+                  </button>
+                  @if ($any(row)['activo']) {
+                    <button
+                      type="button"
+                      class="config__icon-btn"
+                      title="Desactivar"
+                      (click)="desactivarZona($any(row)['id'])"
+                    >
+                      <app-icon name="alert-circle" />
+                    </button>
+                  }
+                </div>
+              </ng-template>
+            </app-table>
+          </div>
+        </section>
+      }
+
+      @if (seccion() === 'vendedores' && esAdmin()) {
+        <section class="config__panel">
+          <h3>Vendedores</h3>
+          <p class="config__hint">Alta rápida desde catálogos (usuarios con rol vendedor).</p>
+          <form class="config__form" [formGroup]="formVendedor">
+            <app-text-input label="Nombre" formControlName="nombre" />
+          </form>
+          <div class="config__acciones">
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="crearVendedor()"
+            >
+              Crear vendedor
+            </app-button>
+          </div>
+          <div class="tabla-scroll">
+            <app-table
+              [columns]="columnasVendedores"
+              [rows]="filasVendedores()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            >
+              <ng-template appTableCell="acciones" let-row>
+                <button
+                  type="button"
+                  class="config__icon-btn"
+                  title="Eliminar"
+                  (click)="eliminarVendedor($any(row)['id'])"
+                >
+                  <app-icon name="alert-circle" />
+                </button>
+              </ng-template>
+            </app-table>
+          </div>
+        </section>
+      }
+
+      @if (seccion() === 'depositos' && esAdmin()) {
+        <section class="config__panel">
+          <div class="config__panel-head">
+            <div>
+              <h3>Depósitos</h3>
+              <p class="config__hint">Depósitos de stock para remitos e inventario.</p>
+            </div>
+            <app-button variant="outline" size="sm" (clicked)="nuevoDeposito()">
+              <app-icon name="plus" />
+              Nuevo
+            </app-button>
+          </div>
+          <form class="config__form" [formGroup]="formDeposito">
+            <app-text-input label="Código" formControlName="codigo" />
+            <app-text-input label="Nombre" formControlName="nombre" />
+          </form>
+          <div class="config__acciones">
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="guardarDeposito()"
+            >
+              {{ editandoDepositoId() ? 'Actualizar depósito' : 'Crear depósito' }}
+            </app-button>
+          </div>
+          <div class="tabla-scroll">
+            <app-table
+              [columns]="columnasDepositos"
+              [rows]="filasDepositos()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            >
+              <ng-template appTableCell="estado" let-row>
+                <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+                  {{ $any(row)['estado'] }}
+                </app-badge>
+              </ng-template>
+              <ng-template appTableCell="acciones" let-row>
+                <div class="config__row-actions">
+                  <button
+                    type="button"
+                    class="config__icon-btn"
+                    title="Editar"
+                    (click)="editarDeposito($any(row)['id'])"
+                  >
+                    <app-icon name="settings" />
+                  </button>
+                  @if ($any(row)['activo']) {
+                    <button
+                      type="button"
+                      class="config__icon-btn"
+                      title="Desactivar"
+                      (click)="desactivarDeposito($any(row)['id'])"
+                    >
+                      <app-icon name="alert-circle" />
+                    </button>
+                  }
+                </div>
+              </ng-template>
+            </app-table>
+          </div>
+        </section>
+      }
+
+      @if (seccion() === 'listas' && esAdmin()) {
+        <section class="config__panel">
+          <div class="config__panel-head">
+            <div>
+              <h3>Listas de precio</h3>
+              <p class="config__hint">Listas activas para resolución de precios de venta.</p>
+            </div>
+            <app-button variant="outline" size="sm" (clicked)="nuevaLista()">
+              <app-icon name="plus" />
+              Nueva
+            </app-button>
+          </div>
+          <form class="config__form" [formGroup]="formLista">
+            <app-text-input label="Código" formControlName="codigo" />
+            <app-text-input label="Nombre" formControlName="nombre" />
+            <label class="config__check">
+              <input type="checkbox" formControlName="esDefault" />
+              Lista por defecto
+            </label>
+          </form>
+          <div class="config__acciones">
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="guardarLista()"
+            >
+              {{ editandoListaId() ? 'Actualizar lista' : 'Crear lista' }}
+            </app-button>
+          </div>
+          <div class="tabla-scroll">
+            <app-table
+              [columns]="columnasListas"
+              [rows]="filasListas()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            >
+              <ng-template appTableCell="estado" let-row>
+                <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+                  {{ $any(row)['estado'] }}
+                </app-badge>
+              </ng-template>
+              <ng-template appTableCell="acciones" let-row>
+                <div class="config__row-actions">
+                  <button
+                    type="button"
+                    class="config__icon-btn"
+                    title="Editar"
+                    (click)="editarLista($any(row)['id'])"
+                  >
+                    <app-icon name="settings" />
+                  </button>
+                  @if ($any(row)['activo']) {
+                    <button
+                      type="button"
+                      class="config__icon-btn"
+                      title="Desactivar"
+                      (click)="desactivarLista($any(row)['id'])"
+                    >
+                      <app-icon name="alert-circle" />
+                    </button>
+                  }
+                </div>
+              </ng-template>
+            </app-table>
+          </div>
+        </section>
+      }
+
+      @if (seccion() === 'usuarios' && esAdmin()) {
+        <section class="config__panel">
+          <h3>Usuarios</h3>
+          <p class="config__hint">Alta completa de usuarios del backoffice.</p>
+          <form class="config__form" [formGroup]="formUsuario">
+            <app-text-input label="Nombre" formControlName="nombre" />
+            <app-text-input label="DNI" formControlName="dni" />
+            <app-text-input label="Email" type="email" formControlName="email" />
+            <app-select-input label="Rol" [options]="rolOptions" formControlName="rol" />
+            <app-text-input label="Contraseña" type="password" formControlName="password" />
+          </form>
+          <div class="config__acciones">
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="crearUsuario()"
+            >
+              Crear usuario
+            </app-button>
+          </div>
+          <div class="tabla-scroll">
+            <app-table
+              [columns]="columnasUsuarios"
+              [rows]="filasUsuarios()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            >
+              <ng-template appTableCell="acciones" let-row>
+                <button
+                  type="button"
+                  class="config__icon-btn"
+                  title="Dar de baja"
+                  (click)="darDeBajaUsuario($any(row)['id'])"
+                >
+                  <app-icon name="alert-circle" />
+                </button>
+              </ng-template>
+            </app-table>
+          </div>
+        </section>
+      }
+    </div>
+  </div>
 </section>

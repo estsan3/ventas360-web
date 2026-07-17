@@ -1,10 +1,37 @@
 <div class="shell">
-  <app-sidebar [items]="items()" [activeId]="activeId()" (itemSelected)="navigate($event)" />
-  <div class="shell__column">
-    <app-topbar />
+  <app-sidebar
+    [items]="items()"
+    [activeId]="activeId()"
+    [avatarIniciales]="iniciales()"
+    [pieTexto]="pieTexto()"
+    (itemSelected)="navigate($event)"
+    (avatarClicked)="abrirPerfil()"
+  />
+
+  <div class="shell__main">
     <main class="shell__content">
-      <h1 class="shell__titulo">{{ titulo() }}</h1>
       <router-outlet />
     </main>
   </div>
+
+  @if (menuPerfilAbierto()) {
+    <button
+      class="shell__menu-backdrop"
+      type="button"
+      aria-label="Cerrar menú"
+      (click)="menuPerfilAbierto.set(false)"
+    ></button>
+    <div class="shell__menu" role="menu">
+      @if (authStore.user(); as user) {
+        <div class="shell__menu-user">
+          <strong>{{ user.nombre }}</strong>
+          <small>{{ user.rol === 'administrador' ? 'Administrador' : 'Vendedor' }}</small>
+        </div>
+      }
+      <button type="button" role="menuitem" (click)="irAConfiguracion()">Configuración</button>
+      <button type="button" role="menuitem" class="shell__menu-salir" (click)="cerrarSesion()">
+        Cerrar sesión
+      </button>
+    </div>
+  }
 </div>

@@ -1,73 +1,79 @@
-<section class="page">
-  <header class="page__header">
+<section class="page caja">
+  <header class="caja__header">
     <div>
-      <h1>Caja</h1>
-      <p class="page__subtitle">Movimientos del día y medios de cobro (efectivo / tarjeta)</p>
+      <h1 class="caja__title">Caja y bancos</h1>
+      <p class="caja__subtitle">Caja del día · {{ usuarioNombre() }}</p>
     </div>
-    <app-button variant="primary" size="md" (clicked)="abrir()">
-      <app-icon name="plus" />
-      Movimiento
-    </app-button>
+    <div class="caja__actions">
+      <button type="button" class="caja__btn caja__btn--ghost">Registrar egreso</button>
+      <button type="button" class="caja__btn caja__btn--dark">Cerrar caja del día</button>
+    </div>
   </header>
 
-  <div class="page__toolbar">
-    <app-text-input
-      label="Fecha"
-      type="date"
-      [ngModel]="fecha()"
-      (ngModelChange)="onFecha($event)"
-    />
+  <div class="caja__kpis">
+    <div class="caja__kpi caja__kpi--dark">
+      <div class="caja__kpi-label">Efectivo en caja</div>
+      <div class="caja__kpi-val">{{ kpiEfectivo().valor }}</div>
+      <div class="caja__kpi-meta">{{ kpiEfectivo().meta }}</div>
+    </div>
+    <div class="caja__kpi">
+      <div class="caja__kpi-label">Cheques en cartera</div>
+      <div class="caja__kpi-val">{{ kpiCheques.valor }}</div>
+      <div class="caja__kpi-meta">{{ kpiCheques.meta }}</div>
+    </div>
+    <div class="caja__kpi">
+      <div class="caja__kpi-label">Banco Nación c/c</div>
+      <div class="caja__kpi-val">{{ kpiBanco.valor }}</div>
+      <div class="caja__kpi-meta">{{ kpiBanco.meta }}</div>
+    </div>
+    <div class="caja__kpi">
+      <div class="caja__kpi-label">Tarjetas a acreditar</div>
+      <div class="caja__kpi-val">{{ kpiTarjetas.valor }}</div>
+      <div class="caja__kpi-meta">{{ kpiTarjetas.meta }}</div>
+    </div>
   </div>
 
-  @if (saldo(); as s) {
-    <div class="kpis">
-      <app-kpi-card tone="green" label="Ingresos" [value]="fmt(s.ingresos)" trendTone="neutral">
-        <app-icon name="dollar" />
-      </app-kpi-card>
-      <app-kpi-card tone="orange" label="Egresos" [value]="fmt(s.egresos)" trendTone="neutral">
-        <app-icon name="dollar" />
-      </app-kpi-card>
-      <app-kpi-card tone="brand" label="Saldo caja" [value]="fmt(s.saldo)" trendTone="neutral">
-        <app-icon name="dollar" />
-      </app-kpi-card>
-    </div>
-  }
-
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filas().length === 0"
-    emptyMessage="Sin movimientos de caja para esta fecha."
-  >
-    <div class="tabla-scroll">
-      <app-table [columns]="columnas" [rows]="filas()" headerVariant="soft" [striped]="true">
-        <ng-template appTableCell="tipo" let-row>
-          <app-badge [variant]="$any(row)['esIngreso'] ? 'success' : 'warning'">
-            {{ $any(row)['tipo'] }}
-          </app-badge>
-        </ng-template>
-      </app-table>
-    </div>
-  </app-state-wrapper>
-
-  <app-side-drawer
-    [abierto]="drawerAbierto()"
-    titulo="Movimiento de caja"
-    (cerrar)="drawerAbierto.set(false)"
-  >
-    <form class="form-drawer" [formGroup]="form">
-      <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
-      <app-select-input label="Medio" [options]="medioOptions" formControlName="medio" />
-      <app-text-input label="Monto" type="number" formControlName="monto" />
-      <app-text-input label="Concepto" formControlName="concepto" />
-    </form>
-    <div class="form-drawer__actions">
-      <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
-        Cancelar
-      </app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
-        Guardar
-      </app-button>
-    </div>
-  </app-side-drawer>
+  <div class="caja__card">
+    <div class="caja__card-title">Movimientos de hoy</div>
+    @if (movimientos().length === 0) {
+      <div class="caja__empty">
+        {{ cargando() ? 'Cargando movimientos…' : 'No hay movimientos para hoy' }}
+      </div>
+    } @else {
+      <table class="caja__table">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Concepto</th>
+            <th>Medio</th>
+            <th class="caja__th-right">Ingreso</th>
+            <th class="caja__th-right">Egreso</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of movimientos(); track row.id) {
+            <tr>
+              <td>{{ row.hora }}</td>
+              <td class="caja__concepto">{{ row.concepto }}</td>
+              <td>{{ row.medio }}</td>
+              <td
+                class="caja__td-right"
+                [class.caja__ingreso]="row.ingreso !== '—'"
+                [class.caja__dash]="row.ingreso === '—'"
+              >
+                {{ row.ingreso }}
+              </td>
+              <td
+                class="caja__td-right"
+                [class.caja__egreso]="row.egreso !== '—'"
+                [class.caja__dash]="row.egreso === '—'"
+              >
+                {{ row.egreso }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
 </section>

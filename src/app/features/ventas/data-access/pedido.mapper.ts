@@ -4,8 +4,20 @@ import {
   DepositoRefDto,
   PedidoDto,
   ProductoRefDto,
+  SaldoClienteDto,
+  UsuarioRefDto,
+  ZonaRefDto,
 } from './pedido.dto';
-import { ClienteRef, CrearPedido, DepositoRef, Pedido, ProductoRef } from './pedido.model';
+import {
+  ClienteRef,
+  CrearPedido,
+  DepositoRef,
+  Pedido,
+  ProductoRef,
+  SaldoClienteRef,
+  UsuarioRef,
+  ZonaRef,
+} from './pedido.model';
 
 export function pedidoToModel(dto: PedidoDto): Pedido {
   return {
@@ -45,7 +57,41 @@ export function crearPedidoToDto(model: CrearPedido): CrearPedidoDto {
 }
 
 export function clienteRefToModel(dto: ClienteRefDto): ClienteRef {
-  return { id: dto.id, nombre: dto.nombre, activo: dto.activo };
+  return {
+    id: dto.id,
+    nombre: dto.nombre,
+    activo: dto.activo,
+    email: dto.email ?? '',
+    telefono: dto.telefono ?? '',
+    cuit: dto.cuit ?? '',
+    condicionIva: dto.condicion_iva ?? 'consumidor_final',
+    limiteCredito: dto.limite_credito ?? 0,
+    zonaId: dto.zona_id ?? null,
+    vendedorId: dto.vendedor_id ?? null,
+    bloqueado: dto.bloqueado ?? false,
+  };
+}
+
+export function saldoClienteToModel(dto: SaldoClienteDto): SaldoClienteRef {
+  return {
+    clienteId: dto.cliente_id,
+    saldo: dto.saldo,
+    debeTotal: dto.debe_total,
+    haberTotal: dto.haber_total,
+  };
+}
+
+export function zonaRefToModel(dto: ZonaRefDto): ZonaRef {
+  return {
+    id: dto.id,
+    nombre: dto.nombre,
+    codigo: dto.codigo,
+    activo: dto.activo,
+  };
+}
+
+export function usuarioRefToModel(dto: UsuarioRefDto): UsuarioRef {
+  return { id: dto.id, nombre: dto.nombre, rol: dto.rol };
 }
 
 export function productoRefToModel(dto: ProductoRefDto): ProductoRef {
@@ -55,6 +101,7 @@ export function productoRefToModel(dto: ProductoRefDto): ProductoRef {
     nombre: dto.nombre,
     activo: dto.activo,
     precio: dto.precio,
+    stock: dto.stock ?? 0,
   };
 }
 

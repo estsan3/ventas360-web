@@ -4,88 +4,96 @@
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: t.$space-md;
-  min-height: 90px; // +25% de alto
-  padding: t.$space-md t.$space-lg;
+  gap: 16px;
+  height: t.$header-height;
+  padding: 0 20px;
+  background: t.$color-surface;
+  border-bottom: 1px solid t.$color-border;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-width: 0;
   font-family: ty.$font-family-base;
 
-  &__title {
-    h1 {
-      margin: 0;
-      font-size: 25px; // +5pt para jerarquía del título de sección
-      font-weight: ty.$font-weight-bold;
+  &__brand {
+    flex: none;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__nav-btn {
+    border: none;
+    cursor: pointer;
+    padding: 8px 11px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: ty.$font-weight-semibold;
+    white-space: nowrap;
+    flex: none;
+    background: transparent;
+    color: #57534e;
+    font-family: inherit;
+
+    &:hover {
       color: t.$color-text;
+      background: t.$color-background-alt;
     }
 
-    p {
-      margin: 2px 0 0;
-      font-size: ty.$font-size-md;
-      color: t.$color-text-muted;
+    &--active {
+      background: rgba(232, 100, 18, 0.12);
+      color: t.$color-primary-deep;
     }
   }
 
   &__right {
     display: flex;
     align-items: center;
-    gap: t.$space-lg; // aire entre lupa, campana y perfil
+    gap: 12px;
+    flex: none;
   }
 
-  &__icon-btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: t.$radius-full;
-    background: transparent;
-    color: t.$color-primary-dark;
-    font-size: 19px;
-    cursor: pointer;
+  &__ctx {
+    font-size: 12.5px;
+    color: t.$color-text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 16vw;
 
-    &:hover {
-      background: rgba(0, 166, 62, 0.12);
+    @media (max-width: t.$breakpoint-tablet) {
+      display: none;
     }
-  }
-
-  &__badge {
-    position: absolute;
-    top: 0;
-    right: 0;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: t.$radius-full;
-    background: t.$color-primary;
-    color: #fff;
-    font-size: 10px;
-    font-weight: ty.$font-weight-bold;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 
   &__perfil-wrap {
     position: relative;
   }
 
-  &__perfil {
-    display: flex;
-    align-items: center;
-    gap: t.$space-md;
-    padding: t.$space-xs t.$space-sm;
-    border: none;
-    border-radius: t.$radius-md;
-    background: transparent;
-    font-family: inherit;
-    text-align: left;
+  &__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: t.$color-primary-surface;
+    border: 1px solid t.$color-border;
+    display: grid;
+    place-items: center;
+    font-size: 12.5px;
+    font-weight: ty.$font-weight-bold;
+    color: t.$color-primary-deep;
     cursor: pointer;
-
-    &:hover {
-      background: t.$color-background-alt;
-    }
+    font-family: inherit;
+    padding: 0;
   }
 
   &__menu-backdrop {
@@ -99,10 +107,10 @@
 
   &__menu {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 8px);
     right: 0;
     z-index: 101;
-    min-width: 200px;
+    min-width: 220px;
     padding: t.$space-xs;
     background: t.$color-surface;
     border: 1px solid t.$color-border;
@@ -120,138 +128,37 @@
       border-radius: t.$radius-sm;
       background: transparent;
       font-family: inherit;
-      font-size: ty.$font-size-md;
+      font-size: ty.$font-size-md-sm;
+      font-weight: ty.$font-weight-semibold;
       color: t.$color-text;
       text-align: left;
       cursor: pointer;
 
-      app-icon {
-        color: t.$color-primary;
-        font-size: 17px;
-      }
-
       &:hover {
-        background: t.$color-background;
+        background: t.$color-background-alt;
       }
+    }
+  }
+
+  &__menu-user {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: t.$space-sm t.$space-md t.$space-md;
+    border-bottom: 1px solid t.$color-border-soft;
+    margin-bottom: t.$space-xs;
+
+    strong {
+      font-size: 13.5px;
+    }
+
+    small {
+      font-size: 12px;
+      color: t.$color-text-muted;
     }
   }
 
   &__menu-salir {
-    border-top: 1px solid t.$color-border !important;
-    border-radius: 0 0 t.$radius-sm t.$radius-sm !important;
-    margin-top: t.$space-xs;
-  }
-
-  &__avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    border-radius: t.$radius-full;
-    background: t.$color-primary-light;
-    color: t.$color-primary-dark;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-
-  &__perfil-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    line-height: 1.25;
-
-    strong {
-      font-size: 18px; // fijo (+4pt, no escala con la raíz)
-      color: t.$color-text;
-    }
-
-    small {
-      font-size: ty.$font-size-xs;
-      color: t.$color-text-muted;
-    }
-
-    .topbar__fecha {
-      color: t.$color-primary-dark;
-    }
-
-    @media (max-width: t.$breakpoint-tablet) {
-      display: none;
-    }
-  }
-}
-
-// --- Popup de búsqueda de viajes ---
-.buscador {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 101;
-  width: min(560px, calc(100vw - 32px));
-  padding: t.$space-md;
-  background: t.$color-surface;
-  border: 1px solid t.$color-border;
-  border-radius: t.$radius-lg;
-  box-shadow: t.$shadow-md;
-  font-family: ty.$font-family-base;
-
-  &__backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    border: none;
-    background: rgba(0, 0, 0, 0.25);
-    cursor: default;
-  }
-
-  &__resultados {
-    list-style: none;
-    margin: t.$space-sm 0 0;
-    padding: 0;
-    max-height: 320px;
-    overflow-y: auto;
-
-    li button {
-      display: flex;
-      align-items: center;
-      gap: t.$space-md;
-      width: 100%;
-      padding: t.$space-sm t.$space-md;
-      border: none;
-      border-radius: t.$radius-md;
-      background: transparent;
-      font-family: inherit;
-      font-size: ty.$font-size-md;
-      text-align: left;
-      cursor: pointer;
-
-      &:hover {
-        background: t.$color-primary-light;
-      }
-    }
-  }
-
-  &__id {
-    font-weight: ty.$font-weight-semibold;
-    color: t.$color-primary-dark;
-    white-space: nowrap;
-  }
-
-  &__detalle {
-    display: flex;
-    flex-direction: column;
-    color: t.$color-text;
-
-    small {
-      color: t.$color-text-muted;
-    }
-  }
-
-  &__vacio {
-    padding: t.$space-md;
-    text-align: center;
-    color: t.$color-text-muted;
-    font-size: ty.$font-size-md;
+    color: t.$color-danger !important;
   }
 }

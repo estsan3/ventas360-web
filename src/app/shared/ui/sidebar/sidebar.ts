@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { Icon, IconName } from '../icon/icon';
 import { Logo } from '../logo/logo';
 
@@ -11,9 +11,8 @@ export interface SidebarItem {
 }
 
 /**
- * Sidebar de navegación del kit Ventas360.
- * Fila superior tipo header: hamburguesa (cuadrado tintado) + logo
- * grande cuando está expandida. Colapsada muestra solo iconos.
+ * Sidebar vertical colapsable (mock DC): hamburguesa + logo + nav + pie.
+ * Expandida ~224px (con etiquetas); colapsada ~68px (solo iconos).
  */
 @Component({
   selector: 'app-sidebar',
@@ -25,14 +24,23 @@ export interface SidebarItem {
 export class Sidebar {
   readonly items = input.required<SidebarItem[]>();
   readonly activeId = input('');
-  /** Línea secundaria bajo el logo (ej. la fecha) — solo visible expandida */
-  readonly subtitle = input('');
+  /** Iniciales del avatar del pie */
+  readonly avatarIniciales = input('U');
+  /** Texto del pie (visible solo expandido) */
+  readonly pieTexto = input('Suc. Central · Caja 1');
 
   readonly itemSelected = output<string>();
+  readonly avatarClicked = output<void>();
 
   protected readonly expandida = signal(true);
 
+  protected readonly widthPx = computed(() => (this.expandida() ? '224px' : '68px'));
+
   protected itemsIn(section: 'top' | 'bottom'): SidebarItem[] {
     return this.items().filter((item) => (item.section ?? 'top') === section);
+  }
+
+  protected toggle(): void {
+    this.expandida.update((v) => !v);
   }
 }
