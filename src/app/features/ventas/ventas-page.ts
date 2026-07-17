@@ -407,7 +407,7 @@ export class VentasPage {
         titulo: 'Confirmar remito',
         mensaje: 'Se descontará stock del depósito. ¿Continuar?',
         textoConfirmar: 'Confirmar',
-        variant: 'primary',
+        variant: 'default',
       });
       if (!ok) {
         return;
@@ -418,7 +418,7 @@ export class VentasPage {
         titulo: 'Facturar remito',
         mensaje: 'Se generará una factura a partir de este remito.',
         textoConfirmar: 'Facturar',
-        variant: 'primary',
+        variant: 'default',
       });
       if (!ok) {
         return;

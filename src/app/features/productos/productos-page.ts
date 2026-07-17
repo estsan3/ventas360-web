@@ -21,7 +21,7 @@ import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
 import { TableCellDef } from '../../shared/ui/table/table-cell-def';
-import { FiltroActivo, Producto } from './data-access/producto.model';
+import { CrearProducto, FiltroActivo, Producto } from './data-access/producto.model';
 import { ProductosStore } from './data-access/productos.store';
 
 const COLUMNAS: TableColumn[] = [
