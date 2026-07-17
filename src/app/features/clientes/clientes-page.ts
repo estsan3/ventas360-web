@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
@@ -165,10 +166,12 @@ export class ClientesPage {
   );
 
   constructor() {
+    // untracked: evitar que lecturas del store dentro de cargar()
+    // re-disparen el effect (loop infinito de HTTP).
     effect(() => {
       const q = this.busqueda();
       const filtro = this.filtro();
-      this.store.cargar({ q, filtro, page: 1 });
+      untracked(() => this.store.cargar({ q, filtro, page: 1 }));
     });
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {

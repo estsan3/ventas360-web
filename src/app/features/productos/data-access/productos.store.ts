@@ -25,11 +25,12 @@ export class ProductosStore {
   readonly pedidosProducto = this._pedidosProducto.asReadonly();
 
   cargar(opts: { q?: string; filtro?: FiltroActivo; page?: number } = {}): void {
-    if (this._productos().status === 'loading') {
+    const actual = this._productos();
+    if (actual.status === 'loading') {
       return;
     }
     const page = opts.page ?? this._page();
-    const prev = this._productos().data;
+    const prev = actual.data;
     this._productos.set({ ...asyncLoading(), data: prev });
     this.api.listar({ q: opts.q, filtro: opts.filtro, page, pageSize: 50 }).subscribe({
       next: (pagina) => {

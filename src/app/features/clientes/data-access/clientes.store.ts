@@ -26,11 +26,12 @@ export class ClientesStore {
   readonly pedidosCliente = this._pedidosCliente.asReadonly();
 
   cargar(opts: { q?: string; filtro?: FiltroActivo; page?: number } = {}): void {
-    if (this._clientes().status === 'loading') {
+    const actual = this._clientes();
+    if (actual.status === 'loading') {
       return;
     }
     const page = opts.page ?? this._page();
-    const prev = this._clientes().data;
+    const prev = actual.data;
     this._clientes.set({ ...asyncLoading(), data: prev });
     this.api.listar({ q: opts.q, filtro: opts.filtro, page, pageSize: 50 }).subscribe({
       next: (pagina) => {
