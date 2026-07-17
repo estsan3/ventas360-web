@@ -1,0 +1,167 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+// Patrón compartido de listados (mismo layout que Agro360 transportistas/productores).
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-lg;
+  padding: t.$space-lg;
+  font-family: ty.$font-family-base;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$space-md;
+  }
+
+  &__subtitle {
+    margin: 0;
+    color: t.$color-text-muted;
+  }
+}
+
+.card {
+  padding: t.$space-lg;
+  background: t.$color-surface;
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-lg;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: t.$space-md;
+  align-items: end;
+
+  @media (max-width: t.$breakpoint-tablet) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: t.$space-md;
+  margin-top: t.$space-md;
+  padding-top: t.$space-sm;
+  border-top: 1px solid t.$color-border;
+  font-size: ty.$font-size-sm;
+  color: t.$color-text-muted;
+
+  &__controles {
+    display: flex;
+    align-items: center;
+    gap: t.$space-sm;
+  }
+
+  &__pagina {
+    min-width: 120px;
+    text-align: center;
+    color: t.$color-text;
+    font-weight: ty.$font-weight-medium;
+  }
+}
+
+.fila-acciones {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  justify-content: flex-end;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: t.$radius-sm;
+    background: transparent;
+    color: t.$color-text;
+    font-size: 15px;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+
+    &:hover {
+      background: t.$color-primary-light;
+      color: t.$color-primary-dark;
+    }
+
+    &--config:hover {
+      background: t.$color-primary-light;
+      color: t.$color-primary-dark;
+    }
+
+    &--on:hover {
+      background: t.$color-success-bg;
+      color: t.$color-primary-dark;
+    }
+
+    &--danger:hover {
+      background: t.$color-danger-bg;
+      color: t.$color-danger-strong;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.lineas-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-md;
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 100px 36px;
+    gap: t.$space-sm;
+    align-items: end;
+  }
+}
+
+.pedido-detalle {
+  &__meta {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: t.$space-sm;
+    margin: 0;
+    font-size: ty.$font-size-sm;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    dt {
+      margin: 0;
+      color: t.$color-text-muted;
+    }
+
+    dd {
+      margin: 2px 0 0;
+      font-weight: ty.$font-weight-medium;
+      color: t.$color-text;
+    }
+  }
+
+  &__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: t.$space-sm;
+  }
+}
+
+.config-modal__meta {
+  margin-top: t.$space-sm;
+}

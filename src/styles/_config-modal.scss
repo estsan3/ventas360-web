@@ -1,0 +1,143 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.config-modal {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-md;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$space-md;
+    margin-bottom: t.$space-sm;
+
+    h3 {
+      margin: 0;
+      font-size: ty.$font-size-lg;
+      font-weight: ty.$font-weight-semibold;
+    }
+
+    &--master {
+      margin-bottom: t.$space-xs;
+
+      h3 {
+        font-size: ty.$font-size-md;
+      }
+    }
+  }
+
+  &__master,
+  &__section {
+    padding: t.$space-sm t.$space-md;
+    background: t.$color-background;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-md;
+  }
+
+  &__form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: t.$space-md;
+
+    &--master {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: t.$space-sm t.$space-md;
+
+      @media (max-width: 1200px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      @media (max-width: 900px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      ::ng-deep .field {
+        gap: 2px;
+      }
+
+      ::ng-deep .field__label {
+        font-size: 12px;
+      }
+
+      ::ng-deep .field__input {
+        height: 32px;
+        padding: 0 t.$space-sm;
+        font-size: 13px;
+      }
+    }
+  }
+
+  &__filtros {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: t.$space-sm;
+    margin-bottom: t.$space-sm;
+    align-items: end;
+
+    ::ng-deep .field__label {
+      font-size: 12px;
+    }
+
+    ::ng-deep .field__input,
+    ::ng-deep select {
+      height: 32px;
+      font-size: 13px;
+    }
+  }
+
+  &__tabla-scroll {
+    overflow-x: auto;
+
+    &--limit {
+      max-height: 330px;
+      overflow-y: auto;
+    }
+  }
+
+  &__tabla {
+    ::ng-deep .table {
+      th,
+      td {
+        font-size: 14px;
+        padding: 4px 8px;
+      }
+
+      th {
+        font-size: 12px;
+      }
+    }
+
+    .fila-acciones__btn {
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+    }
+
+    ::ng-deep app-badge .badge {
+      font-size: 12px;
+      padding: 1px 6px;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: t.$space-sm;
+    padding: t.$space-md;
+    border-top: 1px solid t.$color-border;
+    background: t.$color-surface;
+    border-radius: t.$radius-md;
+    position: sticky;
+    bottom: 0;
+  }
+
+  &__hint {
+    margin: 0;
+    color: t.$color-text-muted;
+    font-size: ty.$font-size-sm;
+    line-height: 1.45;
+  }
+}

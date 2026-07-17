@@ -1,0 +1,190 @@
+<section class="page">
+  <header class="page__header">
+    <p class="page__subtitle">Altas, contacto y estado de la cartera de clientes</p>
+    @if (esAdmin()) {
+      <app-button variant="primary" size="md" (clicked)="abrirCrear()">
+        <app-icon name="plus" />
+        Nuevo cliente
+      </app-button>
+    }
+  </header>
+
+  <div class="toolbar card">
+    <app-text-input
+      label="Buscar"
+      placeholder="Nombre, email o teléfono…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+    />
+    <app-select-input
+      label="Estado"
+      [options]="filtroOptions"
+      [ngModel]="filtro()"
+      (ngModelChange)="filtro.set($event)"
+    />
+  </div>
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filas().length === 0"
+    emptyMessage="No hay clientes para mostrar"
+    [skeletonRows]="4"
+  >
+    <div class="tabla-scroll">
+      <app-table
+        [columns]="columnas"
+        [rows]="filas()"
+        headerVariant="soft"
+        [striped]="true"
+        [compact]="true"
+      >
+        <ng-template appTableCell="estado" let-row>
+          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+            {{ $any(row)['estado'] }}
+          </app-badge>
+        </ng-template>
+        <ng-template appTableCell="acciones" let-row>
+          <div class="fila-acciones">
+            <button
+              type="button"
+              class="fila-acciones__btn fila-acciones__btn--config"
+              title="Configurar cliente"
+              aria-label="Configurar cliente"
+              (click)="abrirConfig($any(row)['id'])"
+            >
+              <app-icon name="settings" />
+            </button>
+            @if (esAdmin() && $any(row)['activo']) {
+              <button
+                type="button"
+                class="fila-acciones__btn fila-acciones__btn--danger"
+                title="Desactivar"
+                aria-label="Desactivar cliente"
+                (click)="desactivar($any(row))"
+              >
+                <app-icon name="alert-circle" />
+              </button>
+            }
+          </div>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+</section>
+
+<app-modal
+  [abierto]="configModalAbierto()"
+  [titulo]="configModalTitulo()"
+  ancho="960px"
+  (cerrar)="cerrarConfigModal()"
+>
+  @if (detalle(); as det) {
+    <div class="config-modal">
+      <section class="config-modal__master">
+        <div class="config-modal__head config-modal__head--master">
+          <h3>Datos del cliente</h3>
+          <app-badge [variant]="det.activo ? 'success' : 'neutral'">
+            {{ det.activo ? 'Activo' : 'Inactivo' }}
+          </app-badge>
+        </div>
+        <form class="config-modal__form config-modal__form--master" [formGroup]="form">
+          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
+          <app-text-input
+            label="Email"
+            type="email"
+            formControlName="email"
+            [error]="errorCampo('email')"
+          />
+          <app-text-input
+            label="Teléfono"
+            formControlName="telefono"
+            [error]="errorCampo('telefono')"
+          />
+        </form>
+      </section>
+
+      <section class="config-modal__section">
+        <div class="config-modal__head">
+          <h3>Opciones</h3>
+          @if (esAdmin() && det.activo) {
+            <app-button variant="danger" size="sm" (clicked)="desactivar(det)">
+              <app-icon name="alert-circle" />
+              Desactivar cliente
+            </app-button>
+          }
+        </div>
+        <p class="config-modal__hint">
+          Desde acá podés editar los datos de contacto y gestionar el estado del cliente.
+        </p>
+      </section>
+
+      <section class="config-modal__section">
+        <div class="config-modal__head">
+          <h3>Pedidos del cliente</h3>
+        </div>
+        @if (pedidosDelCliente().length === 0) {
+          <p class="config-modal__hint">Este cliente aún no tiene pedidos.</p>
+        } @else {
+          <div class="config-modal__tabla-scroll config-modal__tabla">
+            <app-table
+              [columns]="pedidosColumns"
+              [rows]="pedidosDelCliente()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            />
+          </div>
+        }
+      </section>
+
+      <footer class="config-modal__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarConfigModal()">
+          Salir sin guardar
+        </app-button>
+        @if (esAdmin()) {
+          <app-button
+            variant="primary"
+            size="md"
+            [disabled]="!masterDirty() || guardando()"
+            (clicked)="guardarMaster()"
+          >
+            Guardar cambios
+          </app-button>
+        }
+      </footer>
+    </div>
+  }
+</app-modal>
+
+<app-side-drawer [abierto]="drawerAbierto()" titulo="Nuevo cliente" (cerrar)="cerrarDrawer()">
+  <div class="form-drawer">
+    <form [formGroup]="form">
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Datos del cliente</h4>
+        </header>
+        <div class="form-section__body">
+          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
+          <app-text-input
+            label="Email"
+            type="email"
+            formControlName="email"
+            [error]="errorCampo('email')"
+          />
+          <app-text-input
+            label="Teléfono"
+            formControlName="telefono"
+            [error]="errorCampo('telefono')"
+          />
+        </div>
+      </section>
+    </form>
+    <footer class="form-drawer__footer">
+      <app-button variant="outline" size="md" (clicked)="cerrarDrawer()">Cancelar</app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarNuevo()">
+        Guardar
+      </app-button>
+    </footer>
+  </div>
+</app-side-drawer>

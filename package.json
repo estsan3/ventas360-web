@@ -1,0 +1,80 @@
+{
+  "name": "ventas360-web",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "lint": "ng lint",
+    "prepare": "husky",
+    "storybook": "ng run ventas360-web:storybook",
+    "build-storybook": "ng run ventas360-web:build-storybook",
+    "e2e": "playwright test"
+  },
+  "private": true,
+  "packageManager": "npm@11.11.0",
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.html": [
+      "prettier --write"
+    ],
+    "*.{scss,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/compiler": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0",
+    "@angular/platform-browser": "^21.2.0",
+    "@angular/router": "^21.2.0",
+    "leaflet": "^1.9.4",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.16.0"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.6.3",
+    "@angular-devkit/architect": "^0.2102.0",
+    "@angular-devkit/build-angular": "^21.2.0",
+    "@angular-devkit/core": "^21.2.0",
+    "@angular/animations": "^21.2.0",
+    "@angular/build": "^21.2.19",
+    "@angular/cli": "^21.2.19",
+    "@angular/compiler-cli": "^21.2.0",
+    "@angular/platform-browser-dynamic": "^21.2.0",
+    "@chromatic-com/storybook": "^5.2.1",
+    "@compodoc/compodoc": "^2.0.0",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
+    "@storybook/addon-a11y": "^10.5.0",
+    "@storybook/addon-docs": "^10.5.0",
+    "@storybook/addon-onboarding": "^10.5.0",
+    "@storybook/addon-vitest": "^10.5.0",
+    "@storybook/angular-vite": "^10.5.0",
+    "@types/leaflet": "^1.9.21",
+    "@types/node": "^20",
+    "@vitest/browser-playwright": "4.1.10",
+    "@vitest/coverage-v8": "4.1.10",
+    "angular-eslint": "21.4.0",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-storybook": "^10.5.0",
+    "husky": "^9.1.7",
+    "jsdom": "^28.0.0",
+    "lint-staged": "^17.0.8",
+    "playwright": "^1.61.1",
+    "prettier": "^3.9.5",
+    "storybook": "^10.5.0",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "8.59.2",
+    "vite": "^8.1.4",
+    "vitest": "^4.0.8"
+  }
+}

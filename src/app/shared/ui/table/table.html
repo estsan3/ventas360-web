@@ -1,0 +1,40 @@
+<div class="table-wrap">
+  <table
+    class="table"
+    [class.table--soft]="headerVariant() === 'soft'"
+    [class.table--fixed]="layout() === 'fixed'"
+    [class.table--striped]="striped()"
+    [class.table--compact]="compact()"
+    [class.table--dense]="dense()"
+    [style.min-width]="minWidth() || null"
+  >
+    <thead>
+      <tr>
+        @for (col of columns(); track col.key) {
+          <th [style.width]="col.width ?? null" [style.text-align]="col.align ?? 'left'">
+            {{ col.label }}
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track $index) {
+        <tr [class]="rowClass()(row)">
+          @for (col of columns(); track col.key) {
+            <td [style.text-align]="col.align ?? 'left'">
+              @if (templateFor(col.key); as tpl) {
+                <ng-container *ngTemplateOutlet="tpl; context: { $implicit: row }" />
+              } @else {
+                {{ row[col.key] }}
+              }
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td class="table__empty" [attr.colspan]="columns().length">Sin registros</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,79 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: t.$space-sm;
+  width: 356px;
+  padding: t.$space-md;
+  border-radius: t.$radius-lg;
+  box-shadow: t.$shadow-md;
+  font-family: ty.$font-family-base;
+
+  &__icon {
+    font-size: 20px;
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  &__body {
+    flex: 1;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__title {
+    font-size: ty.$font-size-md;
+    font-weight: ty.$font-weight-semibold;
+  }
+
+  &__message {
+    margin-top: t.$space-xs !important;
+    font-size: ty.$font-size-sm;
+    color: t.$color-text;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    font-size: 16px;
+    color: t.$color-text-muted;
+    line-height: 1;
+
+    &:hover {
+      color: t.$color-text;
+    }
+  }
+
+  &--error {
+    background: t.$color-toast-error-bg;
+
+    .toast__icon,
+    .toast__title {
+      color: t.$color-danger-strong;
+    }
+  }
+
+  &--success {
+    background: t.$color-toast-success-bg;
+
+    .toast__icon,
+    .toast__title {
+      color: t.$color-primary-dark;
+    }
+  }
+
+  &--warning {
+    background: t.$color-toast-warning-bg;
+
+    .toast__icon,
+    .toast__title {
+      color: t.$color-warning-text;
+    }
+  }
+}

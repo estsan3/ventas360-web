@@ -1,0 +1,32 @@
+<div class="glegend">
+  @for (serie of series(); track serie; let i = $index) {
+    <span class="glegend__item">
+      <span class="glegend__dot" [style.background]="colors[i]"></span>
+      {{ serie }}
+    </span>
+  }
+</div>
+
+<svg
+  class="gbars"
+  [attr.viewBox]="'0 0 ' + width + ' ' + height"
+  role="img"
+  aria-label="Gráfico de barras agrupadas"
+>
+  @for (line of gridLines(); track line.y) {
+    <line class="gbars__grid" x1="30" [attr.y1]="line.y" [attr.x2]="width" [attr.y2]="line.y" />
+    <text class="gbars__escala" x="26" [attr.y]="line.y + 3" text-anchor="end">
+      {{ line.value }}
+    </text>
+  }
+  @for (group of groups(); track group.label) {
+    @for (bar of group.bars; track $index) {
+      <path [attr.d]="bar.path" [attr.fill]="bar.color">
+        <title>{{ group.label }} — {{ series()[$index] }}: {{ bar.value }}</title>
+      </path>
+    }
+    <text class="gbars__label" [attr.x]="group.x" [attr.y]="height - 8" text-anchor="middle">
+      {{ group.label }}
+    </text>
+  }
+</svg>

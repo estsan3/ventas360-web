@@ -1,0 +1,48 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+:host {
+  display: block;
+  max-width: 1280px;
+  margin-inline: auto;
+  font-family: ty.$font-family-base;
+}
+
+.glegend {
+  display: flex;
+  gap: t.$space-md;
+  margin-bottom: t.$space-sm;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: t.$space-xs;
+    font-size: ty.$font-size-sm;
+    color: t.$color-text;
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: t.$radius-full;
+  }
+}
+
+.gbars {
+  display: block;
+  width: 100%;
+  max-height: 400px;
+  height: auto;
+  margin: 0 auto;
+
+  &__grid {
+    stroke: t.$color-border;
+    stroke-width: 1;
+  }
+
+  &__escala,
+  &__label {
+    font-size: 10px;
+    fill: t.$color-text-muted;
+  }
+}

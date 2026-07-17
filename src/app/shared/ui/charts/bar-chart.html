@@ -1,0 +1,31 @@
+<svg
+  class="bars"
+  [attr.viewBox]="'0 0 ' + width + ' ' + height"
+  role="img"
+  aria-label="Gráfico de barras"
+>
+  @for (line of gridLines(); track line) {
+    <line class="bars__grid" x1="0" [attr.y1]="line" [attr.x2]="width" [attr.y2]="line" />
+  }
+  @for (bar of bars(); track bar.label) {
+    <path [attr.d]="bar.path" [attr.fill]="color()">
+      <title>{{ bar.label }}: {{ bar.value }}</title>
+    </path>
+    <text
+      class="bars__value"
+      [attr.x]="bar.x + bar.width / 2"
+      [attr.y]="bar.y - 6"
+      text-anchor="middle"
+    >
+      {{ bar.value }}
+    </text>
+    <text
+      class="bars__label"
+      [attr.x]="bar.x + bar.width / 2"
+      [attr.y]="height - 8"
+      text-anchor="middle"
+    >
+      {{ bar.label }}
+    </text>
+  }
+</svg>

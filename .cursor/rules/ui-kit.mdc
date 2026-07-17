@@ -1,0 +1,68 @@
+---
+description: Design system UX/UI de Ventas360 (heredado de Agro360). Usar siempre al diseñar o tocar pantallas.
+alwaysApply: true
+---
+
+# UI Kit Ventas360
+
+Ventas360 reutiliza el design system de Agro360. **No reinventar UI**: extender el kit existente. Solo cambian marca (`Ventas360`) y dominio (ventas/comercio).
+
+## Fuente de verdad
+
+- Tokens: `src/styles/_tokens.scss`, tipografía `src/styles/_typography.scss`
+- Componentes: `src/app/shared/ui/*`
+- Layout: `src/app/core/layout/shell` + `topbar` + `shared/ui/sidebar`
+- Referencia visual: `npm run storybook`
+
+## Tokens (no hardcodear colores)
+
+- Primario: `#00a63e` / dark `#007c2e` / deep `#1a4d2e`
+- Fondos: surface `#fff`, background `#f9fafb`, alt `#f3f4f6`
+- Texto: `#1f2937`, muted `#6b7280`, border `#eaecef`
+- En SCSS: `@use 'tokens' as t;` y `t.$color-primary`, `t.$space-md`, etc.
+- Spacing: xs/sm/md/lg/xl · Radios: sm/md/lg/full · Sombras: sm/md
+
+## Componentes a reutilizar
+
+| Necesidad | Usar |
+|-----------|------|
+| Acciones | `app-button` |
+| Formularios | `app-text-input`, `app-select-input` |
+| Métricas | `app-kpi-card` (`tone` / `variant="dark"`) |
+| Tablas | `app-table` + `appTableCell` |
+| Estados | `app-badge`, `app-state-wrapper` |
+| Feedback | `app-toast`, `app-confirm-dialog` |
+| Paneles | `app-modal`, `app-side-drawer` |
+| Charts | `app-bar-chart`, `app-donut-chart`, etc. |
+| Marca | `app-logo` → “Ventas” + chip `360` |
+
+Antes de crear un componente nuevo, buscar uno similar en `shared/ui` y copiar el patrón (standalone, OnPush, SCSS con tokens).
+
+## Patrones de pantalla
+
+- Título de sección: lo pone el **shell/topbar** — no repetir `<h2>` en la página
+- Página: `.page` con `gap`/`padding` de tokens; header = `page__subtitle` muted + CTA (`app-button`)
+- Listados: toolbar `.card` (buscar + filtro) + `app-state-wrapper` + `app-table` `headerVariant="soft"`
+- Acciones de fila: botones icono `.fila-acciones__btn` (mismo patrón Agro360), no botones inventados
+- Formularios: `app-side-drawer` + clases globales `.form-drawer` / `.form-section`
+- KPIs: grilla con `app-kpi-card` (mismos `tone` que Agro360)
+- Loading/error/vacío: `app-state-wrapper`
+- Español en copy de UI
+
+## Anti-patrones
+
+- ❌ Inventar botones/cards con estilos inline o colores sueltos
+- ❌ Purple gradients, dark-mode por defecto, pills excesivos, sombras multi-capa
+- ❌ Tipografía distinta a Inter / tokens tipográficos del proyecto
+- ❌ Mapas Leaflet salvo que el feature lo requiera explícitamente
+
+## Ejemplo
+
+```html
+<!-- ✅ -->
+<app-kpi-card tone="green" label="Ventas del mes" [value]="'$120.000'" trendTone="neutral">
+  <app-icon name="dollar" />
+</app-kpi-card>
+
+<!-- ❌ div.card con background:#00a63e y tipografía custom -->
+```

@@ -1,0 +1,152 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: t.$space-lg;
+  background: t.$color-background;
+  font-family: ty.$font-family-base;
+
+  &__card {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    width: min(980px, 100%);
+    min-height: 560px;
+    border-radius: t.$radius-lg;
+    overflow: hidden;
+    background: t.$color-surface;
+    border: 1px solid t.$color-border;
+    box-shadow: t.$shadow-md;
+
+    @media (max-width: t.$breakpoint-tablet) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // --- Panel promocional: asset del camión (overlay verde ya incluido) ---
+  // Degradado sutil solo para legibilidad del texto sobre la foto
+  &__promo {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: t.$space-xl;
+    background:
+      linear-gradient(rgba(0, 90, 35, 0.15), rgba(0, 70, 28, 0.35)),
+      url('/assets/login-truck.png') center / cover no-repeat;
+    color: #fff;
+
+    @media (max-width: t.$breakpoint-tablet) {
+      display: none;
+    }
+  }
+
+  &__promo-top {
+    p {
+      margin: t.$space-md 0 0;
+      font-size: ty.$font-size-lg;
+      opacity: 0.92;
+      max-width: 300px;
+    }
+  }
+
+  &__logo {
+    display: inline-block;
+    padding: t.$space-sm t.$space-lg;
+    border-radius: t.$radius-md;
+    background: t.$color-primary;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    font-size: ty.$font-size-2xl;
+    font-weight: ty.$font-weight-bold;
+    color: #fff;
+  }
+
+  &__features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: t.$space-md;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: t.$space-md;
+    }
+
+    strong {
+      display: block;
+      font-size: ty.$font-size-md;
+      font-weight: ty.$font-weight-semibold;
+    }
+
+    small {
+      font-size: ty.$font-size-sm;
+      opacity: 0.85;
+    }
+  }
+
+  &__feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: t.$radius-full;
+    background: rgba(255, 255, 255, 0.18);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  // --- Formulario ---
+  &__panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: t.$space-xl;
+  }
+
+  &__box {
+    display: flex;
+    flex-direction: column;
+    gap: t.$space-lg;
+    width: 100%;
+    max-width: 330px;
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: t.$space-md;
+    }
+  }
+
+  &__heading {
+    h1 {
+      margin: 0;
+      font-size: ty.$font-size-2xl;
+      font-weight: ty.$font-weight-bold;
+      color: t.$color-text;
+    }
+
+    p {
+      margin: t.$space-xs 0 0;
+      font-size: ty.$font-size-md;
+      color: t.$color-text-muted;
+    }
+  }
+
+  &__forgot {
+    align-self: center;
+    font-size: ty.$font-size-md;
+    color: t.$color-text;
+    text-decoration: none;
+
+    &:hover {
+      color: t.$color-primary-dark;
+      text-decoration: underline;
+    }
+  }
+}

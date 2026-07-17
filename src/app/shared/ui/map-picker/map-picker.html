@@ -1,0 +1,11 @@
+<div class="map-picker">
+  <span class="map-picker__label">{{ etiqueta() }}</span>
+  <div #mapa class="map-picker__mapa" [style.height]="altura()"></div>
+  <p class="map-picker__hint">
+    @if (soloLectura()) {
+      Vista de referencia
+    } @else {
+      Hacé clic en el mapa o arrastrá el marcador para ajustar la ubicación
+    }
+  </p>
+</div>

@@ -1,0 +1,57 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.config {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-lg;
+  padding: t.$space-lg;
+  font-family: ty.$font-family-base;
+
+  &__card {
+    display: flex;
+    align-items: center;
+    gap: t.$space-lg;
+    padding: t.$space-lg;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-lg;
+    background: t.$color-surface;
+  }
+
+  &__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: t.$radius-full;
+    background: t.$color-primary-light;
+    color: t.$color-primary-dark;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    h2 {
+      margin: 0;
+      font-size: ty.$font-size-xl;
+      font-weight: ty.$font-weight-bold;
+      color: t.$color-text;
+    }
+
+    p {
+      margin: t.$space-xs 0;
+      color: t.$color-text-muted;
+    }
+  }
+
+  &__rol {
+    display: inline-block;
+    padding: 2px t.$space-sm;
+    border-radius: t.$radius-full;
+    background: t.$color-primary-light;
+    color: t.$color-primary-dark;
+    font-size: ty.$font-size-xs;
+    font-weight: ty.$font-weight-semibold;
+  }
+}

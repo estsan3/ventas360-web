@@ -1,0 +1,19 @@
+<section class="config">
+  @if (authStore.user(); as user) {
+    <div class="config__card">
+      <div class="config__avatar"><app-icon name="user" /></div>
+      <div class="config__info">
+        <h2>{{ user.nombre }}</h2>
+        <p>{{ user.email }}</p>
+        <span class="config__rol">
+          {{ user.rol === 'administrador' ? 'Administrador' : 'Vendedor' }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <app-button variant="outline" size="md" (clicked)="cerrarSesion()">
+    <app-icon name="log-out" />
+    Cerrar sesión
+  </app-button>
+</section>

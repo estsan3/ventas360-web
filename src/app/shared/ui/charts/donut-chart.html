@@ -1,0 +1,46 @@
+<div class="donut">
+  <svg viewBox="0 0 160 160" class="donut__svg" role="img" [attr.aria-label]="centerLabel()">
+    @for (segment of segments(); track segment.label) {
+      <circle
+        cx="80"
+        cy="80"
+        [attr.r]="radius"
+        fill="none"
+        [attr.stroke]="segment.color"
+        stroke-width="18"
+        stroke-linecap="round"
+        [attr.stroke-dasharray]="segment.dasharray"
+        [attr.stroke-dashoffset]="segment.dashoffset"
+        transform="rotate(-90 80 80)"
+      >
+        <title>{{ segment.label }}: {{ segment.value }} ({{ segment.percent }}%)</title>
+      </circle>
+    }
+    <text x="80" y="76" text-anchor="middle" class="donut__total">{{ total() }}</text>
+    <text x="80" y="94" text-anchor="middle" class="donut__label">{{ centerLabel() }}</text>
+  </svg>
+
+  <ul class="donut__legend">
+    @for (segment of segments(); track segment.label) {
+      <li>
+        <button
+          type="button"
+          class="donut__legend-btn"
+          [attr.aria-label]="'Filtrar por ' + segment.label"
+          (click)="segmentClick.emit(segment.label)"
+        >
+          <span class="donut__dot" [style.background]="segment.color"></span>
+          <span class="donut__name">{{ segment.label }}</span>
+          <span class="donut__value">{{ segment.value | number }}</span>
+          @if (segment.trend) {
+            <span class="donut__chip" [class.donut__chip--bad]="segment.trend.startsWith('-')">
+              {{ segment.trend }}
+            </span>
+          } @else {
+            <span class="donut__percent">{{ segment.percent }}%</span>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+</div>

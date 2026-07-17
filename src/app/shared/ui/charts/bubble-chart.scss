@@ -1,0 +1,12 @@
+@use 'typography' as ty;
+
+.bubbles {
+  width: 160px;
+  height: 160px;
+
+  &__pct {
+    font-family: ty.$font-family-base;
+    font-size: 13px;
+    font-weight: ty.$font-weight-bold;
+  }
+}

@@ -1,0 +1,209 @@
+<section class="page">
+  <header class="page__header">
+    <p class="page__subtitle">Pedidos, líneas y ciclo de vida hasta la entrega</p>
+    <app-button variant="primary" size="md" (clicked)="abrirCrear()">
+      <app-icon name="plus" />
+      Nuevo pedido
+    </app-button>
+  </header>
+
+  <div class="toolbar card">
+    <app-text-input
+      label="Buscar"
+      placeholder="Cliente, estado o ID…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+    />
+    <app-select-input
+      label="Estado"
+      [options]="filtroOptions"
+      [ngModel]="filtro()"
+      (ngModelChange)="filtro.set($event)"
+    />
+  </div>
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filas().length === 0"
+    emptyMessage="No hay pedidos para mostrar"
+    [skeletonRows]="4"
+  >
+    <div class="tabla-scroll">
+      <app-table
+        [columns]="columnas"
+        [rows]="filas()"
+        headerVariant="soft"
+        [striped]="true"
+        [compact]="true"
+      >
+        <ng-template appTableCell="estadoLabel" let-row>
+          <app-badge [variant]="$any(row)['badge']">
+            {{ $any(row)['estadoLabel'] }}
+          </app-badge>
+        </ng-template>
+        <ng-template appTableCell="acciones" let-row>
+          <div class="fila-acciones">
+            <button
+              type="button"
+              class="fila-acciones__btn fila-acciones__btn--config"
+              title="Configurar pedido"
+              aria-label="Configurar pedido"
+              (click)="abrirConfig($any(row))"
+            >
+              <app-icon name="settings" />
+            </button>
+          </div>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+</section>
+
+<app-side-drawer
+  [abierto]="drawerCrear()"
+  titulo="Nuevo pedido"
+  ancho="640px"
+  (cerrar)="cerrarCrear()"
+>
+  <div class="form-drawer">
+    <form [formGroup]="form">
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Cabecera</h4>
+        </header>
+        <div class="form-section__body">
+          <app-select-input
+            label="Cliente"
+            [options]="clienteOptions()"
+            formControlName="cliente_id"
+          />
+          <app-text-input label="Fecha" type="date" formControlName="fecha" />
+        </div>
+      </section>
+
+      <section class="form-section">
+        <header class="form-section__head">
+          <div>
+            <h4>Líneas</h4>
+            <p>Productos y cantidades del pedido</p>
+          </div>
+          <app-button variant="outline" size="sm" (clicked)="agregarLinea()">
+            <app-icon name="plus" />
+            Agregar
+          </app-button>
+        </header>
+        <div class="form-section__body lineas-pedido" formArrayName="lineas">
+          @for (grupo of lineas.controls; track $index; let i = $index) {
+            <div class="lineas-pedido__row" [formGroupName]="i">
+              <app-select-input
+                label="Producto"
+                [options]="productoOptions()"
+                formControlName="producto_id"
+              />
+              <app-text-input label="Cant." type="number" formControlName="cantidad" />
+              <button
+                type="button"
+                class="fila-acciones__btn fila-acciones__btn--danger"
+                title="Quitar línea"
+                aria-label="Quitar línea"
+                [disabled]="lineas.length <= 1"
+                (click)="quitarLinea(i)"
+              >
+                <app-icon name="trash" />
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    </form>
+    <footer class="form-drawer__footer">
+      <app-button variant="outline" size="md" (clicked)="cerrarCrear()">Cancelar</app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarPedido()">
+        Crear pedido
+      </app-button>
+    </footer>
+  </div>
+</app-side-drawer>
+
+<app-modal
+  [abierto]="configModalAbierto()"
+  [titulo]="configModalTitulo()"
+  ancho="960px"
+  (cerrar)="cerrarConfigModal()"
+>
+  @if (pedidoSeleccionado(); as pedido) {
+    <div class="config-modal">
+      <section class="config-modal__master">
+        <div class="config-modal__head config-modal__head--master">
+          <h3>Datos del pedido</h3>
+          <app-badge [variant]="badgeDe(pedido.estado)">
+            {{ etiquetaEstado(pedido.estado) }}
+          </app-badge>
+        </div>
+        <dl class="pedido-detalle__meta config-modal__meta">
+          <div>
+            <dt>Cliente</dt>
+            <dd>{{ clienteDetalle() }}</dd>
+          </div>
+          <div>
+            <dt>Fecha</dt>
+            <dd>{{ pedido.fecha }}</dd>
+          </div>
+          <div>
+            <dt>Total</dt>
+            <dd>{{ formatearTotal(pedido.total) }}</dd>
+          </div>
+          <div>
+            <dt>Líneas</dt>
+            <dd>{{ pedido.lineas.length }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="config-modal__section">
+        <div class="config-modal__head">
+          <h3>Opciones de estado</h3>
+        </div>
+        @if (transicionesDisponibles().length === 0) {
+          <p class="config-modal__hint">Este pedido ya está en un estado final.</p>
+        } @else {
+          <div class="pedido-detalle__acciones">
+            @for (t of transicionesDisponibles(); track t.estado) {
+              <app-button
+                [variant]="t.danger ? 'danger' : 'primary'"
+                size="sm"
+                [disabled]="cambiandoEstado()"
+                (clicked)="cambiarEstado(t.estado)"
+              >
+                Pasar a {{ t.label }}
+              </app-button>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="config-modal__section">
+        <div class="config-modal__head">
+          <h3>Líneas</h3>
+        </div>
+        <div class="config-modal__tabla-scroll config-modal__tabla">
+          <app-table
+            [columns]="columnasLineas"
+            [rows]="lineasDetalle()"
+            headerVariant="soft"
+            [striped]="true"
+            [compact]="true"
+            [dense]="true"
+          />
+        </div>
+      </section>
+
+      <footer class="config-modal__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarConfigModal()">
+          Cerrar
+        </app-button>
+      </footer>
+    </div>
+  }
+</app-modal>

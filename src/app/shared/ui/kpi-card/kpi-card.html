@@ -1,0 +1,34 @@
+<div
+  class="kpi"
+  [class.kpi--dark]="variant() === 'dark'"
+  [class.kpi--brand]="tone() === 'brand' && variant() !== 'dark'"
+  [class.kpi--neutral]="tone() === 'neutral'"
+  [class.kpi--orange]="tone() === 'orange'"
+  [class.kpi--amber]="tone() === 'amber'"
+  [class.kpi--red]="tone() === 'red'"
+  [class.kpi--green]="tone() === 'green'"
+  [class.kpi--stat]="layout() === 'stat'"
+>
+  <span class="kpi__icon"><ng-content /></span>
+  <div class="kpi__content">
+    <div class="kpi__row">
+      <span class="kpi__label">{{ label() }}</span>
+      @if (trend()) {
+        <span
+          class="kpi__trend"
+          [class.kpi__trend--bad]="trendIsBad()"
+          [class.kpi__trend--neutral]="trendTone() === 'neutral'"
+        >
+          @if (trendTone() !== 'neutral') {
+            {{ trendGlyph() }}
+          }
+          {{ trend() }}
+        </span>
+      }
+    </div>
+    <span class="kpi__value">{{ value() }}</span>
+    @if (detail()) {
+      <span class="kpi__detail">{{ detail() }}</span>
+    }
+  </div>
+</div>

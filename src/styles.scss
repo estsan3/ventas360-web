@@ -1,0 +1,32 @@
+// Estilos globales — la lógica de estilos por componente vive en cada .scss
+@use './styles/tokens' as t;
+@use './styles/typography' as ty;
+@use './styles/form-drawer';
+@use './styles/config-modal';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  // Escala global de tipografía: toda la app usa rem, así que subir
+  // la raíz 16px → 18px agranda ~2pt los tamaños medios en todos lados.
+  // Lo fijado en px (títulos de sección 25px, etc.) no se mueve.
+  font-size: 112.5%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: ty.$font-family-base;
+  font-size: ty.$font-size-md;
+  color: t.$color-text;
+  background-color: t.$color-background;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}

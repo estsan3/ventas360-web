@@ -1,0 +1,44 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px t.$space-sm + t.$space-xs;
+  border-radius: t.$radius-full;
+  font-family: ty.$font-family-base;
+  font-size: ty.$font-size-sm;
+  font-weight: ty.$font-weight-medium;
+  line-height: ty.$line-height-base;
+  white-space: nowrap;
+
+  &--md {
+    font-size: ty.$font-size-md;
+    padding: 4px t.$space-md;
+  }
+
+  &--success {
+    background: t.$color-success-bg;
+    color: t.$color-primary-dark;
+  }
+
+  &--danger {
+    background: t.$color-danger-bg;
+    color: t.$color-danger-text;
+  }
+
+  &--info {
+    background: t.$color-info-bg;
+    color: t.$color-info-text;
+  }
+
+  &--warning {
+    background: t.$color-warning-bg;
+    color: t.$color-warning-text;
+  }
+
+  &--neutral {
+    background: t.$color-background-alt;
+    color: t.$color-text-muted;
+  }
+}

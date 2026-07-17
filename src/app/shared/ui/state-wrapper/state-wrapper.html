@@ -1,0 +1,25 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="state state--loading" aria-busy="true">
+      @for (row of [].constructor(skeletonRows()); track $index) {
+        <div class="state__skeleton"></div>
+      }
+    </div>
+  }
+  @case ('error') {
+    <div class="state state--error" role="alert">
+      <app-icon name="alert-circle" />
+      <span>{{ error() || 'Ocurrió un error al cargar los datos' }}</span>
+    </div>
+  }
+  @case ('success') {
+    @if (empty()) {
+      <div class="state state--empty">
+        <app-icon name="info" />
+        <span>{{ emptyMessage() }}</span>
+      </div>
+    } @else {
+      <ng-content />
+    }
+  }
+}

@@ -1,0 +1,17 @@
+<div
+  class="progress"
+  role="progressbar"
+  [attr.aria-valuenow]="clamped()"
+  aria-valuemin="0"
+  aria-valuemax="100"
+>
+  <div
+    class="progress__fill"
+    [class.progress__fill--success]="variant() === 'success'"
+    [class.progress__fill--info]="variant() === 'info'"
+    [class.progress__fill--danger]="variant() === 'danger'"
+    [class.progress__fill--neutral]="variant() === 'neutral'"
+    [style.width.%]="clamped()"
+  ></div>
+  <span class="progress__label">{{ clamped() }}%</span>
+</div>

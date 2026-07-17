@@ -1,0 +1,38 @@
+@if (dialog.abierto()) {
+  <button
+    type="button"
+    class="confirm-dialog__backdrop"
+    aria-label="Cancelar"
+    (click)="dialog.cancelar()"
+  ></button>
+  <div
+    class="confirm-dialog"
+    role="alertdialog"
+    [attr.aria-labelledby]="'confirm-dialog-title'"
+    [attr.aria-describedby]="'confirm-dialog-message'"
+    [class.confirm-dialog--danger]="dialog.variant() === 'danger'"
+  >
+    <header class="confirm-dialog__header">
+      <div class="confirm-dialog__title-wrap">
+        <span class="confirm-dialog__icon" aria-hidden="true">
+          <app-icon [name]="icono()" />
+        </span>
+        <h2 id="confirm-dialog-title">{{ dialog.titulo() }}</h2>
+      </div>
+      <app-button variant="outline" size="sm" (clicked)="dialog.cancelar()">
+        <app-icon name="x" />
+      </app-button>
+    </header>
+    <div class="confirm-dialog__body">
+      <p id="confirm-dialog-message">{{ dialog.mensaje() }}</p>
+    </div>
+    <footer class="confirm-dialog__footer">
+      <app-button variant="outline" size="md" (clicked)="dialog.cancelar()">
+        {{ dialog.textoCancelar() }}
+      </app-button>
+      <app-button [variant]="confirmVariant()" size="md" (clicked)="dialog.confirmar()">
+        {{ dialog.textoConfirmar() }}
+      </app-button>
+    </footer>
+  </div>
+}

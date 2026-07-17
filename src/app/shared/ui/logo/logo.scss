@@ -1,0 +1,24 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: t.$space-xs;
+  font-family: ty.$font-family-base;
+  font-weight: ty.$font-weight-bold;
+  font-size: ty.$font-size-3xl;
+  color: t.$color-text;
+
+  &__chip {
+    background: t.$color-primary;
+    color: #fff;
+    border-radius: t.$radius-md;
+    padding: 0 t.$space-sm;
+    line-height: 1.4;
+  }
+
+  &--sm {
+    font-size: ty.$font-size-lg;
+  }
+}

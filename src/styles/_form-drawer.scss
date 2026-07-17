@@ -1,0 +1,165 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+// Misma paleta suave que la grilla de Gestión operativa
+$seccion-head-bg: #f0faec;
+$seccion-body-bg: #f9fafb;
+
+.form-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-lg;
+
+  > form {
+    display: flex;
+    flex-direction: column;
+    gap: t.$space-lg;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: t.$space-sm;
+    margin-top: t.$space-md;
+    padding-top: t.$space-lg;
+    border-top: 1px solid t.$color-border;
+  }
+}
+
+.form-section {
+  background: t.$color-surface;
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-lg;
+  overflow: hidden;
+  box-shadow: t.$shadow-sm;
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: t.$space-sm;
+    padding: t.$space-sm t.$space-md;
+    background: $seccion-head-bg;
+    border-bottom: 1px solid rgba(0, 124, 46, 0.12);
+
+    h4 {
+      margin: 0;
+      font-size: ty.$font-size-md;
+      font-weight: ty.$font-weight-semibold;
+      color: t.$color-primary-dark;
+    }
+
+    p {
+      margin: 2px 0 0;
+      font-size: ty.$font-size-sm;
+      color: t.$color-text-muted;
+      line-height: 1.4;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: t.$space-md;
+    padding: t.$space-md;
+    background: $seccion-body-bg;
+  }
+
+  &__grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: t.$space-md;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: t.$space-sm;
+  }
+}
+
+.form-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-md;
+}
+
+.punto-card {
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-md;
+  overflow: hidden;
+  background: t.$color-surface;
+  box-shadow: t.$shadow-sm;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: t.$space-sm t.$space-md;
+    background: t.$color-primary-light;
+    border-bottom: 1px solid rgba(0, 124, 46, 0.1);
+
+    strong {
+      font-size: ty.$font-size-md-sm;
+      font-weight: ty.$font-weight-semibold;
+      color: t.$color-primary-dark;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: t.$space-md;
+    padding: t.$space-md;
+    background: $seccion-body-bg;
+  }
+
+  &__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: t.$radius-sm;
+    background: transparent;
+    color: t.$color-danger-strong;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+
+    &:hover {
+      background: t.$color-danger-bg;
+    }
+  }
+}
+
+.link-maps {
+  border: none;
+  background: transparent;
+  color: t.$color-primary-dark;
+  font-size: ty.$font-size-sm;
+  font-weight: ty.$font-weight-semibold;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.puntos-entrada__empty {
+  margin: 0;
+  padding: t.$space-md;
+  border: 1px dashed t.$color-border;
+  border-radius: t.$radius-md;
+  background: t.$color-surface;
+  font-size: ty.$font-size-sm;
+  color: t.$color-text-muted;
+  text-align: center;
+}

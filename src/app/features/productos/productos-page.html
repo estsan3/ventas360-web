@@ -1,0 +1,201 @@
+<section class="page">
+  <header class="page__header">
+    <p class="page__subtitle">Catálogo, precios y stock disponible</p>
+    @if (esAdmin()) {
+      <app-button variant="primary" size="md" (clicked)="abrirCrear()">
+        <app-icon name="plus" />
+        Nuevo producto
+      </app-button>
+    }
+  </header>
+
+  <div class="toolbar card">
+    <app-text-input
+      label="Buscar"
+      placeholder="SKU o nombre…"
+      [ngModel]="busqueda()"
+      (ngModelChange)="busqueda.set($event)"
+    />
+    <app-select-input
+      label="Estado"
+      [options]="filtroOptions"
+      [ngModel]="filtro()"
+      (ngModelChange)="filtro.set($event)"
+    />
+  </div>
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filas().length === 0"
+    emptyMessage="No hay productos para mostrar"
+    [skeletonRows]="4"
+  >
+    <div class="tabla-scroll">
+      <app-table
+        [columns]="columnas"
+        [rows]="filas()"
+        headerVariant="soft"
+        [striped]="true"
+        [compact]="true"
+      >
+        <ng-template appTableCell="estado" let-row>
+          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+            {{ $any(row)['estado'] }}
+          </app-badge>
+        </ng-template>
+        <ng-template appTableCell="acciones" let-row>
+          <div class="fila-acciones">
+            <button
+              type="button"
+              class="fila-acciones__btn fila-acciones__btn--config"
+              title="Configurar producto"
+              aria-label="Configurar producto"
+              (click)="abrirConfig($any(row)['id'])"
+            >
+              <app-icon name="settings" />
+            </button>
+            @if (esAdmin()) {
+              <button
+                type="button"
+                class="fila-acciones__btn"
+                [class.fila-acciones__btn--on]="!$any(row)['activo']"
+                [title]="$any(row)['activo'] ? 'Desactivar' : 'Activar'"
+                [attr.aria-label]="$any(row)['activo'] ? 'Desactivar' : 'Activar'"
+                (click)="toggleActivo($any(row))"
+              >
+                <app-icon [name]="$any(row)['activo'] ? 'alert-circle' : 'check-circle'" />
+              </button>
+            }
+          </div>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+</section>
+
+<app-modal
+  [abierto]="configModalAbierto()"
+  [titulo]="configModalTitulo()"
+  ancho="960px"
+  (cerrar)="cerrarConfigModal()"
+>
+  @if (detalle(); as det) {
+    <div class="config-modal">
+      <section class="config-modal__master">
+        <div class="config-modal__head config-modal__head--master">
+          <h3>Datos del producto</h3>
+          <app-badge [variant]="det.activo ? 'success' : 'neutral'">
+            {{ det.activo ? 'Activo' : 'Inactivo' }}
+          </app-badge>
+        </div>
+        <form class="config-modal__form config-modal__form--master" [formGroup]="form">
+          <app-text-input label="SKU" formControlName="sku" [error]="errorCampo('sku')" />
+          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
+          <app-text-input
+            label="Precio"
+            type="number"
+            formControlName="precio"
+            [error]="errorCampo('precio')"
+          />
+          <app-text-input
+            label="Stock"
+            type="number"
+            formControlName="stock"
+            [error]="errorCampo('stock')"
+          />
+        </form>
+      </section>
+
+      <section class="config-modal__section">
+        <div class="config-modal__head">
+          <h3>Opciones</h3>
+          @if (esAdmin()) {
+            <app-button
+              [variant]="det.activo ? 'danger' : 'primary'"
+              size="sm"
+              (clicked)="toggleActivo(det)"
+            >
+              <app-icon [name]="det.activo ? 'alert-circle' : 'check-circle'" />
+              {{ det.activo ? 'Desactivar producto' : 'Activar producto' }}
+            </app-button>
+          }
+        </div>
+        <p class="config-modal__hint">
+          Editá SKU, precio y stock. El estado controla si el producto puede usarse en pedidos.
+        </p>
+      </section>
+
+      <section class="config-modal__section">
+        <div class="config-modal__head">
+          <h3>Pedidos que lo incluyen</h3>
+        </div>
+        @if (pedidosDelProducto().length === 0) {
+          <p class="config-modal__hint">Ningún pedido incluye este producto todavía.</p>
+        } @else {
+          <div class="config-modal__tabla-scroll config-modal__tabla">
+            <app-table
+              [columns]="pedidosColumns"
+              [rows]="pedidosDelProducto()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            />
+          </div>
+        }
+      </section>
+
+      <footer class="config-modal__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarConfigModal()">
+          Salir sin guardar
+        </app-button>
+        @if (esAdmin()) {
+          <app-button
+            variant="primary"
+            size="md"
+            [disabled]="!masterDirty() || guardando()"
+            (clicked)="guardarMaster()"
+          >
+            Guardar cambios
+          </app-button>
+        }
+      </footer>
+    </div>
+  }
+</app-modal>
+
+<app-side-drawer [abierto]="drawerAbierto()" titulo="Nuevo producto" (cerrar)="cerrarDrawer()">
+  <div class="form-drawer">
+    <form [formGroup]="form">
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Datos del producto</h4>
+        </header>
+        <div class="form-section__body">
+          <div class="form-section__grid-2">
+            <app-text-input label="SKU" formControlName="sku" [error]="errorCampo('sku')" />
+            <app-text-input
+              label="Stock"
+              type="number"
+              formControlName="stock"
+              [error]="errorCampo('stock')"
+            />
+          </div>
+          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
+          <app-text-input
+            label="Precio"
+            type="number"
+            formControlName="precio"
+            [error]="errorCampo('precio')"
+          />
+        </div>
+      </section>
+    </form>
+    <footer class="form-drawer__footer">
+      <app-button variant="outline" size="md" (clicked)="cerrarDrawer()">Cancelar</app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarNuevo()">
+        Guardar
+      </app-button>
+    </footer>
+  </div>
+</app-side-drawer>

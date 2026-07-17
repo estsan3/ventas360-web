@@ -1,0 +1,23 @@
+<svg class="bubbles" viewBox="0 0 160 160" role="img" aria-label="Distribución por destino">
+  @for (bubble of bubbles(); track bubble.label) {
+    <circle
+      [attr.cx]="bubble.cx"
+      [attr.cy]="bubble.cy"
+      [attr.r]="bubble.r"
+      [attr.fill]="bubble.color"
+      stroke="#fff"
+      stroke-width="2"
+    >
+      <title>{{ bubble.label }}: {{ bubble.percent }}%</title>
+    </circle>
+    <text
+      class="bubbles__pct"
+      [attr.x]="bubble.cx"
+      [attr.y]="bubble.cy + 4"
+      text-anchor="middle"
+      [attr.fill]="bubble.textColor"
+    >
+      {{ bubble.percent }}%
+    </text>
+  }
+</svg>

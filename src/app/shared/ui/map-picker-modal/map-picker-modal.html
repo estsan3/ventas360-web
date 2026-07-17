@@ -1,0 +1,43 @@
+@if (abierto()) {
+  <button
+    type="button"
+    class="map-modal__backdrop"
+    aria-label="Cerrar mapa"
+    (click)="cerrar.emit()"
+  ></button>
+  <div class="map-modal" role="dialog" [attr.aria-label]="titulo()">
+    <header class="map-modal__header">
+      <div>
+        <h2>{{ titulo() }}</h2>
+        <p class="map-modal__hint">
+          Hacé clic en el mapa o arrastrá el marcador para marcar el punto.
+        </p>
+      </div>
+      <app-button variant="outline" size="sm" (clicked)="cerrar.emit()">
+        <app-icon name="x" />
+      </app-button>
+    </header>
+    <div class="map-modal__body">
+      <app-map-picker
+        [latitud]="latitud()"
+        [longitud]="longitud()"
+        altura="420px"
+        etiqueta=""
+        (coordenadasChange)="onCoordenadasChange($event)"
+      />
+      <div class="map-modal__coords">
+        <span>Lat: {{ latPreview() ?? latitud() ?? '—' }}</span>
+        <span>Lng: {{ lngPreview() ?? longitud() ?? '—' }}</span>
+        <button type="button" class="map-modal__gmaps" (click)="abrirGoogleMaps()">
+          Abrir en Google Maps
+        </button>
+      </div>
+    </div>
+    <footer class="map-modal__footer">
+      <app-button variant="outline" size="md" (clicked)="cerrar.emit()">Cancelar</app-button>
+      <app-button variant="primary" size="md" (clicked)="confirmarUbicacion()">
+        Confirmar ubicación
+      </app-button>
+    </footer>
+  </div>
+}

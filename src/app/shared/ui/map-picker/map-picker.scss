@@ -1,0 +1,28 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.map-picker {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-xs;
+
+  &__label {
+    font-size: ty.$font-size-sm;
+    font-weight: ty.$font-weight-medium;
+    color: t.$color-text;
+  }
+
+  &__mapa {
+    width: 100%;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-md;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: ty.$font-size-xs;
+    color: t.$color-text-muted;
+  }
+}

@@ -1,0 +1,79 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: t.$space-sm;
+  height: 48px;
+  padding: 0 t.$space-md;
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-md;
+  background: t.$color-surface;
+  box-shadow: t.$shadow-sm;
+  color: t.$color-text-muted;
+  font-family: ty.$font-family-base;
+  font-size: ty.$font-size-md;
+  cursor: text;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: t.$color-primary;
+  }
+
+  &:focus-within {
+    border-color: t.$color-primary;
+    box-shadow: 0 0 0 3px rgba(0, 166, 62, 0.15);
+  }
+
+  &__lupa {
+    color: t.$color-primary;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    color: t.$color-text;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: t.$color-text-muted;
+    }
+
+    // Oculta la X nativa de type=search (usamos la propia)
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+  }
+
+  &__limpiar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: t.$radius-full;
+    background: t.$color-background-alt;
+    color: t.$color-text-muted;
+    font-size: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:hover {
+      background: t.$color-border;
+      color: t.$color-text;
+    }
+  }
+}

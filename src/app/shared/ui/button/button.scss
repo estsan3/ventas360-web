@@ -1,0 +1,83 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: t.$space-sm;
+  font-family: ty.$font-family-base;
+  font-weight: ty.$font-weight-medium;
+  border: none;
+  border-radius: t.$radius-md;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // --- Variantes ---
+  &--primary {
+    background: t.$color-primary;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: t.$color-primary-dark;
+    }
+  }
+
+  &--danger {
+    background: t.$color-danger;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: t.$color-danger-strong;
+    }
+  }
+
+  &--outline {
+    background: t.$color-surface;
+    color: t.$color-text;
+    border: 1px solid t.$color-border;
+    box-shadow: t.$shadow-sm;
+
+    &:hover:not(:disabled) {
+      background: t.$color-background;
+    }
+  }
+
+  // --- Tamaños ---
+  &--xl {
+    height: 48px;
+    padding: 0 t.$space-xl;
+    font-size: ty.$font-size-lg;
+  }
+
+  &--md {
+    height: 36px;
+    padding: 0 t.$space-md;
+    font-size: ty.$font-size-md-sm;
+  }
+
+  &--sm {
+    height: 28px;
+    padding: 0 t.$space-md;
+    font-size: ty.$font-size-sm;
+    border-radius: t.$radius-full;
+  }
+
+  &--full {
+    width: 100%;
+  }
+
+  // Iconos svg proyectados heredan el tamaño del texto
+  ::ng-deep svg {
+    width: 1.2em;
+    height: 1.2em;
+    flex-shrink: 0;
+  }
+}

@@ -1,0 +1,59 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-xs;
+  font-family: ty.$font-family-base;
+
+  &__label {
+    font-size: ty.$font-size-md;
+    font-weight: ty.$font-weight-medium;
+    color: t.$color-text;
+  }
+
+  &__input {
+    height: 40px;
+    padding: 0 t.$space-md;
+    border: 1px solid t.$color-border;
+    border-radius: t.$radius-md;
+    background: t.$color-surface;
+    font-family: inherit;
+    font-size: ty.$font-size-md;
+    color: t.$color-text;
+    box-shadow: t.$shadow-sm;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: t.$color-text-muted;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: t.$color-primary;
+      box-shadow: 0 0 0 3px rgba(0, 166, 62, 0.15);
+    }
+
+    &:disabled {
+      background: t.$color-background-alt;
+      cursor: not-allowed;
+    }
+
+    &--error {
+      border-color: t.$color-danger-strong;
+
+      &:focus {
+        border-color: t.$color-danger-strong;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+      }
+    }
+  }
+
+  &__error {
+    font-size: ty.$font-size-sm;
+    color: t.$color-danger-strong;
+  }
+}

@@ -1,0 +1,52 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.state {
+  font-family: ty.$font-family-base;
+
+  &--loading {
+    display: flex;
+    flex-direction: column;
+    gap: t.$space-sm;
+  }
+
+  &__skeleton {
+    height: 40px;
+    border-radius: t.$radius-md;
+    background: linear-gradient(
+      90deg,
+      t.$color-background-alt 25%,
+      t.$color-border 50%,
+      t.$color-background-alt 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+
+  &--error,
+  &--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: t.$space-sm;
+    padding: t.$space-xl;
+    font-size: ty.$font-size-md;
+  }
+
+  &--error {
+    color: t.$color-danger-strong;
+  }
+
+  &--empty {
+    color: t.$color-text-muted;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

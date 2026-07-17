@@ -1,0 +1,275 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.kpi {
+  display: flex;
+  align-items: center;
+  gap: t.$space-md;
+  padding: t.$space-md;
+  border-radius: t.$radius-md;
+  background: t.$color-surface;
+  border: 1px solid t.$color-border;
+  box-shadow: t.$shadow-sm;
+  font-family: ty.$font-family-base;
+  min-width: 200px;
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: t.$radius-md;
+    background: t.$color-primary;
+    color: #fff;
+    font-size: 20px;
+    flex-shrink: 0;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$space-sm;
+  }
+
+  &__label {
+    font-size: ty.$font-size-sm;
+    color: t.$color-text-muted;
+  }
+
+  &__value {
+    font-size: ty.$font-size-3xl;
+    font-weight: ty.$font-weight-bold;
+    color: t.$color-text;
+  }
+
+  &__trend {
+    font-size: ty.$font-size-xs;
+    font-weight: ty.$font-weight-semibold;
+    white-space: nowrap;
+    color: t.$color-primary-dark;
+
+    &--bad {
+      color: t.$color-danger-strong;
+    }
+  }
+
+  &--dark {
+    position: relative;
+    overflow: hidden;
+    padding: t.$space-lg;
+    min-height: 116px;
+    background: t.$color-primary-deep;
+    border-color: transparent;
+    box-shadow: t.$shadow-md;
+
+    .kpi__icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      font-size: 30px;
+      border-radius: t.$radius-lg;
+    }
+
+    .kpi__label {
+      font-size: 15px;
+      font-weight: ty.$font-weight-medium;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .kpi__value {
+      color: #fff;
+      font-size: 38px;
+      line-height: 1.1;
+    }
+
+    .kpi__trend {
+      font-size: 13px;
+      padding: 3px 10px;
+      border-radius: t.$radius-full;
+      background: rgba(255, 255, 255, 0.15);
+      color: t.$color-accent-green;
+
+      &--bad {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fecaca;
+      }
+
+      &--neutral {
+        background: rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.85);
+      }
+    }
+
+    .kpi__detail {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 2px;
+    }
+  }
+
+  // --- Tonos de totalizadores (Gestión operativa) ---
+  // Stat-cards protagonistas: número héroe, icono grande, chip píldora
+  @mixin tone($tint, $color) {
+    position: relative;
+    overflow: hidden;
+    padding: t.$space-lg;
+    min-height: 116px;
+
+    // Barra de acento superior con el color del estado
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: $color;
+    }
+
+    box-shadow: t.$shadow-md;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .kpi__icon {
+      width: 64px;
+      height: 64px;
+      background: $tint;
+      color: $color;
+      font-size: 30px;
+      border-radius: t.$radius-lg;
+    }
+
+    .kpi__label {
+      font-size: 15px;
+      font-weight: ty.$font-weight-medium;
+    }
+
+    .kpi__value {
+      color: $color;
+      font-size: 38px;
+      line-height: 1.1;
+    }
+
+    .kpi__trend {
+      font-size: 13px;
+      padding: 3px 10px;
+      border-radius: t.$radius-full;
+      background: t.$color-success-bg;
+      color: t.$color-primary-dark;
+
+      &--bad {
+        background: t.$color-danger-bg;
+        color: t.$color-danger-text;
+      }
+
+      &--neutral {
+        background: t.$color-background-alt;
+        color: t.$color-text-muted;
+      }
+    }
+
+    .kpi__detail {
+      font-size: 13px;
+      color: t.$color-text-muted;
+      margin-top: 2px;
+    }
+  }
+
+  &__detail {
+    display: block;
+  }
+
+  // Layout stat (dashboard Reportería): icono arriba, chip flotante, valor grande
+  &--stat {
+    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: t.$space-sm;
+    padding: t.$space-lg;
+
+    .kpi__icon {
+      width: 44px;
+      height: 44px;
+      background: t.$color-background-alt;
+      color: t.$color-text;
+      font-size: 20px;
+    }
+
+    .kpi__row {
+      position: absolute;
+      top: t.$space-md;
+      right: t.$space-md;
+    }
+
+    .kpi__trend {
+      padding: 2px t.$space-sm;
+      border-radius: t.$radius-full;
+      background: t.$color-success-bg;
+      color: t.$color-primary-dark;
+
+      &--bad {
+        background: t.$color-danger-bg;
+        color: t.$color-danger-text;
+      }
+    }
+
+    .kpi__value {
+      font-size: 30px;
+    }
+
+    &.kpi--dark .kpi__icon {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    &.kpi--dark .kpi__trend {
+      background: rgba(255, 255, 255, 0.15);
+      color: t.$color-accent-green;
+    }
+  }
+
+  &--orange {
+    @include tone(#fdf0e3, #ea580c);
+  }
+
+  &--brand {
+    @include tone(t.$color-primary-light, t.$color-primary-dark);
+  }
+
+  &--neutral {
+    @include tone(t.$color-background-alt, t.$color-text);
+  }
+
+  &--amber {
+    @include tone(#fdf7e3, #d97706);
+  }
+
+  &--red {
+    @include tone(#fdeaea, t.$color-danger-strong);
+  }
+
+  &--green {
+    @include tone(#e9f8ee, t.$color-primary);
+  }
+}

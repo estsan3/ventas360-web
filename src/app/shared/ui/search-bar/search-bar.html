@@ -1,0 +1,21 @@
+<label class="search">
+  <app-icon class="search__lupa" name="search" />
+  <input
+    #campo
+    class="search__input"
+    type="search"
+    [placeholder]="placeholder()"
+    [value]="value()"
+    (input)="handleInput($event)"
+  />
+  @if (texto()) {
+    <button
+      class="search__limpiar"
+      type="button"
+      aria-label="Limpiar búsqueda"
+      (click)="limpiar(campo)"
+    >
+      <app-icon name="x" />
+    </button>
+  }
+</label>

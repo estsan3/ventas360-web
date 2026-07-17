@@ -1,0 +1,69 @@
+<div class="login">
+  <div class="login__card">
+    <aside class="login__promo">
+      <div class="login__promo-top">
+        <span class="login__logo">Ventas360</span>
+        <p>Gestión inteligente de ventas retail con agentes de IA</p>
+      </div>
+
+      <ul class="login__features">
+        <li>
+          <span class="login__feature-icon"><app-icon name="shield" /></span>
+          <div>
+            <strong>Agentes que venden por vos</strong>
+            <small>Automatizá seguimiento, cotizaciones y cierre de ventas</small>
+          </div>
+        </li>
+        <li>
+          <span class="login__feature-icon"><app-icon name="package" /></span>
+          <div>
+            <strong>Catálogo y stock unificado</strong>
+            <small>Clientes, productos y pedidos en un solo panel</small>
+          </div>
+        </li>
+      </ul>
+    </aside>
+
+    <section class="login__panel">
+      <div class="login__box">
+        <div class="login__heading">
+          <h1>Iniciar sesión</h1>
+          <p>Accedé a tu panel de ventas</p>
+        </div>
+
+        @if (loginError()) {
+          <app-toast
+            variant="error"
+            title="No pudimos iniciar sesión"
+            [message]="loginError()"
+            [dismissible]="false"
+          />
+        }
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <app-text-input
+            label="Correo electrónico"
+            type="email"
+            placeholder="tu@empresa.com"
+            formControlName="email"
+            [error]="fieldError('email')"
+          />
+          <app-text-input
+            label="Contraseña"
+            type="password"
+            placeholder="••••••••"
+            formControlName="password"
+            [error]="fieldError('password')"
+          />
+          <app-button type="submit" size="md" [fullWidth]="true" [disabled]="loading()">
+            {{ loading() ? 'Ingresando…' : 'Iniciar sesión' }}
+          </app-button>
+        </form>
+
+        <a class="login__forgot" href="#" (click)="$event.preventDefault()">
+          ¿Olvidaste tu contraseña?
+        </a>
+      </div>
+    </section>
+  </div>
+</div>

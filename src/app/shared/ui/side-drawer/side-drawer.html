@@ -1,0 +1,19 @@
+@if (abierto()) {
+  <button
+    type="button"
+    class="drawer__backdrop"
+    aria-label="Cerrar panel"
+    (click)="onBackdropClick()"
+  ></button>
+  <aside class="drawer" role="dialog" [attr.aria-label]="titulo()" [style.width]="ancho()">
+    <header class="drawer__header">
+      <h2>{{ titulo() }}</h2>
+      <app-button variant="outline" size="sm" (clicked)="cerrar.emit()">
+        <app-icon name="x" />
+      </app-button>
+    </header>
+    <div class="drawer__body">
+      <ng-content />
+    </div>
+  </aside>
+}

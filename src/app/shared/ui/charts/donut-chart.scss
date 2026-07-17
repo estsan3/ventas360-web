@@ -1,0 +1,102 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.donut {
+  display: flex;
+  align-items: center;
+  gap: t.$space-lg;
+  font-family: ty.$font-family-base;
+  flex: 1;
+
+  &__svg {
+    width: 168px;
+    height: 168px;
+    flex-shrink: 0;
+  }
+
+  &__total {
+    font-size: 28px;
+    font-weight: ty.$font-weight-bold;
+    fill: t.$color-text;
+  }
+
+  &__label {
+    font-size: 11px;
+    fill: t.$color-text-muted;
+  }
+
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+
+    li {
+      display: block;
+    }
+  }
+
+  &__legend-btn {
+    display: grid;
+    grid-template-columns: 10px 1fr auto auto;
+    align-items: center;
+    gap: t.$space-sm;
+    width: 100%;
+    padding: 8px t.$space-sm;
+    border: 1px solid transparent;
+    border-radius: t.$radius-md;
+    background: transparent;
+    font-family: inherit;
+    font-size: ty.$font-size-md;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease;
+
+    &:hover {
+      background: t.$color-background;
+      border-color: t.$color-border;
+    }
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: t.$radius-full;
+  }
+
+  &__name {
+    color: t.$color-text;
+  }
+
+  &__value {
+    font-weight: ty.$font-weight-semibold;
+    color: t.$color-text;
+  }
+
+  &__chip {
+    font-size: ty.$font-size-2xs;
+    font-weight: ty.$font-weight-semibold;
+    padding: 1px t.$space-sm;
+    border-radius: t.$radius-full;
+    background: t.$color-success-bg;
+    color: t.$color-primary-dark;
+
+    &--bad {
+      background: t.$color-danger-bg;
+      color: t.$color-danger-text;
+    }
+  }
+
+  &__percent {
+    color: t.$color-text-muted;
+    font-size: ty.$font-size-sm;
+    min-width: 36px;
+    text-align: right;
+  }
+}

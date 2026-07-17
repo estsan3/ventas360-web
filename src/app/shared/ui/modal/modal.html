@@ -1,0 +1,19 @@
+@if (abierto()) {
+  <button
+    type="button"
+    class="modal__backdrop"
+    aria-label="Cerrar"
+    (click)="cerrar.emit()"
+  ></button>
+  <div class="modal" role="dialog" [attr.aria-label]="titulo()" [style.max-width]="ancho()">
+    <header class="modal__header">
+      <h2>{{ titulo() }}</h2>
+      <app-button variant="outline" size="sm" (clicked)="cerrar.emit()">
+        <app-icon name="x" />
+      </app-button>
+    </header>
+    <div class="modal__body">
+      <ng-content />
+    </div>
+  </div>
+}

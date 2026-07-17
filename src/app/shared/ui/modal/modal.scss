@@ -1,0 +1,50 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  width: calc(100vw - #{t.$space-lg * 2});
+  max-height: 92vh;
+  transform: translate(-50%, -50%);
+  background: t.$color-surface;
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-lg;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+
+  &__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    border: none;
+    background: rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: t.$space-md;
+    padding: t.$space-lg;
+    border-bottom: 1px solid t.$color-border;
+    flex-shrink: 0;
+
+    h2 {
+      margin: 0;
+      font-size: ty.$font-size-xl;
+      font-weight: ty.$font-weight-semibold;
+      color: t.$color-text;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    overflow: auto;
+    padding: t.$space-lg;
+  }
+}

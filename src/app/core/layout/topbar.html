@@ -1,0 +1,52 @@
+<header class="topbar">
+  <span></span>
+
+  <div class="topbar__right">
+    @if (authStore.user(); as user) {
+      <div class="topbar__perfil-wrap">
+        <button
+          class="topbar__perfil"
+          type="button"
+          aria-label="Menú de perfil"
+          [attr.aria-expanded]="menuPerfilAbierto()"
+          (click)="menuPerfilAbierto.set(!menuPerfilAbierto())"
+        >
+          <span class="topbar__avatar"><app-icon name="user" /></span>
+          <div class="topbar__perfil-info">
+            <strong>{{ user.nombre }}</strong>
+            <small>{{ user.rol === 'administrador' ? 'Administrador' : 'Vendedor' }}</small>
+            <small class="topbar__fecha">{{ fecha }}</small>
+          </div>
+        </button>
+
+        @if (menuPerfilAbierto()) {
+          <button
+            class="topbar__menu-backdrop"
+            type="button"
+            aria-label="Cerrar menú"
+            (click)="menuPerfilAbierto.set(false)"
+          ></button>
+          <div class="topbar__menu" role="menu">
+            <button type="button" role="menuitem" (click)="irAMiPerfil()">
+              <app-icon name="user" />
+              Mi perfil
+            </button>
+            <button type="button" role="menuitem" (click)="irAConfiguracion()">
+              <app-icon name="settings" />
+              Configuración
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              class="topbar__menu-salir"
+              (click)="cerrarSesion()"
+            >
+              <app-icon name="log-out" />
+              Cerrar sesión
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</header>

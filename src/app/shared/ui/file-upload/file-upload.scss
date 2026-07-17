@@ -1,0 +1,81 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.upload {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-xs;
+
+  &__label {
+    font-size: ty.$font-size-sm;
+    font-weight: ty.$font-weight-medium;
+    color: t.$color-text;
+  }
+
+  &__drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: t.$space-xs;
+    min-height: 120px;
+    padding: t.$space-md;
+    border: 1px dashed t.$color-border;
+    border-radius: t.$radius-md;
+    color: t.$color-text-muted;
+    cursor: pointer;
+    text-align: center;
+
+    input {
+      display: none;
+    }
+
+    &:hover {
+      border-color: t.$color-primary;
+      color: t.$color-primary-dark;
+    }
+  }
+
+  &__preview {
+    margin: 0;
+
+    img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: t.$radius-md;
+      border: 1px solid t.$color-border;
+    }
+
+    figcaption {
+      margin-top: t.$space-xs;
+      font-size: ty.$font-size-sm;
+      color: t.$color-text-muted;
+    }
+  }
+
+  &__remove {
+    display: inline-flex;
+    align-items: center;
+    gap: t.$space-xs;
+    align-self: flex-start;
+    border: none;
+    background: transparent;
+    color: t.$color-danger-strong;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: ty.$font-size-sm;
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: ty.$font-size-sm;
+    color: t.$color-text-muted;
+  }
+
+  &__error {
+    margin: 0;
+    font-size: ty.$font-size-sm;
+    color: t.$color-danger-strong;
+  }
+}

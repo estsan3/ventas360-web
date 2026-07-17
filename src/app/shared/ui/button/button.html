@@ -1,0 +1,15 @@
+<button
+  class="btn"
+  [type]="type()"
+  [disabled]="disabled()"
+  [class.btn--primary]="variant() === 'primary'"
+  [class.btn--danger]="variant() === 'danger'"
+  [class.btn--outline]="variant() === 'outline'"
+  [class.btn--xl]="size() === 'xl'"
+  [class.btn--md]="size() === 'md'"
+  [class.btn--sm]="size() === 'sm'"
+  [class.btn--full]="fullWidth()"
+  (click)="clicked.emit()"
+>
+  <ng-content />
+</button>

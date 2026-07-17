@@ -1,0 +1,28 @@
+<div class="upload">
+  <label class="upload__label">{{ label() }}</label>
+
+  @if (preview(); as archivo) {
+    <figure class="upload__preview">
+      <img [src]="archivo.dataUrl" [alt]="archivo.nombre" />
+      <figcaption>{{ archivo.nombre }}</figcaption>
+    </figure>
+    @if (!soloLectura() && !deshabilitado()) {
+      <button type="button" class="upload__remove" (click)="quitar()">
+        <app-icon name="trash" />
+        Quitar
+      </button>
+    }
+  } @else if (!soloLectura()) {
+    <label class="upload__drop">
+      <app-icon name="file-text" />
+      <span>Seleccionar imagen (máx. 5 MB)</span>
+      <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+    </label>
+  } @else {
+    <p class="upload__empty">Sin archivo</p>
+  }
+
+  @if (error()) {
+    <p class="upload__error">{{ error() }}</p>
+  }
+</div>

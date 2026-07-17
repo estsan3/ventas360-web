@@ -1,0 +1,20 @@
+<div
+  class="toast"
+  role="alert"
+  [class.toast--success]="variant() === 'success'"
+  [class.toast--error]="variant() === 'error'"
+  [class.toast--warning]="variant() === 'warning'"
+>
+  <span class="toast__icon"><app-icon [name]="iconName()" /></span>
+  <div class="toast__body">
+    <p class="toast__title">{{ title() }}</p>
+    @if (message()) {
+      <p class="toast__message">{{ message() }}</p>
+    }
+  </div>
+  @if (dismissible()) {
+    <button class="toast__close" type="button" aria-label="Cerrar" (click)="closed.emit()">
+      <app-icon name="x" />
+    </button>
+  }
+</div>

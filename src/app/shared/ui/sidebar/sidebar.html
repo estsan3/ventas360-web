@@ -1,0 +1,55 @@
+<nav class="sidebar" [class.sidebar--expandida]="expandida()">
+  <div class="sidebar__top">
+    <button
+      class="sidebar__hamburguesa"
+      type="button"
+      aria-label="Expandir o colapsar menú"
+      [attr.aria-expanded]="expandida()"
+      (click)="expandida.set(!expandida())"
+    >
+      <app-icon name="menu" />
+    </button>
+    @if (expandida()) {
+      <app-logo class="sidebar__marca" />
+    }
+  </div>
+  @if (expandida() && subtitle()) {
+    <p class="sidebar__subtitle">{{ subtitle() }}</p>
+  }
+
+  <div class="sidebar__section">
+    @for (item of itemsIn('top'); track item.id) {
+      <button
+        class="sidebar__item"
+        type="button"
+        [class.sidebar__item--active]="item.id === activeId()"
+        [attr.aria-label]="item.label"
+        [attr.title]="expandida() ? null : item.label"
+        (click)="itemSelected.emit(item.id)"
+      >
+        <app-icon [name]="item.icon" />
+        @if (expandida()) {
+          <span class="sidebar__label">{{ item.label }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <div class="sidebar__section sidebar__section--bottom">
+    @for (item of itemsIn('bottom'); track item.id) {
+      <button
+        class="sidebar__item"
+        type="button"
+        [class.sidebar__item--active]="item.id === activeId()"
+        [attr.aria-label]="item.label"
+        [attr.title]="expandida() ? null : item.label"
+        (click)="itemSelected.emit(item.id)"
+      >
+        <app-icon [name]="item.icon" />
+        @if (expandida()) {
+          <span class="sidebar__label">{{ item.label }}</span>
+        }
+      </button>
+    }
+  </div>
+</nav>
