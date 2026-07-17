@@ -2,18 +2,25 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { ParametrosNegocioDto, ParametrosOperativosDto, TalonarioDto } from './parametros.dto';
+import {
+  negocioToDto,
+  negocioToModel,
+  operativosToDto,
+  operativosToModel,
+  talonarioToModel,
+  talonarioToUpsertDto,
+} from './parametros.mapper';
+import { ParametrosNegocio, ParametrosOperativos, Talonario } from './parametros.model';
 import { UsuarioDto } from './usuario.dto';
 import { nuevoUsuarioToDto, usuarioToModel } from './usuario.mapper';
 import { NuevoUsuario, Usuario } from './usuario.model';
-
-export type TipoCatalogo = 'productores' | 'choferes' | 'vendedores' | 'materiales';
 
 @Injectable({ providedIn: 'root' })
 export class ConfiguracionService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiBaseUrl;
 
-  // --- Usuarios ---
   getUsuarios(): Observable<Usuario[]> {
     return this.http
       .get<UsuarioDto[]>(`${this.base}/usuarios`)
@@ -30,50 +37,37 @@ export class ConfiguracionService {
     return this.http.delete<void>(`${this.base}/usuarios/${id}`);
   }
 
-  // --- Catálogos maestros ---
-  agregarCatalogo(tipo: TipoCatalogo, body: Record<string, string>): Observable<unknown> {
-    return this.http.post(`${this.base}/catalogos/${tipo}`, body);
+  obtenerNegocio(): Observable<ParametrosNegocio> {
+    return this.http.get<ParametrosNegocioDto>(`${this.base}/parametros`).pipe(map(negocioToModel));
   }
 
-  agregarCampo(productorId: string, nombre: string): Observable<unknown> {
-    return this.http.post(`${this.base}/catalogos/productores/${productorId}/campos`, { nombre });
+  guardarNegocio(datos: ParametrosNegocio): Observable<ParametrosNegocio> {
+    return this.http
+      .put<ParametrosNegocioDto>(`${this.base}/parametros`, negocioToDto(datos))
+      .pipe(map(negocioToModel));
   }
 
-  eliminarCatalogo(tipo: TipoCatalogo, id: string): Observable<void> {
-    return this.http.delete<void>(`${this.base}/catalogos/${tipo}/${encodeURIComponent(id)}`);
+  obtenerOperativos(): Observable<ParametrosOperativos> {
+    return this.http
+      .get<ParametrosOperativosDto>(`${this.base}/parametros/operativos`)
+      .pipe(map(operativosToModel));
   }
 
-  crearTransportista(body: { nombre: string; cuit?: string }): Observable<unknown> {
-    return this.http.post(`${this.base}/catalogos/transportistas`, body);
+  guardarOperativos(datos: ParametrosOperativos): Observable<ParametrosOperativos> {
+    return this.http
+      .put<ParametrosOperativosDto>(`${this.base}/parametros/operativos`, operativosToDto(datos))
+      .pipe(map(operativosToModel));
   }
 
-  agregarCamion(
-    transportistaId: string,
-    body: { dominio: string; modelo?: string },
-  ): Observable<unknown> {
-    return this.http.post(
-      `${this.base}/catalogos/transportistas/${transportistaId}/camiones`,
-      body,
-    );
+  listarTalonarios(): Observable<Talonario[]> {
+    return this.http
+      .get<TalonarioDto[]>(`${this.base}/parametros/talonarios`)
+      .pipe(map((items) => items.map(talonarioToModel)));
   }
 
-  crearChoferEnTransportista(
-    transportistaId: string,
-    body: { nombre: string },
-  ): Observable<unknown> {
-    return this.http.post(
-      `${this.base}/catalogos/transportistas/${transportistaId}/choferes`,
-      body,
-    );
-  }
-
-  eliminarTransportista(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.base}/catalogos/transportistas/${id}`);
-  }
-
-  eliminarCamion(transportistaId: string, camionId: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.base}/catalogos/transportistas/${transportistaId}/camiones/${camionId}`,
-    );
+  guardarTalonario(datos: Talonario): Observable<Talonario> {
+    return this.http
+      .put<TalonarioDto>(`${this.base}/parametros/talonarios`, talonarioToUpsertDto(datos))
+      .pipe(map(talonarioToModel));
   }
 }

@@ -12,6 +12,56 @@
     </div>
   }
 
+  @if (esAdmin()) {
+    <section class="config__panel">
+      <h3>Parámetros de negocio</h3>
+      <form class="config__form" [formGroup]="formNegocio">
+        <app-text-input label="IVA %" type="number" formControlName="ivaPorcentaje" />
+        <app-select-input label="Moneda" [options]="monedaOptions" formControlName="moneda" />
+      </form>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarNegocio()">
+        Guardar negocio
+      </app-button>
+    </section>
+
+    <section class="config__panel">
+      <h3>Sucursal y condiciones de pago</h3>
+      <form class="config__form" [formGroup]="formOperativos">
+        <app-text-input label="Código sucursal" formControlName="sucursalCodigo" />
+        <app-text-input label="Nombre sucursal" formControlName="sucursalNombre" />
+        <app-text-input
+          label="Condiciones (separadas por coma)"
+          formControlName="condicionesPago"
+        />
+      </form>
+      <app-button
+        variant="primary"
+        size="md"
+        [disabled]="guardando()"
+        (clicked)="guardarOperativos()"
+      >
+        Guardar operativos
+      </app-button>
+    </section>
+
+    <section class="config__panel">
+      <h3>Talonarios</h3>
+      @if (talonarios().length === 0) {
+        <p class="config__hint">No hay talonarios. Se crean con el seed o al guardar uno nuevo.</p>
+      } @else {
+        <ul class="config__talonarios">
+          @for (t of talonarios(); track t.id) {
+            <li>
+              <strong>{{ t.tipoComprobante }}</strong>
+              · prefijo {{ t.prefijo || '—' }} · próximo {{ t.proximoNumero }} ·
+              {{ t.activo ? 'activo' : 'inactivo' }}
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
   <app-button variant="outline" size="md" (clicked)="cerrarSesion()">
     <app-icon name="log-out" />
     Cerrar sesión

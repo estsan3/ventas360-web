@@ -1,43 +1,76 @@
 <section class="page">
   <header class="page__header">
-    <p class="page__subtitle">Métricas de ventas y actividad de agentes de IA</p>
+    <p class="page__subtitle">Métricas comerciales en tiempo real desde la API</p>
   </header>
 
-  <div class="kpis">
-    <app-kpi-card
-      tone="brand"
-      label="Ventas del día"
-      value="$ 248.500"
-      trend="+8%"
-      trendTone="good"
-    >
-      <app-icon name="dollar" />
-    </app-kpi-card>
-    <app-kpi-card
-      tone="green"
-      label="Pedidos"
-      value="34"
-      trend="+5"
-      trendTone="neutral"
-      detail="12 pendientes de confirmación"
-    >
-      <app-icon name="package" />
-    </app-kpi-card>
-    <app-kpi-card tone="orange" label="Clientes activos" value="128" trend="+3" trendTone="neutral">
-      <app-icon name="user" />
-    </app-kpi-card>
-    <app-kpi-card
-      tone="neutral"
-      label="Agentes en curso"
-      value="6"
-      detail="2 cotizando, 4 en seguimiento"
-    >
-      <app-icon name="message" />
-    </app-kpi-card>
-  </div>
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="!kpis()"
+    emptyMessage="Sin datos de reportería"
+    [skeletonRows]="2"
+  >
+    @if (kpis(); as k) {
+      <div class="kpis">
+        <app-kpi-card
+          tone="brand"
+          label="Ventas del día"
+          [value]="fmt(k.montoVentasDia)"
+          [detail]="k.ventasDia + ' comprobantes'"
+          trendTone="neutral"
+        >
+          <app-icon name="dollar" />
+        </app-kpi-card>
+        <app-kpi-card
+          tone="green"
+          label="Ventas del mes"
+          [value]="fmt(k.montoVentasMes)"
+          [detail]="k.ventasMes + ' comprobantes · ticket ' + fmt(k.ticketPromedio)"
+          trendTone="neutral"
+        >
+          <app-icon name="dollar" />
+        </app-kpi-card>
+        <app-kpi-card
+          tone="orange"
+          label="Pendientes"
+          [value]="'' + (k.pedidosPendientes + k.remitosPendientes)"
+          [detail]="
+            k.pedidosPendientes +
+            ' pedidos · ' +
+            k.remitosPendientes +
+            ' remitos · ' +
+            k.remitosPorFacturar +
+            ' por facturar'
+          "
+          trendTone="neutral"
+        >
+          <app-icon name="clock" />
+        </app-kpi-card>
+        <app-kpi-card
+          tone="neutral"
+          label="Clientes activos"
+          [value]="'' + k.clientesActivos"
+          [detail]="k.productosActivos + ' artículos activos'"
+          trendTone="neutral"
+        >
+          <app-icon name="user" />
+        </app-kpi-card>
+      </div>
 
-  <p class="page__note">
-    Los agentes de IA gestionan seguimiento y cotizaciones automáticamente. Los números son
-    demostrativos hasta conectar la API de ventas.
-  </p>
+      <section class="top card">
+        <h3>Top artículos</h3>
+        @if (filasTop().length === 0) {
+          <p class="top__empty">Todavía no hay ventas confirmadas para rankear.</p>
+        } @else {
+          <app-table
+            [columns]="columnasTop"
+            [rows]="filasTop()"
+            headerVariant="soft"
+            [striped]="true"
+            [compact]="true"
+          />
+        }
+      </section>
+    }
+  </app-state-wrapper>
 </section>
