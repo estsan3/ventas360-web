@@ -1,7 +1,9 @@
 /**
- * Desarrollo local: el proxy (proxy.conf.json) reescribe /api → http://localhost:8000/api/v1
+ * Desarrollo local: proxy reescribe /api → http://localhost:8001/api/v1
+ * (ver proxy.conf.json). No commitear secrets.
  */
 export const environment = {
+  production: false,
   apiBaseUrl: '/api',
   mockApi: false,
 };

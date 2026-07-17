@@ -7,7 +7,7 @@ import {
   asyncLoading,
   asyncSuccess,
 } from '../../../core/models/async-state';
-import { CrearPedido, EstadoPedido, Pedido } from './pedido.model';
+import { ClienteRef, CrearPedido, EstadoPedido, Pedido, ProductoRef } from './pedido.model';
 import { VentasService } from './ventas.service';
 
 @Injectable({ providedIn: 'root' })
@@ -15,8 +15,12 @@ export class VentasStore {
   private readonly api = inject(VentasService);
 
   private readonly _pedidos = signal<AsyncState<Pedido[]>>(asyncIdle());
+  private readonly _clientesRef = signal<ClienteRef[]>([]);
+  private readonly _productosRef = signal<ProductoRef[]>([]);
 
   readonly pedidos = this._pedidos.asReadonly();
+  readonly clientesRef = this._clientesRef.asReadonly();
+  readonly productosRef = this._productosRef.asReadonly();
 
   cargar(): void {
     if (this._pedidos().status === 'loading') {
@@ -28,6 +32,11 @@ export class VentasStore {
       next: (items) => this._pedidos.set(asyncSuccess(items)),
       error: (error: Error) => this._pedidos.set({ ...asyncError(error.message), data: prev }),
     });
+  }
+
+  cargarReferencias(): void {
+    this.api.listarClientesRef().subscribe((items) => this._clientesRef.set(items));
+    this.api.listarProductosRef().subscribe((items) => this._productosRef.set(items));
   }
 
   crear(body: CrearPedido): Observable<Pedido> {

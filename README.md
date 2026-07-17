@@ -1,17 +1,28 @@
 # Ventas360 Web
 
-Backoffice web de **Ventas360**: gestión de ventas retail con agentes de IA. Panel para administradores y vendedores con dashboard, clientes, productos y ventas.
+Backoffice Angular de **Ventas360**: gestión de ventas/comercio con agentes de IA.
+
+Arquitectura: feature-based, smart/dumb, Signals, dto≠modelo, cookie httpOnly.  
+Detalle: [docs/ARQUITECTURA-WEB.md](docs/ARQUITECTURA-WEB.md) y `.cursor/rules/arquitectura-angular.mdc`.
 
 ## Inicio rápido
 
 ```bash
 npm install
-npm start
+npm start -- --port 4201
 ```
 
-Abrir [http://localhost:4200/](http://localhost:4200/).
+Abrir [http://localhost:4201/](http://localhost:4201/).
 
-El dev server usa proxy hacia la API en `http://localhost:8000` (ver `proxy.conf.json`).
+Proxy: `/api` → `http://localhost:8001/api/v1` (`proxy.conf.json`), con cookies.
+
+API en paralelo:
+
+```bash
+cd ../ventas360-api && poetry run uvicorn app.main:app --reload --port 8001
+```
+
+CORS del API debe incluir `http://localhost:4201` (ya en default).
 
 ### Login demo
 
@@ -22,20 +33,20 @@ El dev server usa proxy hacia la API en `http://localhost:8000` (ver `proxy.conf
 
 ## Rutas
 
-| Ruta             | Descripción                           |
-| ---------------- | ------------------------------------- |
-| `/login`         | Autenticación                         |
-| `/dashboard`     | Resumen de ventas (default)           |
-| `/clientes`      | Gestión de clientes (placeholder)     |
-| `/productos`     | Catálogo de productos (placeholder)   |
-| `/ventas`        | Registro de ventas (placeholder)      |
-| `/configuracion` | Perfil del usuario y cierre de sesión |
+| Ruta             | Descripción                 |
+| ---------------- | --------------------------- |
+| `/login`         | Autenticación (cookie)      |
+| `/dashboard`     | Resumen                     |
+| `/clientes`      | ABM clientes + config modal |
+| `/productos`     | Catálogo productos          |
+| `/ventas`        | Pedidos + estados           |
+| `/configuracion` | Perfil y logout             |
 
 ## Scripts
 
-| Comando         | Descripción      |
-| --------------- | ---------------- |
-| `npm start`     | Dev server       |
-| `npm run build` | Build producción |
-| `npm test`      | Tests unitarios  |
-| `npm run lint`  | ESLint           |
+| Comando             | Descripción |
+| ------------------- | ----------- |
+| `npm start`         | Dev server  |
+| `npm run build`     | Build prod  |
+| `npm test`          | Vitest      |
+| `npm run storybook` | UI kit      |

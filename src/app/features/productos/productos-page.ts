@@ -6,16 +6,14 @@ import { NotificationStore } from '../../notifications/state/notification.store'
 import { Badge } from '../../shared/ui/badge/badge';
 import { Button } from '../../shared/ui/button/button';
 import { Icon } from '../../shared/ui/icon/icon';
+import { CatalogToolbar } from '../../shared/ui/catalog-toolbar/catalog-toolbar';
 import { TextInput } from '../../shared/ui/input/text-input';
 import { Modal } from '../../shared/ui/modal/modal';
-import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
+import { SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
 import { TableCellDef } from '../../shared/ui/table/table-cell-def';
-import { ClientesStore } from '../clientes/data-access/clientes.store';
-import { ETIQUETAS_ESTADO } from '../ventas/data-access/pedido.model';
-import { VentasStore } from '../ventas/data-access/ventas.store';
 import { FiltroActivo, Producto } from './data-access/producto.model';
 import { ProductosStore } from './data-access/productos.store';
 
@@ -51,9 +49,9 @@ function formatearPrecio(valor: number): string {
     Badge,
     Button,
     Icon,
+    CatalogToolbar,
     TextInput,
     Modal,
-    SelectInput,
     SideDrawer,
     StateWrapper,
     Table,
@@ -66,8 +64,6 @@ function formatearPrecio(valor: number): string {
 export class ProductosPage {
   private readonly fb = inject(FormBuilder);
   private readonly store = inject(ProductosStore);
-  private readonly ventasStore = inject(VentasStore);
-  private readonly clientesStore = inject(ClientesStore);
   private readonly auth = inject(AuthStore);
   private readonly notifications = inject(NotificationStore);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -135,33 +131,12 @@ export class ProductosPage {
     return det ? `Configuración · ${det.nombre}` : 'Configuración';
   });
 
-  protected readonly pedidosDelProducto = computed(() => {
-    const id = this.seleccionadoId();
-    if (!id) {
-      return [];
-    }
-    const clientes = new Map(
-      (this.clientesStore.clientes().data ?? []).map((c) => [c.id, c.nombre]),
-    );
-    return (this.ventasStore.pedidos().data ?? [])
-      .flatMap((p) =>
-        p.lineas
-          .filter((l) => l.producto_id === id)
-          .map((l) => ({
-            id: `${p.id}-${l.id}`,
-            fecha: p.fecha,
-            cliente: clientes.get(p.cliente_id) ?? p.cliente_id,
-            estadoLabel: ETIQUETAS_ESTADO[p.estado],
-            cantidad: l.cantidad,
-          })),
-      )
-      .map((row) => row as Record<string, unknown>);
-  });
+  protected readonly pedidosDelProducto = computed(() =>
+    this.store.pedidosProducto().map((row) => row as unknown as Record<string, unknown>),
+  );
 
   constructor() {
     this.store.cargar();
-    this.ventasStore.cargar();
-    this.clientesStore.cargar();
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {
         this.masterDirty.set(true);
@@ -196,6 +171,7 @@ export class ProductosPage {
     }
     this.masterDirty.set(false);
     this.configModalAbierto.set(true);
+    this.store.cargarPedidosDelProducto(id);
   }
 
   protected async cerrarConfigModal(): Promise<void> {

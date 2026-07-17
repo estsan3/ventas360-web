@@ -4,8 +4,7 @@ import { User } from '../models/user';
 import { AuthService, LoginCredentials } from '../services/auth.service';
 
 /**
- * Estado de sesión compartido (Signals). Único punto de verdad sobre
- * el usuario autenticado; guard e interceptors lo consultan.
+ * Estado de sesión compartido (Signals). Vive en core porque cruza features.
  */
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
@@ -26,7 +25,7 @@ export class AuthStore {
     return this.api.logout().pipe(tap(() => this._user.set(null)));
   }
 
-  /** Reconstruye la sesión desde el token guardado al recargar la página */
+  /** Reconstruye la sesión desde la cookie httpOnly al recargar. */
   restoreSession(): void {
     this._restoring.set(true);
     this.api.me().subscribe({
@@ -34,7 +33,10 @@ export class AuthStore {
         this._user.set(user);
         this._restoring.set(false);
       },
-      error: () => this._restoring.set(false),
+      error: () => {
+        this._user.set(null);
+        this._restoring.set(false);
+      },
     });
   }
 }

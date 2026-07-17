@@ -9,14 +9,17 @@ import {
 } from '../../../core/models/async-state';
 import { ActualizarCliente, Cliente, CrearCliente } from './cliente.model';
 import { ClientesService } from './clientes.service';
+import { PedidoResumen } from './pedido-resumen.model';
 
 @Injectable({ providedIn: 'root' })
 export class ClientesStore {
   private readonly api = inject(ClientesService);
 
   private readonly _clientes = signal<AsyncState<Cliente[]>>(asyncIdle());
+  private readonly _pedidosCliente = signal<PedidoResumen[]>([]);
 
   readonly clientes = this._clientes.asReadonly();
+  readonly pedidosCliente = this._pedidosCliente.asReadonly();
 
   cargar(): void {
     if (this._clientes().status === 'loading') {
@@ -65,5 +68,13 @@ export class ClientesStore {
         }
       }),
     );
+  }
+
+  cargarPedidosDelCliente(clienteId: string): void {
+    this._pedidosCliente.set([]);
+    this.api.listarPedidosDelCliente(clienteId).subscribe({
+      next: (items) => this._pedidosCliente.set(items),
+      error: () => this._pedidosCliente.set([]),
+    });
   }
 }

@@ -6,17 +6,23 @@ import { NotificationStore } from '../../notifications/state/notification.store'
 import { Badge } from '../../shared/ui/badge/badge';
 import { Button } from '../../shared/ui/button/button';
 import { Icon } from '../../shared/ui/icon/icon';
+import { CatalogToolbar } from '../../shared/ui/catalog-toolbar/catalog-toolbar';
 import { TextInput } from '../../shared/ui/input/text-input';
 import { Modal } from '../../shared/ui/modal/modal';
-import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
+import { SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
 import { TableCellDef } from '../../shared/ui/table/table-cell-def';
-import { ETIQUETAS_ESTADO } from '../ventas/data-access/pedido.model';
-import { VentasStore } from '../ventas/data-access/ventas.store';
 import { Cliente, FiltroActivo } from './data-access/cliente.model';
 import { ClientesStore } from './data-access/clientes.store';
+
+const ETIQUETAS_ESTADO: Record<string, string> = {
+  borrador: 'Borrador',
+  confirmado: 'Confirmado',
+  entregado: 'Entregado',
+  cancelado: 'Cancelado',
+};
 
 const COLUMNAS: TableColumn[] = [
   { key: 'nombre', label: 'Nombre' },
@@ -49,9 +55,9 @@ function formatearPrecio(valor: number): string {
     Badge,
     Button,
     Icon,
+    CatalogToolbar,
     TextInput,
     Modal,
-    SelectInput,
     SideDrawer,
     StateWrapper,
     Table,
@@ -64,7 +70,6 @@ function formatearPrecio(valor: number): string {
 export class ClientesPage {
   private readonly fb = inject(FormBuilder);
   private readonly store = inject(ClientesStore);
-  private readonly ventasStore = inject(VentasStore);
   private readonly auth = inject(AuthStore);
   private readonly notifications = inject(NotificationStore);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -133,27 +138,20 @@ export class ClientesPage {
     return det ? `Configuración · ${det.nombre}` : 'Configuración';
   });
 
-  protected readonly pedidosDelCliente = computed(() => {
-    const id = this.seleccionadoId();
-    if (!id) {
-      return [];
-    }
-    return (this.ventasStore.pedidos().data ?? [])
-      .filter((p) => p.cliente_id === id)
-      .map(
-        (p) =>
-          ({
-            ...p,
-            estadoLabel: ETIQUETAS_ESTADO[p.estado],
-            totalFmt: formatearPrecio(p.total),
-            lineasCount: p.lineas.length,
-          }) as Record<string, unknown>,
-      );
-  });
+  protected readonly pedidosDelCliente = computed(() =>
+    this.store.pedidosCliente().map(
+      (p) =>
+        ({
+          ...p,
+          estadoLabel: ETIQUETAS_ESTADO[p.estado] ?? p.estado,
+          totalFmt: formatearPrecio(p.total),
+          lineasCount: p.lineasCount,
+        }) as Record<string, unknown>,
+    ),
+  );
 
   constructor() {
     this.store.cargar();
-    this.ventasStore.cargar();
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {
         this.masterDirty.set(true);
@@ -187,6 +185,7 @@ export class ClientesPage {
     }
     this.masterDirty.set(false);
     this.configModalAbierto.set(true);
+    this.store.cargarPedidosDelCliente(id);
   }
 
   protected async cerrarConfigModal(): Promise<void> {

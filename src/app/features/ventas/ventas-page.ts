@@ -18,8 +18,6 @@ import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
 import { TableCellDef } from '../../shared/ui/table/table-cell-def';
-import { ClientesStore } from '../clientes/data-access/clientes.store';
-import { ProductosStore } from '../productos/data-access/productos.store';
 import {
   ETIQUETAS_ESTADO,
   EstadoPedido,
@@ -89,8 +87,6 @@ function badgeEstado(estado: EstadoPedido): BadgeVariant {
 export class VentasPage {
   private readonly fb = inject(FormBuilder);
   private readonly store = inject(VentasStore);
-  private readonly clientesStore = inject(ClientesStore);
-  private readonly productosStore = inject(ProductosStore);
   private readonly notifications = inject(NotificationStore);
   private readonly confirmDialog = inject(ConfirmDialogService);
 
@@ -115,19 +111,21 @@ export class VentasPage {
   ];
 
   protected readonly form = this.fb.nonNullable.group({
-    cliente_id: ['', Validators.required],
+    clienteId: ['', Validators.required],
     fecha: [''],
     lineas: this.fb.array([this.nuevaLinea()]),
   });
 
   protected readonly clienteOptions = computed<SelectOption[]>(() =>
-    (this.clientesStore.clientes().data ?? [])
+    this.store
+      .clientesRef()
       .filter((c) => c.activo)
       .map((c) => ({ value: c.id, label: c.nombre })),
   );
 
   protected readonly productoOptions = computed<SelectOption[]>(() =>
-    (this.productosStore.productos().data ?? [])
+    this.store
+      .productosRef()
       .filter((p) => p.activo)
       .map((p) => ({
         value: p.id,
@@ -137,7 +135,7 @@ export class VentasPage {
 
   private readonly mapaClientes = computed(() => {
     const map = new Map<string, string>();
-    for (const c of this.clientesStore.clientes().data ?? []) {
+    for (const c of this.store.clientesRef()) {
       map.set(c.id, c.nombre);
     }
     return map;
@@ -145,7 +143,7 @@ export class VentasPage {
 
   private readonly mapaProductos = computed(() => {
     const map = new Map<string, string>();
-    for (const p of this.productosStore.productos().data ?? []) {
+    for (const p of this.store.productosRef()) {
       map.set(p.id, `${p.sku} · ${p.nombre}`);
     }
     return map;
@@ -160,7 +158,7 @@ export class VentasPage {
     if (q) {
       const clientes = this.mapaClientes();
       items = items.filter((p) => {
-        const nombre = clientes.get(p.cliente_id) ?? '';
+        const nombre = clientes.get(p.clienteId) ?? '';
         return (
           nombre.toLowerCase().includes(q) ||
           p.id.toLowerCase().includes(q) ||
@@ -173,7 +171,7 @@ export class VentasPage {
       (p) =>
         ({
           ...p,
-          cliente: clientes.get(p.cliente_id) ?? p.cliente_id,
+          cliente: clientes.get(p.clienteId) ?? p.clienteId,
           totalFmt: formatearPrecio(p.total),
           lineasCount: p.lineas.length,
           estadoLabel: ETIQUETAS_ESTADO[p.estado],
@@ -192,9 +190,9 @@ export class VentasPage {
       (l) =>
         ({
           ...l,
-          producto: productos.get(l.producto_id) ?? l.producto_id,
-          precioFmt: formatearPrecio(l.precio_unitario),
-          subtotalFmt: formatearPrecio(l.cantidad * l.precio_unitario),
+          producto: productos.get(l.productoId) ?? l.productoId,
+          precioFmt: formatearPrecio(l.precioUnitario),
+          subtotalFmt: formatearPrecio(l.cantidad * l.precioUnitario),
         }) as Record<string, unknown>,
     );
   });
@@ -216,7 +214,7 @@ export class VentasPage {
     if (!pedido) {
       return '';
     }
-    return this.mapaClientes().get(pedido.cliente_id) ?? pedido.cliente_id;
+    return this.mapaClientes().get(pedido.clienteId) ?? pedido.clienteId;
   });
 
   protected readonly configModalTitulo = computed(() => {
@@ -233,8 +231,7 @@ export class VentasPage {
 
   constructor() {
     this.store.cargar();
-    this.clientesStore.cargar();
-    this.productosStore.cargar();
+    this.store.cargarReferencias();
     this.form.valueChanges.subscribe(() => {
       if (this.drawerCrear()) {
         this.formDirty.set(true);
@@ -255,7 +252,8 @@ export class VentasPage {
   }
 
   protected abrirCrear(): void {
-    this.form.reset({ cliente_id: '', fecha: '' });
+    this.store.cargarReferencias();
+    this.form.reset({ clienteId: '', fecha: '' });
     this.lineas.clear();
     this.lineas.push(this.nuevaLinea());
     this.formDirty.set(false);
@@ -294,10 +292,10 @@ export class VentasPage {
     const raw = this.form.getRawValue();
     const lineas = raw.lineas
       .map((l) => ({
-        producto_id: l.producto_id,
+        productoId: l.productoId,
         cantidad: Number(l.cantidad),
       }))
-      .filter((l) => l.producto_id && l.cantidad > 0);
+      .filter((l) => l.productoId && l.cantidad > 0);
 
     if (lineas.length === 0) {
       this.notifications.error('Pedido incompleto', 'Agregá al menos una línea válida');
@@ -307,7 +305,7 @@ export class VentasPage {
     this.guardando.set(true);
     this.store
       .crear({
-        cliente_id: raw.cliente_id,
+        clienteId: raw.clienteId,
         fecha: raw.fecha || null,
         lineas,
       })
@@ -324,7 +322,6 @@ export class VentasPage {
   }
 
   protected abrirConfig(pedido: Pedido): void {
-    // Preferir la versión actual del store (p. ej. tras un cambio de estado).
     const actual = (this.estado().data ?? []).find((p) => p.id === pedido.id) ?? pedido;
     this.pedidoSeleccionado.set(actual);
     this.configModalAbierto.set(true);
@@ -364,7 +361,7 @@ export class VentasPage {
 
   private nuevaLinea() {
     return this.fb.nonNullable.group({
-      producto_id: ['', Validators.required],
+      productoId: ['', Validators.required],
       cantidad: ['1', [Validators.required]],
     });
   }

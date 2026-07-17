@@ -1,10 +1,13 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
+/**
+ * Shell + lazy load por feature (`features/<dominio>/<dominio>.routes.ts`).
+ */
 export const routes: Routes = [
   {
     path: 'login',
-    loadComponent: () => import('./features/login/login-page').then((m) => m.LoginPage),
+    loadChildren: () => import('./features/login/login.routes').then((m) => m.LOGIN_ROUTES),
   },
   {
     path: '',
@@ -13,27 +16,29 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () =>
-          import('./features/dashboard/dashboard-page').then((m) => m.DashboardPage),
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       },
       {
         path: 'clientes',
-        loadComponent: () =>
-          import('./features/clientes/clientes-page').then((m) => m.ClientesPage),
+        loadChildren: () =>
+          import('./features/clientes/clientes.routes').then((m) => m.CLIENTES_ROUTES),
       },
       {
         path: 'productos',
-        loadComponent: () =>
-          import('./features/productos/productos-page').then((m) => m.ProductosPage),
+        loadChildren: () =>
+          import('./features/productos/productos.routes').then((m) => m.PRODUCTOS_ROUTES),
       },
       {
         path: 'ventas',
-        loadComponent: () => import('./features/ventas/ventas-page').then((m) => m.VentasPage),
+        loadChildren: () => import('./features/ventas/ventas.routes').then((m) => m.VENTAS_ROUTES),
       },
       {
         path: 'configuracion',
-        loadComponent: () =>
-          import('./features/configuracion/configuracion-page').then((m) => m.ConfiguracionPage),
+        loadChildren: () =>
+          import('./features/configuracion/configuracion.routes').then(
+            (m) => m.CONFIGURACION_ROUTES,
+          ),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],

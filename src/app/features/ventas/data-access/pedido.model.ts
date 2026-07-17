@@ -1,17 +1,15 @@
-/** DTOs alineados con la API de ventas. */
-
 export type EstadoPedido = 'borrador' | 'confirmado' | 'entregado' | 'cancelado';
 
 export interface LineaPedido {
   id: string;
-  producto_id: string;
+  productoId: string;
   cantidad: number;
-  precio_unitario: number;
+  precioUnitario: number;
 }
 
 export interface Pedido {
   id: string;
-  cliente_id: string;
+  clienteId: string;
   estado: EstadoPedido;
   total: number;
   fecha: string;
@@ -19,19 +17,32 @@ export interface Pedido {
 }
 
 export interface CrearLineaPedido {
-  producto_id: string;
+  productoId: string;
   cantidad: number;
 }
 
 export interface CrearPedido {
-  cliente_id: string;
+  clienteId: string;
   fecha?: string | null;
   lineas: CrearLineaPedido[];
 }
 
+export interface ClienteRef {
+  id: string;
+  nombre: string;
+  activo: boolean;
+}
+
+export interface ProductoRef {
+  id: string;
+  sku: string;
+  nombre: string;
+  activo: boolean;
+  precio: number;
+}
+
 export type FiltroEstado = 'todos' | EstadoPedido;
 
-/** Transiciones válidas según la BO del backend. */
 export const TRANSICIONES: Record<EstadoPedido, EstadoPedido[]> = {
   borrador: ['confirmado', 'cancelado'],
   confirmado: ['entregado', 'cancelado'],

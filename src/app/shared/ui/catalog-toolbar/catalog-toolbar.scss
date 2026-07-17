@@ -1,0 +1,19 @@
+@use 'tokens' as t;
+
+.card {
+  padding: t.$space-lg;
+  background: t.$color-surface;
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-lg;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: t.$space-md;
+  align-items: end;
+
+  @media (max-width: t.$breakpoint-tablet) {
+    grid-template-columns: 1fr;
+  }
+}

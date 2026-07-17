@@ -9,20 +9,14 @@
     }
   </header>
 
-  <div class="toolbar card">
-    <app-text-input
-      label="Buscar"
-      placeholder="SKU o nombre…"
-      [ngModel]="busqueda()"
-      (ngModelChange)="busqueda.set($event)"
-    />
-    <app-select-input
-      label="Estado"
-      [options]="filtroOptions"
-      [ngModel]="filtro()"
-      (ngModelChange)="filtro.set($event)"
-    />
-  </div>
+  <app-catalog-toolbar
+    [busqueda]="busqueda()"
+    [filtro]="filtro()"
+    [filtroOptions]="filtroOptions"
+    placeholderBusqueda="SKU o nombre…"
+    (busquedaChange)="busqueda.set($event)"
+    (filtroChange)="filtro.set($any($event))"
+  />
 
   <app-state-wrapper
     [status]="estado().status"

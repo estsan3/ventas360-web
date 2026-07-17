@@ -1,4 +1,3 @@
-/** DTO alineado con la API (`ProductoResponse`). */
 export interface Producto {
   id: string;
   sku: string;

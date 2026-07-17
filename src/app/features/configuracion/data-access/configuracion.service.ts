@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { UsuarioDto } from './usuario.dto';
+import { nuevoUsuarioToDto, usuarioToModel } from './usuario.mapper';
 import { NuevoUsuario, Usuario } from './usuario.model';
 
 export type TipoCatalogo = 'productores' | 'choferes' | 'vendedores' | 'materiales';
@@ -13,11 +15,15 @@ export class ConfiguracionService {
 
   // --- Usuarios ---
   getUsuarios(): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(`${this.base}/usuarios`);
+    return this.http
+      .get<UsuarioDto[]>(`${this.base}/usuarios`)
+      .pipe(map((items) => items.map(usuarioToModel)));
   }
 
   crearUsuario(usuario: NuevoUsuario): Observable<Usuario> {
-    return this.http.post<Usuario>(`${this.base}/usuarios`, usuario);
+    return this.http
+      .post<UsuarioDto>(`${this.base}/usuarios`, nuevoUsuarioToDto(usuario))
+      .pipe(map(usuarioToModel));
   }
 
   darDeBaja(id: string): Observable<void> {

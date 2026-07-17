@@ -1,4 +1,3 @@
-/** El DTO del backend tiene la misma forma (campos simples) */
 export interface Usuario {
   id: string;
   nombre: string;

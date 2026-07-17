@@ -1,4 +1,4 @@
-/** DTO alineado con la API (`ClienteResponse`). */
+/** Modelo de dominio del front. */
 export interface Cliente {
   id: string;
   nombre: string;

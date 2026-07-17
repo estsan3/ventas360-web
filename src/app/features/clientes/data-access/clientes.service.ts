@@ -1,31 +1,50 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { ClienteDto } from './cliente.dto';
+import { actualizarClienteToDto, clienteToModel, crearClienteToDto } from './cliente.mapper';
 import { ActualizarCliente, Cliente, CrearCliente } from './cliente.model';
+import { PedidoResumenDto } from './pedido-resumen.dto';
+import { pedidoResumenToModel } from './pedido-resumen.mapper';
+import { PedidoResumen } from './pedido-resumen.model';
 
 @Injectable({ providedIn: 'root' })
 export class ClientesService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/clientes`;
+  private readonly api = environment.apiBaseUrl;
 
   listar(): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(this.base);
+    return this.http.get<ClienteDto[]>(this.base).pipe(map((items) => items.map(clienteToModel)));
   }
 
   obtener(id: string): Observable<Cliente> {
-    return this.http.get<Cliente>(`${this.base}/${id}`);
+    return this.http.get<ClienteDto>(`${this.base}/${id}`).pipe(map(clienteToModel));
   }
 
   crear(body: CrearCliente): Observable<Cliente> {
-    return this.http.post<Cliente>(this.base, body);
+    return this.http.post<ClienteDto>(this.base, crearClienteToDto(body)).pipe(map(clienteToModel));
   }
 
   actualizar(id: string, body: ActualizarCliente): Observable<Cliente> {
-    return this.http.put<Cliente>(`${this.base}/${id}`, body);
+    return this.http
+      .put<ClienteDto>(`${this.base}/${id}`, actualizarClienteToDto(body))
+      .pipe(map(clienteToModel));
   }
 
   desactivar(id: string): Observable<Cliente> {
-    return this.http.patch<Cliente>(`${this.base}/${id}/desactivar`, {});
+    return this.http
+      .patch<ClienteDto>(`${this.base}/${id}/desactivar`, {})
+      .pipe(map(clienteToModel));
+  }
+
+  /** Pedidos del cliente vía HTTP propio (sin importar el feature ventas). */
+  listarPedidosDelCliente(clienteId: string): Observable<PedidoResumen[]> {
+    return this.http
+      .get<PedidoResumenDto[]>(`${this.api}/ventas/pedidos`)
+      .pipe(
+        map((items) => items.filter((p) => p.cliente_id === clienteId).map(pedidoResumenToModel)),
+      );
   }
 }

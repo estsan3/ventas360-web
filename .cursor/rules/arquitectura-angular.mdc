@@ -1,0 +1,29 @@
+---
+description: Arquitectura Angular Ventas360 (feature-based, smart/dumb, Signals, dto≠modelo). Heredada del prompt Agro360.
+alwaysApply: true
+---
+
+# Arquitectura web Ventas360
+
+Angular standalone (sin NgModules). Backend: FastAPI REST. Target: PC + tablet.
+
+## Carpetas
+
+- `core/` — singleton: interceptors, guards, services, models, layout, state transversal
+- `shared/` — presentacional (`ui/`, pipes, directives, validators); sin HTTP ni stores
+- `features/<dominio>/` — `data-access/` + pantalla smart + `ui/` dumb + `<dominio>.routes.ts`
+- `notifications/` — desacoplado (store Signals + transporte)
+- Tokens en `src/styles/_tokens.scss` (nunca hardcodear breakpoints/colores)
+
+## Reglas
+
+1. Dumb (`shared/ui`, `features/*/ui`): solo `input()`/`output()`; OnPush; sin HTTP/stores.
+2. Smart: una por pantalla; único que inyecta stores/services.
+3. Un feature **nunca** importa otro feature; solo `core`, `shared` o su `data-access`.
+4. data-access: `*.dto.ts` + `*.model.ts` + `*.mapper.ts` + `*.service.ts` + `*.store.ts`.
+5. Estado: Signals en stores `providedIn: 'root'`; mutaciones solo en el store.
+6. Auth: cookie httpOnly + `withCredentials` (no localStorage/sessionStorage para JWT).
+7. Lazy loading: rutas en `features/<dominio>/<dominio>.routes.ts`.
+8. Errores HTTP → interceptor → `NotificationStore`; no try/catch de toasts en pantallas.
+9. Formularios: Reactive Forms tipados (`NonNullableFormBuilder`).
+10. Storybook para `shared/ui`; Vitest (services/stores) + Playwright (flujos críticos).

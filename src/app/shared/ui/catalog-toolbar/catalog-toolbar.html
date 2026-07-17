@@ -1,0 +1,14 @@
+<div class="toolbar card">
+  <app-text-input
+    label="Buscar"
+    [placeholder]="placeholderBusqueda()"
+    [ngModel]="busqueda()"
+    (ngModelChange)="busquedaChange.emit($event)"
+  />
+  <app-select-input
+    label="Estado"
+    [options]="filtroOptions()"
+    [ngModel]="filtro()"
+    (ngModelChange)="filtroChange.emit($event)"
+  />
+</div>

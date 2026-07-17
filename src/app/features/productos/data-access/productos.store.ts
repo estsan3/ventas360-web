@@ -8,15 +8,17 @@ import {
   asyncSuccess,
 } from '../../../core/models/async-state';
 import { ActualizarProducto, CrearProducto, Producto } from './producto.model';
-import { ProductosService } from './productos.service';
+import { PedidoProductoResumen, ProductosService } from './productos.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProductosStore {
   private readonly api = inject(ProductosService);
 
   private readonly _productos = signal<AsyncState<Producto[]>>(asyncIdle());
+  private readonly _pedidosProducto = signal<PedidoProductoResumen[]>([]);
 
   readonly productos = this._productos.asReadonly();
+  readonly pedidosProducto = this._pedidosProducto.asReadonly();
 
   cargar(): void {
     if (this._productos().status === 'loading') {
@@ -52,5 +54,13 @@ export class ProductosStore {
         }
       }),
     );
+  }
+
+  cargarPedidosDelProducto(productoId: string): void {
+    this._pedidosProducto.set([]);
+    this.api.listarPedidosDelProducto(productoId).subscribe({
+      next: (items) => this._pedidosProducto.set(items),
+      error: () => this._pedidosProducto.set([]),
+    });
   }
 }
