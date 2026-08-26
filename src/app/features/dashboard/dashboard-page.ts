@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { Router } from '@angular/router';
 import { AuthStore } from '../../core/state/auth.store';
 import { DashboardStore } from './data-access/dashboard.store';
+import { KPIS_VACIOS } from './data-access/kpi.model';
 
 export interface BarraSemana {
   label: string;
@@ -9,104 +10,37 @@ export interface BarraSemana {
   tono: 'light' | 'mid' | 'today';
 }
 
-export interface ComprobanteDash {
-  numero: string;
-  cliente: string;
-  total: string;
-  estado: string;
-  badge: 'success' | 'warning' | 'neutral';
+function formatearMoneda(valor: number, moneda = 'ARS'): string {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: moneda || 'ARS',
+    maximumFractionDigits: 0,
+  })
+    .format(valor)
+    .replace(/\u00a0/g, ' ');
 }
 
-export interface StockUrgente {
-  nombre: string;
-  detalle: string;
-  stock: string;
-  tono: 'danger' | 'warning';
+function badgeEstado(estado: string): 'success' | 'warning' | 'neutral' {
+  const e = estado.toLowerCase();
+  if (e.includes('confirm') || e.includes('entreg') || e.includes('factur')) {
+    return 'success';
+  }
+  if (e.includes('borrador') || e.includes('vigente') || e.includes('acept')) {
+    return 'warning';
+  }
+  return 'neutral';
 }
 
-export interface VencimientoDash {
-  cliente: string;
-  fecha: string;
-  monto: string;
-  vencido: boolean;
+function formatearVencimiento(fecha: string | null, vencido: boolean): string {
+  if (!fecha) {
+    return 'Sin fecha de cargo';
+  }
+  const txt = new Date(`${fecha}T00:00:00`).toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+  });
+  return vencido ? `Venció el ${txt}` : `Desde el ${txt}`;
 }
-
-/** Contenido del mock DC — distribución y copy 1:1. */
-const BARRAS: BarraSemana[] = [
-  { label: 'Sáb', altura: 52, tono: 'light' },
-  { label: 'Dom', altura: 30, tono: 'light' },
-  { label: 'Lun', altura: 66, tono: 'mid' },
-  { label: 'Mar', altura: 58, tono: 'mid' },
-  { label: 'Mié', altura: 74, tono: 'mid' },
-  { label: 'Jue', altura: 62, tono: 'mid' },
-  { label: 'Hoy', altura: 88, tono: 'today' },
-];
-
-const COMPROBANTES: ComprobanteDash[] = [
-  {
-    numero: 'FAC A 0003-00014582',
-    cliente: 'Constructora Delta SRL',
-    total: '$ 148.900,00',
-    estado: 'Cobrada',
-    badge: 'success',
-  },
-  {
-    numero: 'FAC B 0003-00014581',
-    cliente: 'Rodríguez, Aníbal',
-    total: '$ 23.450,00',
-    estado: 'Cobrada',
-    badge: 'success',
-  },
-  {
-    numero: 'FAC A 0003-00014580',
-    cliente: 'Agropecuaria El Ceibo',
-    total: '$ 86.200,00',
-    estado: 'Cta. cte.',
-    badge: 'warning',
-  },
-  {
-    numero: 'REM 0002-00003401',
-    cliente: 'Constructora Delta SRL',
-    total: '$ 61.780,00',
-    estado: 'Remito',
-    badge: 'neutral',
-  },
-  {
-    numero: 'FAC B 0003-00014579',
-    cliente: 'Pintado Fácil (M. Suárez)',
-    total: '$ 12.300,00',
-    estado: 'Cobrada',
-    badge: 'success',
-  },
-];
-
-const STOCK_URGENTE: StockUrgente[] = [
-  { nombre: 'Disco corte 115mm', detalle: 'DIS-115 · Tyrolit', stock: '0 un.', tono: 'danger' },
-  { nombre: 'Guante nitrilo T9', detalle: 'GUA-N09 · Libus', stock: '0 un.', tono: 'danger' },
-  {
-    nombre: 'Tornillo fix 8×50 ×100',
-    detalle: 'TOR-850 · Fischer',
-    stock: '4 un.',
-    tono: 'warning',
-  },
-  { nombre: 'Cinta papel 24mm', detalle: 'CIN-P24 · Doble A', stock: '6 un.', tono: 'warning' },
-];
-
-const VENCIMIENTOS: VencimientoDash[] = [
-  { cliente: 'Corralón Mitre SA', fecha: 'Venció el 10/07', monto: '$ 187.400', vencido: true },
-  {
-    cliente: 'Agropecuaria El Ceibo',
-    fecha: 'Vence el 21/07',
-    monto: '$ 96.800',
-    vencido: false,
-  },
-  {
-    cliente: 'Constructora Delta SRL',
-    fecha: 'Vence el 28/07',
-    monto: '$ 148.900',
-    vencido: false,
-  },
-];
 
 @Component({
   selector: 'app-dashboard-page',
@@ -119,14 +53,23 @@ export class DashboardPage {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
 
-  protected readonly barras = BARRAS;
-  protected readonly comprobantes = COMPROBANTES;
-  protected readonly stockUrgente = STOCK_URGENTE;
-  protected readonly vencimientos = VENCIMIENTOS;
+  protected readonly cargando = computed(() => {
+    const s = this.store.kpis().status;
+    return s === 'idle' || s === 'loading';
+  });
+
+  protected readonly error = computed(() =>
+    this.store.kpis().status === 'error' ? this.store.kpis().error : null,
+  );
+
+  protected readonly kpis = computed(() => this.store.kpis().data ?? KPIS_VACIOS);
 
   protected readonly saludo = computed(() => {
-    const nombre = this.auth.user()?.nombre?.trim() ?? 'Marcos';
-    return nombre.split(/\s+/)[0] || 'Marcos';
+    const nombre = this.auth.user()?.nombre?.trim();
+    if (!nombre) {
+      return '';
+    }
+    return nombre.split(/\s+/)[0] || '';
   });
 
   protected readonly fechaHoy = (() => {
@@ -149,32 +92,84 @@ export class DashboardPage {
     return `${DIAS[hoy.getDay()]} ${hoy.getDate()} de ${MESES[hoy.getMonth()]}`;
   })();
 
-  /** KPIs del mock; si la API responde, mezcla ventas/pedidos reales. */
   protected readonly kpisVista = computed(() => {
-    const k = this.store.kpis().data;
-    const fmt = (n: number) =>
-      new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        maximumFractionDigits: 0,
-      })
-        .format(n)
-        .replace(/\u00a0/g, ' ');
-
+    const k = this.kpis();
+    const moneda = k.moneda || 'ARS';
+    const ventasHoy = formatearMoneda(k.montoVentasDia, moneda);
+    const comprobantesHoy = k.ventasDia === 1 ? '1 comprobante' : `${k.ventasDia} comprobantes`;
+    const pendientesRemitos =
+      k.remitosPorFacturar === 0
+        ? 'Sin remitos por facturar'
+        : k.remitosPorFacturar === 1
+          ? '1 remito por facturar'
+          : `${k.remitosPorFacturar} remitos por facturar`;
     return {
-      ventasHoy: k ? fmt(k.montoVentasDia) : '$ 486.320',
-      ventasHoyFoot: k
-        ? `▲ 12% vs. ayer · ${k.ventasDia} comprobantes`
-        : '▲ 12% vs. ayer · 23 comprobantes',
-      pedidos: k ? String(k.pedidosPendientes) : '14',
-      pedidosFoot: '5 para entregar hoy',
-      saldoCobrar: '$ 1.284.900',
-      saldoFoot: '$ 312.400 vencido',
-      bajoStock: '9 artículos',
-      bajoStockFoot: '2 sin stock',
-      totalSemana: k ? fmt(k.montoVentasMes) : '$ 2.914.200',
+      ventasHoy,
+      ventasHoyFoot: k.ventasDia === 0 ? 'Sin ventas hoy' : comprobantesHoy,
+      ventasHoyOk: k.ventasDia > 0,
+      pedidos: String(k.pedidosPendientes),
+      pedidosFoot: pendientesRemitos,
+      saldoCobrar: formatearMoneda(k.saldoCobrar, moneda),
+      saldoFoot:
+        k.saldoCobrar === 0
+          ? 'Sin deuda'
+          : k.saldoVencido > 0
+            ? `${formatearMoneda(k.saldoVencido, moneda)} vencido`
+            : 'Sin deuda vencida',
+      saldoAlerta: k.saldoVencido > 0,
+      bajoStock: k.articulosBajoStock === 1 ? '1 artículo' : `${k.articulosBajoStock} artículos`,
+      bajoStockFoot:
+        k.productosActivos === 0
+          ? 'Todavía no hay artículos'
+          : k.articulosSinStock === 0
+            ? 'Ninguno sin stock'
+            : k.articulosSinStock === 1
+              ? '1 sin stock'
+              : `${k.articulosSinStock} sin stock`,
+      totalSemana: formatearMoneda(
+        k.serieSemana.reduce((acc, p) => acc + p.monto, 0),
+        moneda,
+      ),
     };
   });
+
+  protected readonly barras = computed((): BarraSemana[] => {
+    const serie = this.kpis().serieSemana;
+    const max = Math.max(0, ...serie.map((p) => p.monto));
+    return serie.map((p, i) => ({
+      label: p.label,
+      altura: max <= 0 ? 0 : Math.max(8, Math.round((p.monto / max) * 100)),
+      tono: p.esHoy ? 'today' : i < 2 ? 'light' : 'mid',
+    }));
+  });
+
+  protected readonly hayVentasSemana = computed(() =>
+    this.kpis().serieSemana.some((p) => p.monto > 0),
+  );
+
+  protected readonly comprobantes = computed(() =>
+    this.kpis().ultimosComprobantes.map((c) => ({
+      ...c,
+      totalFmt: formatearMoneda(c.total, this.kpis().moneda),
+      badge: badgeEstado(c.estado),
+    })),
+  );
+
+  protected readonly stockUrgente = computed(() =>
+    this.kpis().reposicion.map((item) => ({
+      ...item,
+      stockFmt: `${item.stock} un.`,
+      tono: item.stock <= 0 ? ('danger' as const) : ('warning' as const),
+    })),
+  );
+
+  protected readonly vencimientos = computed(() =>
+    this.kpis().vencimientos.map((v) => ({
+      ...v,
+      fechaFmt: formatearVencimiento(v.fecha, v.vencido),
+      montoFmt: formatearMoneda(v.monto, this.kpis().moneda),
+    })),
+  );
 
   constructor() {
     this.store.cargar();

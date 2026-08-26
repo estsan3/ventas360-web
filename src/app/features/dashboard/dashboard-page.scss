@@ -248,7 +248,7 @@ $dc-hover: #faf7f3;
 
   &__bar-fill {
     border-radius: 6px 6px 3px 3px;
-    min-height: 8%;
+    min-height: 0;
 
     &--light {
       background: $dc-bar-light;
@@ -420,6 +420,35 @@ $dc-hover: #faf7f3;
 
     &:hover {
       background: $dc-hover;
+    }
+  }
+
+  &__error {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    background: $dc-danger-bg;
+    color: $dc-danger;
+    font-size: 13px;
+  }
+
+  &__kpis--loading {
+    opacity: 0.65;
+  }
+
+  &__empty {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: $dc-muted;
+    line-height: 1.45;
+
+    &--pad {
+      padding: 8px 20px 20px;
+    }
+
+    &--side {
+      flex: 1;
+      margin: 0;
     }
   }
 }
