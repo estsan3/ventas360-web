@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+import { etiquetaRol } from '../../core/models/modulos';
 import { AuthStore } from '../../core/state/auth.store';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Badge } from '../../shared/ui/badge/badge';
@@ -19,11 +20,19 @@ import {
 } from './data-access/catalogos.models';
 import { ConfiguracionService } from './data-access/configuracion.service';
 import { Talonario } from './data-access/parametros.model';
+import { CeldaPermiso, RolEditable } from './data-access/permisos.model';
 import { Usuario } from './data-access/usuario.model';
 import { UsuariosStore } from './data-access/usuarios.store';
 
 type SeccionConfig =
-  'negocio' | 'talonarios' | 'zonas' | 'vendedores' | 'depositos' | 'listas' | 'usuarios';
+  | 'negocio'
+  | 'permisos'
+  | 'talonarios'
+  | 'zonas'
+  | 'vendedores'
+  | 'depositos'
+  | 'listas'
+  | 'usuarios';
 
 type TipoTalonario = Talonario['tipoComprobante'];
 
@@ -44,6 +53,7 @@ export class ConfiguracionPage {
   private readonly confirmDialog = inject(ConfirmDialogService);
 
   protected readonly authStore = inject(AuthStore);
+  protected readonly etiquetaRol = etiquetaRol;
   protected readonly seccion = signal<SeccionConfig>('negocio');
   protected readonly guardando = signal(false);
   protected readonly talonarios = signal<Talonario[]>([]);
@@ -51,6 +61,7 @@ export class ConfiguracionPage {
   protected readonly vendedores = signal<VendedorCatalogo[]>([]);
   protected readonly depositos = signal<DepositoCatalogo[]>([]);
   protected readonly listas = signal<ListaPrecioCatalogo[]>([]);
+  protected readonly matriz = signal<CeldaPermiso[]>([]);
   protected readonly editandoZonaId = signal<string | null>(null);
   protected readonly editandoDepositoId = signal<string | null>(null);
   protected readonly editandoListaId = signal<string | null>(null);
@@ -59,6 +70,7 @@ export class ConfiguracionPage {
 
   protected readonly menuItems: { id: SeccionConfig; label: string }[] = [
     { id: 'negocio', label: 'Negocio' },
+    { id: 'permisos', label: 'Permisos' },
     { id: 'talonarios', label: 'Talonarios' },
     { id: 'zonas', label: 'Zonas' },
     { id: 'vendedores', label: 'Vendedores' },
@@ -85,6 +97,7 @@ export class ConfiguracionPage {
 
   protected readonly rolOptions: SelectOption[] = [
     { value: 'vendedor', label: 'Vendedor' },
+    { value: 'encargado', label: 'Encargado' },
     { value: 'administrador', label: 'Administrador' },
   ];
 
@@ -130,6 +143,24 @@ export class ConfiguracionPage {
     { key: 'rol', label: 'Rol', width: '130px' },
     { key: 'acciones', label: '', width: '80px', align: 'right' },
   ];
+
+  protected readonly columnasPermisos: TableColumn[] = [
+    { key: 'etiqueta', label: 'Módulo' },
+    { key: 'vendedor', label: 'Vendedor', width: '120px', align: 'center' },
+    { key: 'encargado', label: 'Encargado', width: '120px', align: 'center' },
+    { key: 'administrador', label: 'Admin', width: '100px', align: 'center' },
+  ];
+
+  protected readonly filasPermisos = computed(() =>
+    this.matriz().map((c) => ({
+      id: c.modulo,
+      modulo: c.modulo,
+      etiqueta: c.etiqueta,
+      vendedor: c.vendedor,
+      encargado: c.encargado,
+      administrador: c.administrador,
+    })),
+  );
 
   protected readonly filasTalonarios = computed(() =>
     this.talonarios().map((t) => ({
@@ -188,7 +219,7 @@ export class ConfiguracionPage {
       id: u.id,
       nombre: u.nombre,
       email: u.email,
-      rol: u.rol === 'administrador' ? 'Administrador' : 'Vendedor',
+      rol: this.etiquetaRol(u.rol),
     })),
   );
 
@@ -254,7 +285,35 @@ export class ConfiguracionPage {
       this.cargarListas();
     } else if (id === 'usuarios') {
       this.usuariosStore.cargar();
+    } else if (id === 'permisos') {
+      this.cargarMatriz();
     }
+  }
+
+  protected cargarMatriz(): void {
+    this.api.obtenerMatrizPermisos().subscribe((items) => this.matriz.set(items));
+  }
+
+  protected onTogglePermiso(rol: RolEditable, modulo: string, event: Event): void {
+    const habilitado = (event.target as HTMLInputElement).checked;
+    this.togglePermiso(rol, modulo, habilitado);
+  }
+
+  protected togglePermiso(rol: RolEditable, modulo: string, habilitado: boolean): void {
+    const actual = this.matriz();
+    const modulos: Record<string, boolean> = {};
+    for (const fila of actual) {
+      modulos[fila.modulo] = fila.modulo === modulo ? habilitado : fila[rol];
+    }
+    this.guardando.set(true);
+    this.api.actualizarPermisos(rol, modulos).subscribe({
+      next: (items) => {
+        this.matriz.set(items);
+        this.notifications.success('Permisos actualizados', this.etiquetaRol(rol));
+        this.guardando.set(false);
+      },
+      error: () => this.guardando.set(false),
+    });
   }
 
   protected etiquetaTipo(tipo: TipoTalonario): string {

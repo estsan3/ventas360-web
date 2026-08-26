@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../core/state/auth.store';
@@ -26,10 +26,48 @@ export class LoginPage {
   protected readonly loading = signal(false);
   protected readonly loginError = signal('');
 
+  protected readonly contexto = this.authStore.contexto;
+  protected readonly hostOk = computed(() => {
+    const ctx = this.contexto();
+    if (!ctx) {
+      return false;
+    }
+    if (ctx.tipo === 'plataforma') {
+      return true;
+    }
+    return ctx.tipo === 'comercio' && ctx.tenant !== null;
+  });
+  protected readonly tituloHost = computed(() => {
+    const ctx = this.contexto();
+    if (ctx?.tipo === 'plataforma') {
+      return 'Plataforma';
+    }
+    return ctx?.tenant?.nombre ?? 'Ventas360';
+  });
+  protected readonly subtituloHost = computed(() => {
+    const ctx = this.contexto();
+    if (!ctx || ctx.tipo === 'sin_slug') {
+      return 'Entrá con el subdominio de tu comercio (ej. demo.localhost:4201).';
+    }
+    if (ctx.tipo === 'plataforma') {
+      return 'Administración de comercios';
+    }
+    if (!ctx.tenant) {
+      return 'No hay un comercio para este subdominio.';
+    }
+    return 'Accedé al panel de tu comercio';
+  });
+
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(4)]],
   });
+
+  constructor() {
+    if (this.authStore.isAuthenticated()) {
+      void this.router.navigateByUrl(this.authStore.rutaInicial());
+    }
+  }
 
   protected fieldError(field: 'email' | 'password'): string {
     const control = this.form.controls[field];
@@ -50,6 +88,10 @@ export class LoginPage {
 
   protected submit(): void {
     this.loginError.set('');
+    if (!this.hostOk()) {
+      this.loginError.set(this.subtituloHost());
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -59,7 +101,7 @@ export class LoginPage {
     this.authStore.login(this.form.getRawValue()).subscribe({
       next: () => {
         this.loading.set(false);
-        void this.router.navigateByUrl('/dashboard');
+        void this.router.navigateByUrl(this.authStore.rutaInicial());
       },
       error: (error: Error) => {
         this.loading.set(false);

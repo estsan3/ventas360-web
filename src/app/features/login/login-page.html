@@ -31,7 +31,10 @@
       <div class="login__box">
         <div class="login__heading">
           <h1>Iniciar sesión</h1>
-          <p>Accedé a tu panel de ventas</p>
+          <p>{{ subtituloHost() }}</p>
+          @if (hostOk()) {
+            <p class="login__comercio">{{ tituloHost() }}</p>
+          }
         </div>
 
         @if (loginError()) {
@@ -58,7 +61,12 @@
             formControlName="password"
             [error]="fieldError('password')"
           />
-          <app-button type="submit" size="md" [fullWidth]="true" [disabled]="loading()">
+          <app-button
+            type="submit"
+            size="md"
+            [fullWidth]="true"
+            [disabled]="loading() || !hostOk()"
+          >
             {{ loading() ? 'Ingresando…' : 'Iniciar sesión' }}
           </app-button>
         </form>

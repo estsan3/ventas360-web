@@ -103,7 +103,7 @@ export class ProductosPage {
   protected readonly formDirty = signal(false);
   protected readonly guardando = signal(false);
 
-  protected readonly esAdmin = computed(() => this.auth.user()?.rol === 'administrador');
+  protected readonly esAdmin = computed(() => this.auth.puede('articulos'));
 
   protected readonly form = this.fb.nonNullable.group({
     sku: ['', [Validators.required, Validators.maxLength(40)]],

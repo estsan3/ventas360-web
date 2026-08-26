@@ -25,10 +25,12 @@
       @if (authStore.user(); as user) {
         <div class="shell__menu-user">
           <strong>{{ user.nombre }}</strong>
-          <small>{{ user.rol === 'administrador' ? 'Administrador' : 'Vendedor' }}</small>
+          <small>{{ etiquetaRol(user.rol) }}</small>
         </div>
       }
-      <button type="button" role="menuitem" (click)="irAConfiguracion()">Configuración</button>
+      @if (puedeConfig()) {
+        <button type="button" role="menuitem" (click)="irAConfiguracion()">Configuración</button>
+      }
       <button type="button" role="menuitem" class="shell__menu-salir" (click)="cerrarSesion()">
         Cerrar sesión
       </button>

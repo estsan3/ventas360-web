@@ -154,6 +154,13 @@
     }
   }
 
+  &__comercio {
+    margin: t.$space-sm 0 0 !important;
+    font-size: ty.$font-size-lg !important;
+    font-weight: ty.$font-weight-semibold;
+    color: t.$color-text !important;
+  }
+
   &__forgot {
     align-self: center;
     font-size: ty.$font-size-md;

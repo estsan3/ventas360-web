@@ -107,7 +107,7 @@ export class ClientesPage {
   protected readonly formDirty = signal(false);
   protected readonly guardando = signal(false);
 
-  protected readonly esAdmin = computed(() => this.auth.user()?.rol === 'administrador');
+  protected readonly esAdmin = computed(() => this.auth.puede('clientes'));
 
   protected readonly zonasOptions = computed(() =>
     (this.zonasStore.zonas().data ?? [])

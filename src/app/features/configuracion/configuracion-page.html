@@ -32,12 +32,49 @@
             <div class="config__info">
               <h2>{{ user.nombre }}</h2>
               <p>{{ user.email }}</p>
-              <span class="config__rol">
-                {{ user.rol === 'administrador' ? 'Administrador' : 'Vendedor' }}
-              </span>
+              <span class="config__rol">{{ etiquetaRol(user.rol) }}</span>
             </div>
           </div>
         }
+      }
+
+      @if (seccion() === 'permisos' && esAdmin()) {
+        <section class="config__panel">
+          <h3>Permisos por rol</h3>
+          <p class="config__hint">
+            El administrador siempre tiene todos los módulos (incluida Configuración). Solo se
+            editan Vendedor y Encargado.
+          </p>
+          <div class="tabla-scroll">
+            <app-table
+              [columns]="columnasPermisos"
+              [rows]="filasPermisos()"
+              headerVariant="soft"
+              [striped]="true"
+              [compact]="true"
+            >
+              <ng-template appTableCell="vendedor" let-row>
+                <input
+                  type="checkbox"
+                  [checked]="$any(row)['vendedor']"
+                  [disabled]="guardando()"
+                  (change)="onTogglePermiso('vendedor', $any(row)['modulo'], $event)"
+                />
+              </ng-template>
+              <ng-template appTableCell="encargado" let-row>
+                <input
+                  type="checkbox"
+                  [checked]="$any(row)['encargado']"
+                  [disabled]="guardando()"
+                  (change)="onTogglePermiso('encargado', $any(row)['modulo'], $event)"
+                />
+              </ng-template>
+              <ng-template appTableCell="administrador" let-row>
+                <input type="checkbox" checked disabled />
+              </ng-template>
+            </app-table>
+          </div>
+        </section>
       }
 
       @if (!esAdmin() && seccion() !== 'negocio') {

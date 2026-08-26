@@ -14,7 +14,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       const message = friendlyMessage(error);
-      if (!req.url.includes('/auth/')) {
+      if (!req.url.includes('/auth/') && !req.url.includes('/tenants/contexto')) {
         notifications.error('Algo salió mal', message);
       }
       return throwError(() => new Error(message));
@@ -22,22 +22,24 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
+function apiMensaje(error: HttpErrorResponse): string | undefined {
+  return (error.error as { error?: { mensaje?: string } })?.error?.mensaje;
+}
+
 function friendlyMessage(error: HttpErrorResponse): string {
+  const delApi = apiMensaje(error);
   switch (error.status) {
     case 0:
       return 'No hay conexión con el servidor';
     case 401:
-      return 'Credenciales inválidas o sesión expirada';
+      return delApi ?? 'Credenciales inválidas o sesión expirada';
     case 403:
-      return 'No tenés permisos para esta operación';
+      return delApi ?? 'No tenés permisos para esta operación';
     case 404:
-      return 'El recurso solicitado no existe';
+      return delApi ?? 'El recurso solicitado no existe';
     case 422:
-      return (
-        (error.error as { error?: { mensaje?: string } })?.error?.mensaje ??
-        'Los datos enviados no son válidos'
-      );
+      return delApi ?? 'Los datos enviados no son válidos';
     default:
-      return 'Ocurrió un error inesperado. Intentalo de nuevo.';
+      return delApi ?? 'Ocurrió un error inesperado. Intentalo de nuevo.';
   }
 }

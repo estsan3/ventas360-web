@@ -1,3 +1,4 @@
+import { parseRol } from './modulos';
 import { UserDto } from './user.dto';
 import { User } from './user';
 
@@ -7,6 +8,8 @@ export function userToModel(dto: UserDto): User {
     nombre: dto.nombre,
     email: dto.email,
     dni: dto.dni ?? '',
-    rol: dto.rol === 'administrador' ? 'administrador' : 'vendedor',
+    rol: parseRol(dto.rol),
+    tenantId: dto.tenant_id ?? null,
+    permisos: dto.permisos ?? [],
   };
 }
