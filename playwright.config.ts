@@ -10,7 +10,7 @@ export default defineConfig({
   fullyParallel: false,
   retries: 0,
   use: {
-    baseURL: 'http://localhost:4201',
+    baseURL: 'http://demo.localhost:4201',
     viewport: { width: 1280, height: 900 },
     trace: 'on-first-retry',
   },

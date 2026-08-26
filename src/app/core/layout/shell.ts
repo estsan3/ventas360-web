@@ -3,10 +3,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { Sidebar, SidebarItem } from '../../shared/ui/sidebar/sidebar';
+import { etiquetaRol } from '../models/modulos';
 import { AuthStore } from '../state/auth.store';
 
 /** Navegación alineada al mock DC Ventas360 (sidebar vertical). */
-const NAV_ITEMS: SidebarItem[] = [
+const NAV_COMERCIO: SidebarItem[] = [
   { id: 'dashboard', label: 'Inicio', icon: 'grid' },
   { id: 'ventas', label: 'Mostrador', icon: 'file-text' },
   { id: 'presupuestos', label: 'Presup.', icon: 'ticket' },
@@ -21,6 +22,8 @@ const NAV_ITEMS: SidebarItem[] = [
   { id: 'configuracion', label: 'Config.', icon: 'settings', section: 'bottom' },
 ];
 
+const NAV_PLATAFORMA: SidebarItem[] = [{ id: 'comercios', label: 'Comercios', icon: 'grid' }];
+
 /**
  * Layout principal: sidebar vertical colapsable + contenido ruteado.
  */
@@ -34,9 +37,16 @@ const NAV_ITEMS: SidebarItem[] = [
 export class Shell {
   private readonly router = inject(Router);
   protected readonly authStore = inject(AuthStore);
+  protected readonly etiquetaRol = etiquetaRol;
 
-  protected readonly items = computed(() => NAV_ITEMS);
+  protected readonly items = computed(() => {
+    if (this.authStore.esPlataforma()) {
+      return NAV_PLATAFORMA;
+    }
+    return NAV_COMERCIO.filter((item) => this.authStore.puedeRuta(item.id));
+  });
   protected readonly menuPerfilAbierto = signal(false);
+  protected readonly puedeConfig = computed(() => this.authStore.puede('configuracion'));
 
   protected readonly activeId = toSignal(
     this.router.events.pipe(
@@ -60,7 +70,12 @@ export class Shell {
 
   protected readonly pieTexto = computed(() => {
     const user = this.authStore.user();
-    return user ? `Suc. Central · ${user.nombre.split(/\s+/)[0]}` : 'Suc. Central · Caja 1';
+    const persona = user?.nombre.split(/\s+/)[0] ?? '';
+    if (this.authStore.esPlataforma()) {
+      return persona ? `Plataforma · ${persona}` : 'Plataforma';
+    }
+    const comercio = this.authStore.nombreComercio() ?? 'Comercio';
+    return persona ? `${comercio} · ${persona}` : comercio;
   });
 
   protected navigate(id: string): void {

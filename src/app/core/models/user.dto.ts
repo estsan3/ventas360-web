@@ -5,6 +5,8 @@ export interface UserDto {
   dni: string;
   email: string;
   rol: string;
+  tenant_id?: string | null;
+  permisos?: string[];
 }
 
 export interface LoginResponseDto {

@@ -1,0 +1,202 @@
+<section class="page">
+  <header class="page__header">
+    <div>
+      <h1>Comercios</h1>
+      <p class="page__subtitle">
+        Cada comercio entra por su subdominio (ej. demo.localhost:4201). El slug no se cambia
+        después.
+      </p>
+    </div>
+    <app-button variant="primary" size="md" (clicked)="abrirAlta()">
+      <app-icon name="plus" />
+      Nuevo comercio
+    </app-button>
+  </header>
+
+  <app-state-wrapper
+    [status]="estado().status"
+    [error]="estado().error ?? ''"
+    [empty]="filas().length === 0"
+    emptyMessage="No hay comercios"
+  >
+    <div class="tabla-scroll">
+      <app-table
+        [columns]="columnas"
+        [rows]="filas()"
+        headerVariant="soft"
+        [striped]="true"
+        [compact]="true"
+      >
+        <ng-template appTableCell="admin" let-row>
+          @if ($any(row)['adminNombre'] || $any(row)['adminEmail']) {
+            <span>{{ $any(row)['adminNombre'] || '—' }}</span>
+          } @else {
+            <span class="comercios__vacio">Sin administrador</span>
+          }
+        </ng-template>
+        <ng-template appTableCell="adminEmail" let-row>
+          {{ $any(row)['adminEmail'] || '—' }}
+        </ng-template>
+        <ng-template appTableCell="adminDni" let-row>
+          {{ $any(row)['adminDni'] || '—' }}
+        </ng-template>
+        <ng-template appTableCell="estado" let-row>
+          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+            {{ $any(row)['estado'] }}
+          </app-badge>
+        </ng-template>
+        <ng-template appTableCell="acciones" let-row>
+          <div class="fila-acciones">
+            <button
+              type="button"
+              class="fila-acciones__btn"
+              (click)="abrirDetalle($any(row)['id'])"
+            >
+              Ver
+            </button>
+            <button
+              type="button"
+              class="fila-acciones__btn"
+              [title]="$any(row)['activo'] ? 'Desactivar' : 'Activar'"
+              (click)="toggleActivo($any(row)['id'])"
+            >
+              {{ $any(row)['activo'] ? 'Desactivar' : 'Activar' }}
+            </button>
+          </div>
+        </ng-template>
+      </app-table>
+    </div>
+  </app-state-wrapper>
+</section>
+
+<app-side-drawer
+  [abierto]="panel() !== null"
+  [titulo]="tituloDrawer()"
+  ancho="480px"
+  (cerrar)="cerrarPanel()"
+>
+  @if (panel() === 'alta') {
+    <form class="form-drawer" [formGroup]="form">
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Comercio</h4>
+          <p>El subdominio se arma solo a partir del nombre; podés editarlo.</p>
+        </header>
+        <div class="form-section__body">
+          <app-text-input
+            label="Nombre comercial"
+            formControlName="nombre"
+            [error]="errorAlta('nombre')"
+          />
+          <app-text-input
+            label="Subdominio (slug)"
+            formControlName="slug"
+            placeholder="agronorte"
+            [error]="errorAlta('slug')"
+          />
+        </div>
+      </section>
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Primer administrador</h4>
+          <p>Con este email entra al subdominio del comercio.</p>
+        </header>
+        <div class="form-section__body">
+          <app-text-input
+            label="Nombre"
+            formControlName="adminNombre"
+            [error]="errorAlta('adminNombre')"
+          />
+          <app-text-input label="DNI" formControlName="adminDni" [error]="errorAlta('adminDni')" />
+          <app-text-input
+            label="Email"
+            type="email"
+            formControlName="adminEmail"
+            [error]="errorAlta('adminEmail')"
+          />
+          <app-text-input
+            label="Contraseña"
+            type="password"
+            formControlName="adminPassword"
+            [error]="errorAlta('adminPassword')"
+          />
+        </div>
+      </section>
+      <footer class="form-drawer__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarPanel()">Cancelar</app-button>
+        <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="crear()">
+          Crear comercio
+        </app-button>
+      </footer>
+    </form>
+  }
+
+  @if (panel() === 'detalle' && detalle(); as comercio) {
+    <div class="form-drawer">
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Datos</h4>
+        </header>
+        <div class="form-section__body">
+          <p class="comercios__dato">
+            <span>Subdominio</span>
+            <strong>{{ comercio.slug }}.localhost:4201</strong>
+          </p>
+          <p class="comercios__dato">
+            <span>Estado</span>
+            <strong>{{ comercio.activo ? 'Activo' : 'Inactivo' }}</strong>
+          </p>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <header class="form-section__head">
+          <h4>Usuarios</h4>
+          <p>Podés asignar una contraseña nueva. No se muestra la actual.</p>
+        </header>
+        <div class="form-section__body">
+          @for (usuario of comercio.usuarios; track usuario.id) {
+            <article class="comercios__usuario">
+              <div>
+                <strong>{{ usuario.nombre }}</strong>
+                <small
+                  >{{ usuario.email }} · DNI {{ usuario.dni }} ·
+                  {{ etiquetaRol(usuario.rol) }}</small
+                >
+              </div>
+              @if (usuarioClaveId() === usuario.id) {
+                <div class="comercios__clave" [formGroup]="formClave">
+                  <app-text-input
+                    label="Nueva contraseña"
+                    type="password"
+                    formControlName="password"
+                    [error]="errorClave()"
+                  />
+                  <div class="form-section__actions">
+                    <app-button variant="outline" size="sm" (clicked)="usuarioClaveId.set(null)">
+                      Cancelar
+                    </app-button>
+                    <app-button
+                      variant="primary"
+                      size="sm"
+                      [disabled]="guardando()"
+                      (clicked)="guardarClave(usuario)"
+                    >
+                      Guardar clave
+                    </app-button>
+                  </div>
+                </div>
+              } @else {
+                <app-button variant="outline" size="sm" (clicked)="mostrarClave(usuario)">
+                  Cambiar contraseña
+                </app-button>
+              }
+            </article>
+          } @empty {
+            <p class="comercios__vacio">Este comercio todavía no tiene usuarios.</p>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</app-side-drawer>

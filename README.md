@@ -9,12 +9,14 @@ Detalle: [docs/ARQUITECTURA-WEB.md](docs/ARQUITECTURA-WEB.md) y `.cursor/rules/a
 
 ```bash
 npm install
-npm start -- --port 4201
+npm start
 ```
 
-Abrir [http://localhost:4201/](http://localhost:4201/).
+Abrir el comercio en [http://demo.localhost:4201/](http://demo.localhost:4201/) y la plataforma en [http://admin.localhost:4201/](http://admin.localhost:4201/). En macOS `*.localhost` apunta a 127.0.0.1 (no hace falta `/etc/hosts`).
 
-Proxy: `/api` → `http://localhost:8001/api/v1` (`proxy.conf.json`), con cookies.
+`http://localhost:4201` no alcanza: el login usa el subdominio como slug del comercio.
+
+Proxy: `/api` → `http://localhost:8001/api/v1` (`proxy.conf.json`), con cookies. El GET same-origin no manda `Origin`; el front y el proxy envían `X-Forwarded-Host` con el subdominio para que la API clasifique el comercio.
 
 API en paralelo:
 
@@ -22,25 +24,22 @@ API en paralelo:
 cd ../ventas360-api && poetry run uvicorn app.main:app --reload --port 8001
 ```
 
-CORS del API debe incluir `http://localhost:4201` (ya en default).
-
 ### Login demo
 
-| Campo    | Valor                 |
-| -------- | --------------------- |
-| Email    | `admin@ventas360.com` |
-| Password | `demo12345`           |
+| Host                   | Email                 | Password    |
+| ---------------------- | --------------------- | ----------- |
+| `demo.localhost:4201`  | `admin@ventas360.com` | `demo12345` |
+| `admin.localhost:4201` | `super@ventas360.com` | `demo12345` |
 
 ## Rutas
 
-| Ruta             | Descripción                 |
-| ---------------- | --------------------------- |
-| `/login`         | Autenticación (cookie)      |
-| `/dashboard`     | Resumen                     |
-| `/clientes`      | ABM clientes + config modal |
-| `/productos`     | Catálogo productos          |
-| `/ventas`        | Pedidos + estados           |
-| `/configuracion` | Perfil y logout             |
+| Ruta             | Descripción               |
+| ---------------- | ------------------------- |
+| `/login`         | Autenticación (cookie)    |
+| `/dashboard`     | Inicio                    |
+| `/ventas`        | Mostrador                 |
+| `/configuracion` | Negocio, usuarios, matriz |
+| `/comercios`     | Plataforma (`admin.*`)    |
 
 ## Scripts
 

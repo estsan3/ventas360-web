@@ -13,6 +13,8 @@ import {
   talonarioToUpsertDto,
 } from './parametros.mapper';
 import { ParametrosNegocio, ParametrosOperativos, Talonario } from './parametros.model';
+import { MatrizPermisosDto } from './permisos.dto';
+import { CeldaPermiso, RolEditable } from './permisos.model';
 import { UsuarioDto } from './usuario.dto';
 import { nuevoUsuarioToDto, usuarioToModel } from './usuario.mapper';
 import { NuevoUsuario, Usuario } from './usuario.model';
@@ -227,5 +229,20 @@ export class ConfiguracionService {
     return this.http
       .put<TalonarioDto>(`${this.base}/parametros/talonarios`, talonarioToUpsertDto(datos))
       .pipe(map(talonarioToModel));
+  }
+
+  obtenerMatrizPermisos(): Observable<CeldaPermiso[]> {
+    return this.http
+      .get<MatrizPermisosDto>(`${this.base}/tenants/permisos`)
+      .pipe(map((body) => body.items));
+  }
+
+  actualizarPermisos(
+    rol: RolEditable,
+    modulos: Record<string, boolean>,
+  ): Observable<CeldaPermiso[]> {
+    return this.http
+      .put<MatrizPermisosDto>(`${this.base}/tenants/permisos`, { rol, modulos })
+      .pipe(map((body) => body.items));
   }
 }

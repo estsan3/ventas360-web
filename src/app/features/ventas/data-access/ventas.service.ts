@@ -172,7 +172,7 @@ export class VentasService {
 
   listarUsuariosRef(): Observable<UsuarioRef[]> {
     return this.http
-      .get<UsuarioRefDto[]>(`${this.api}/usuarios`)
+      .get<UsuarioRefDto[]>(`${this.api}/catalogos/vendedores`)
       .pipe(map((items) => items.map(usuarioRefToModel)));
   }
 

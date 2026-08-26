@@ -1,3 +1,4 @@
+import { parseRol } from '../../../core/models/modulos';
 import { NuevoUsuarioDto, UsuarioDto } from './usuario.dto';
 import { NuevoUsuario, Usuario } from './usuario.model';
 
@@ -7,7 +8,7 @@ export function usuarioToModel(dto: UsuarioDto): Usuario {
     nombre: dto.nombre,
     dni: dto.dni,
     email: dto.email,
-    rol: dto.rol === 'administrador' ? 'administrador' : 'vendedor',
+    rol: parseRol(dto.rol),
   };
 }
 

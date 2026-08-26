@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { Logo } from '../../shared/ui/logo/logo';
+import { etiquetaRol } from '../models/modulos';
 import { AuthStore } from '../state/auth.store';
 
 export interface TopbarNavItem {
@@ -34,6 +35,7 @@ export class Topbar {
   readonly itemSelected = output<string>();
 
   protected readonly authStore = inject(AuthStore);
+  protected readonly etiquetaRol = etiquetaRol;
   protected readonly menuPerfilAbierto = signal(false);
 
   protected readonly iniciales = computed(() => {

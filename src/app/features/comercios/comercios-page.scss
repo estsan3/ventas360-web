@@ -1,0 +1,143 @@
+@use 'tokens' as t;
+@use 'typography' as ty;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-lg;
+  padding: t.$space-lg;
+  font-family: ty.$font-family-base;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: t.$space-md;
+
+    h1 {
+      margin: 0;
+      font-size: ty.$font-size-2xl;
+      font-weight: ty.$font-weight-bold;
+    }
+  }
+
+  &__subtitle {
+    margin: t.$space-xs 0 0;
+    color: t.$color-text-muted;
+  }
+}
+
+.card {
+  padding: t.$space-lg;
+  border: 1px solid t.$color-border;
+  border-radius: t.$radius-lg;
+  background: t.$color-surface;
+
+  h2 {
+    margin: 0 0 t.$space-md;
+    font-size: ty.$font-size-lg;
+    font-weight: ty.$font-weight-semibold;
+  }
+}
+
+.comercios__form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: t.$space-md;
+}
+
+.comercios__acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: t.$space-sm;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.fila-acciones {
+  display: inline-flex;
+  gap: t.$space-xs;
+}
+
+.comercios__admin {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.35;
+
+  strong {
+    font-weight: ty.$font-weight-semibold;
+  }
+
+  span {
+    font-size: ty.$font-size-sm;
+    color: t.$color-text-muted;
+  }
+}
+
+.fila-acciones__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border: none;
+  border-radius: t.$radius-sm;
+  background: transparent;
+  color: t.$color-text-muted;
+  cursor: pointer;
+  font: inherit;
+  font-size: ty.$font-size-sm;
+
+  &:hover {
+    color: t.$color-primary-dark;
+  }
+}
+
+.comercios__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+
+  span {
+    font-size: ty.$font-size-sm;
+    color: t.$color-text-muted;
+  }
+}
+
+.comercios__usuario {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-sm;
+  padding-bottom: t.$space-md;
+  border-bottom: 1px solid t.$color-border;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  strong {
+    display: block;
+  }
+
+  small {
+    display: block;
+    color: t.$color-text-muted;
+  }
+}
+
+.comercios__clave {
+  display: flex;
+  flex-direction: column;
+  gap: t.$space-sm;
+}
+
+.comercios__vacio {
+  margin: 0;
+  color: t.$color-text-muted;
+  font-size: ty.$font-size-sm;
+}
