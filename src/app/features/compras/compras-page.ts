@@ -1,6 +1,7 @@
 import { SlicePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Button } from '../../shared/ui/button/button';
 import { TextInput } from '../../shared/ui/input/text-input';
@@ -97,6 +98,7 @@ export class ComprasPage {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ComprasService);
   private readonly notifications = inject(NotificationStore);
+  private readonly route = inject(ActivatedRoute);
   protected readonly store = inject(ComprasStore);
 
   protected readonly tab = signal<TabCompras>('facturas');
@@ -193,6 +195,10 @@ export class ComprasPage {
   });
 
   constructor() {
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab === 'listas' || tab === 'proveedores' || tab === 'pedidos' || tab === 'facturas') {
+      this.tab.set(tab);
+    }
     this.store.cargar();
     this.recargarProveedores();
     this.api.listarProductosRef().subscribe((items) => {

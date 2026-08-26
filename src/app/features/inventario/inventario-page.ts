@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+import { AuthStore } from '../../core/state/auth.store';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { DepositoInventario, DepositosService } from './data-access/depositos.service';
 import { InventarioItem, StockService } from './data-access/stock.service';
@@ -42,6 +44,59 @@ interface AlertaStock {
 
 const STOCK_MINIMO = 5;
 
+function claveToma(tenantId: string, depositoId: string): string {
+  return `ventas360.toma.${tenantId}.${depositoId}`;
+}
+
+function leerConteos(tenantId: string, depositoId: string): Record<string, string> {
+  if (!tenantId || !depositoId || typeof localStorage === 'undefined') {
+    return {};
+  }
+  try {
+    const raw = localStorage.getItem(claveToma(tenantId, depositoId));
+    if (!raw) {
+      return {};
+    }
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function guardarConteos(tenantId: string, depositoId: string, filas: FilaConteo[]): void {
+  if (!tenantId || !depositoId || typeof localStorage === 'undefined') {
+    return;
+  }
+  const mapa: Record<string, string> = {};
+  for (const f of filas) {
+    if (f.conteo.trim() !== '') {
+      mapa[f.articuloId] = f.conteo;
+    }
+  }
+  const clave = claveToma(tenantId, depositoId);
+  if (Object.keys(mapa).length === 0) {
+    localStorage.removeItem(clave);
+    return;
+  }
+  localStorage.setItem(clave, JSON.stringify(mapa));
+}
+
+function borrarConteos(tenantId: string, depositoId: string): void {
+  if (!tenantId || !depositoId || typeof localStorage === 'undefined') {
+    return;
+  }
+  localStorage.removeItem(claveToma(tenantId, depositoId));
+}
+
+function csvCelda(valor: string | number): string {
+  const t = String(valor);
+  if (/[",;\n]/.test(t)) {
+    return `"${t.replaceAll('"', '""')}"`;
+  }
+  return t;
+}
+
 function formatearFechaCorta(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) {
@@ -77,12 +132,16 @@ export class InventarioPage {
   private readonly stockApi = inject(StockService);
   private readonly notifications = inject(NotificationStore);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly auth = inject(AuthStore);
+  private readonly confirm = inject(ConfirmDialogService);
 
   protected readonly tab = signal<TabStock>('toma');
   protected readonly depositos = signal<DepositoInventario[]>([]);
   protected readonly depActivo = signal<string>('');
   protected readonly busqueda = signal('');
   protected readonly cargando = signal(false);
+  protected readonly cerrando = signal(false);
   protected readonly filas = signal<FilaConteo[]>([]);
   protected readonly remitos = signal<RemitoVista[]>([]);
   protected readonly nombresProv = signal<Record<string, string>>({});
@@ -139,6 +198,10 @@ export class InventarioPage {
   );
 
   constructor() {
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab === 'toma' || tab === 'recepcion' || tab === 'alertas') {
+      this.tab.set(tab);
+    }
     this.stockApi.mapProveedores().subscribe({
       next: (m) => this.nombresProv.set(m),
     });
@@ -175,6 +238,10 @@ export class InventarioPage {
     }
   }
 
+  private tenantId(): string {
+    return this.auth.contexto()?.tenant?.id ?? this.auth.contexto()?.slug ?? 'local';
+  }
+
   private cargarInventario(depositoId: string): void {
     if (!depositoId) {
       this.filas.set([]);
@@ -183,7 +250,13 @@ export class InventarioPage {
     this.cargando.set(true);
     this.stockApi.listarInventario(depositoId).subscribe({
       next: (items) => {
-        this.filas.set(items.map((i) => this.aFila(i)));
+        const guardados = leerConteos(this.tenantId(), depositoId);
+        this.filas.set(
+          items.map((i) => {
+            const fila = this.aFila(i);
+            return { ...fila, conteo: guardados[i.articuloId] ?? '' };
+          }),
+        );
         this.cargando.set(false);
       },
       error: () => {
@@ -241,10 +314,124 @@ export class InventarioPage {
     };
   }
 
-  protected actualizarConteo(codigo: string, valor: string): void {
-    this.filas.update((rows) =>
-      rows.map((r) => (r.codigo === codigo ? { ...r, conteo: valor } : r)),
-    );
+  protected actualizarConteo(articuloId: string, valor: string): void {
+    this.filas.update((rows) => {
+      const next = rows.map((r) => (r.articuloId === articuloId ? { ...r, conteo: valor } : r));
+      guardarConteos(this.tenantId(), this.depActivo(), next);
+      return next;
+    });
+  }
+
+  protected exportarValorizado(): void {
+    const rows = this.filas();
+    if (rows.length === 0) {
+      this.notifications.warning('Nada para exportar', 'No hay artículos en este depósito.');
+      return;
+    }
+    const encabezado = [
+      'Código',
+      'Artículo',
+      'Depósito',
+      'Sistema',
+      'Conteo',
+      'Diferencia',
+      'Costo',
+      'Valor sistema',
+      'Valor conteo',
+      'Valor diferencia',
+    ];
+    const lineas = [encabezado.map(csvCelda).join(';')];
+    for (const r of rows) {
+      const conteo = r.conteo.trim() === '' ? '' : Number(r.conteo);
+      const dif = typeof conteo === 'number' && Number.isFinite(conteo) ? conteo - r.sistema : '';
+      const valorSis = r.sistema * r.costoUnit;
+      const valorCon =
+        typeof conteo === 'number' && Number.isFinite(conteo) ? conteo * r.costoUnit : '';
+      const valorDif =
+        typeof conteo === 'number' && Number.isFinite(conteo)
+          ? (conteo - r.sistema) * r.costoUnit
+          : '';
+      lineas.push(
+        [
+          r.codigo,
+          r.articulo,
+          r.ubicacion,
+          r.sistema,
+          conteo === '' ? '' : conteo,
+          dif,
+          r.costoUnit,
+          valorSis,
+          valorCon,
+          valorDif,
+        ]
+          .map(csvCelda)
+          .join(';'),
+      );
+    }
+    const blob = new Blob(['\uFEFF' + lineas.join('\n')], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const dep = this.depositoActivoNombre().replaceAll(/\s+/g, '-').toLowerCase();
+    const hoy = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `toma-${dep}-${hoy}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  protected async cerrarToma(): Promise<void> {
+    const depositoId = this.depActivo();
+    const contados = this.filas()
+      .map((r) => ({ fila: r, cantidad: Math.trunc(Number(r.conteo)) }))
+      .filter((x) => x.fila.conteo.trim() !== '' && Number.isFinite(x.cantidad) && x.cantidad >= 0);
+    if (!depositoId) {
+      this.notifications.warning('Sin depósito', 'Elegí un depósito para cerrar la toma.');
+      return;
+    }
+    if (contados.length === 0) {
+      this.notifications.warning(
+        'Nada contado',
+        'Cargá el conteo de al menos un artículo antes de ajustar.',
+      );
+      return;
+    }
+    const conDif = contados.filter((x) => x.cantidad !== x.fila.sistema).length;
+    const ok = await this.confirm.abrir({
+      titulo: 'Cerrar toma y ajustar',
+      mensaje:
+        conDif === 0
+          ? `Hay ${contados.length} artículos contados, todos coinciden con el sistema. ¿Cerrar la toma?`
+          : `Se van a ajustar ${conDif} artículo${conDif === 1 ? '' : 's'} con diferencia. Los no contados no se tocan.`,
+      textoConfirmar: 'Ajustar stock',
+      textoCancelar: 'Seguir contando',
+      variant: conDif > 0 ? 'danger' : 'default',
+    });
+    if (!ok) {
+      return;
+    }
+    this.cerrando.set(true);
+    this.stockApi
+      .cerrarToma(
+        depositoId,
+        contados.map((x) => ({ articuloId: x.fila.articuloId, cantidad: x.cantidad })),
+      )
+      .subscribe({
+        next: (r) => {
+          borrarConteos(this.tenantId(), depositoId);
+          this.cerrando.set(false);
+          this.notifications.success(
+            'Toma cerrada',
+            r.ajustados === 0
+              ? 'No hubo diferencias para ajustar.'
+              : `Se ajustaron ${r.ajustados} artículo${r.ajustados === 1 ? '' : 's'}.`,
+          );
+          this.cargarInventario(depositoId);
+        },
+        error: () => {
+          this.cerrando.set(false);
+        },
+      });
   }
 
   protected confirmarRemito(id: string): void {

@@ -1,5 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { catchError, of } from 'rxjs';
 import { AuthStore } from '../../core/state/auth.store';
+import {
+  BancosService,
+  CuentaBancariaDto,
+  ValorBancarioDto,
+} from '../bancos/data-access/bancos.service';
 import { CajaService, MovimientoCajaDto, SaldoCajaDto } from './data-access/caja.service';
 
 export interface FilaMovimientoCaja {
@@ -43,6 +49,27 @@ function horaDeFecha(iso: string): string {
   return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 }
 
+function totalesMedio(
+  items: MovimientoCajaDto[],
+  medio: string,
+): { ingresos: number; egresos: number; saldo: number; cobros: number } {
+  let ingresos = 0;
+  let egresos = 0;
+  let cobros = 0;
+  for (const m of items) {
+    if (m.medio !== medio) {
+      continue;
+    }
+    if (m.tipo === 'ingreso') {
+      ingresos += m.monto;
+      cobros += 1;
+    } else {
+      egresos += m.monto;
+    }
+  }
+  return { ingresos, egresos, saldo: ingresos - egresos, cobros };
+}
+
 @Component({
   selector: 'app-caja-page',
   templateUrl: './caja-page.html',
@@ -51,27 +78,71 @@ function horaDeFecha(iso: string): string {
 })
 export class CajaPage {
   private readonly api = inject(CajaService);
+  private readonly bancos = inject(BancosService);
   private readonly auth = inject(AuthStore);
 
   protected readonly saldo = signal<SaldoCajaDto | null>(null);
   protected readonly movimientosRaw = signal<MovimientoCajaDto[]>([]);
+  protected readonly cuentas = signal<CuentaBancariaDto[]>([]);
+  protected readonly valores = signal<ValorBancarioDto[]>([]);
   protected readonly cargando = signal(true);
-
-  /** KPIs mock para medios que la API aún no expone. */
-  protected readonly kpiCheques = { valor: '$ 645.200', meta: '8 cheques · mock' };
-  protected readonly kpiBanco = { valor: '$ 1.892.140', meta: 'Conciliado · mock' };
-  protected readonly kpiTarjetas = { valor: '$ 168.900', meta: 'Acredita · mock' };
 
   protected readonly usuarioNombre = computed(() => this.auth.user()?.nombre ?? 'Cajero');
 
   protected readonly kpiEfectivo = computed(() => {
-    const s = this.saldo();
-    if (!s) {
-      return { valor: '—', meta: 'Cargando…' };
+    const efectivo = totalesMedio(this.movimientosRaw(), 'efectivo');
+    if (this.cargando() && this.movimientosRaw().length === 0 && !this.saldo()) {
+      return { valor: formatearMoneda(0), meta: 'Cargando…' };
     }
     return {
-      valor: formatearMoneda(s.saldo),
-      meta: `Ingresos ${formatearMoneda(s.ingresos)} · Egresos ${formatearMoneda(s.egresos)}`,
+      valor: formatearMoneda(efectivo.saldo),
+      meta:
+        efectivo.ingresos === 0 && efectivo.egresos === 0
+          ? 'Sin movimientos de efectivo hoy'
+          : `Ingresos ${formatearMoneda(efectivo.ingresos)} · Egresos ${formatearMoneda(efectivo.egresos)}`,
+    };
+  });
+
+  protected readonly kpiCheques = computed(() => {
+    const cartera = this.valores().filter(
+      (v) => v.tipo === 'cheque_tercero' && v.estado === 'en_cartera',
+    );
+    const total = cartera.reduce((acc, v) => acc + v.monto, 0);
+    const n = cartera.length;
+    return {
+      valor: formatearMoneda(total),
+      meta: n === 0 ? 'Sin cheques en cartera' : n === 1 ? '1 cheque' : `${n} cheques`,
+    };
+  });
+
+  protected readonly kpiBanco = computed(() => {
+    const cuentas = this.cuentas().filter((c) => c.activo);
+    if (cuentas.length === 0) {
+      return {
+        label: 'Cuentas bancarias',
+        valor: formatearMoneda(0),
+        meta: 'Sin cuenta cargada',
+      };
+    }
+    const cuenta = cuentas.find((c) => c.es_default) ?? cuentas[0];
+    return {
+      label: cuenta.nombre || cuenta.banco || 'Cuenta bancaria',
+      valor: formatearMoneda(cuenta.saldo),
+      meta:
+        cuentas.length === 1 ? cuenta.banco || 'Saldo de la cuenta' : `${cuentas.length} cuentas`,
+    };
+  });
+
+  protected readonly kpiTarjetas = computed(() => {
+    const tarjetas = totalesMedio(this.movimientosRaw(), 'tarjeta');
+    return {
+      valor: formatearMoneda(tarjetas.ingresos),
+      meta:
+        tarjetas.cobros === 0
+          ? 'Sin cobros con tarjeta hoy'
+          : tarjetas.cobros === 1
+            ? '1 cobro hoy'
+            : `${tarjetas.cobros} cobros hoy`,
     };
   });
 
@@ -98,5 +169,13 @@ export class CajaPage {
       next: (items) => this.movimientosRaw.set(items),
       error: () => this.movimientosRaw.set([]),
     });
+    this.bancos
+      .cuentas()
+      .pipe(catchError(() => of([])))
+      .subscribe((items) => this.cuentas.set(items));
+    this.bancos
+      .valores()
+      .pipe(catchError(() => of([])))
+      .subscribe((items) => this.valores.set(items));
   }
 }

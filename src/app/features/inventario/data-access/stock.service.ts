@@ -94,6 +94,21 @@ export class StockService {
     return this.http.post(`${this.api}/compras/${id}/confirmar`, {});
   }
 
+  cerrarToma(
+    depositoId: string,
+    conteos: { articuloId: string; cantidad: number }[],
+  ): Observable<{ ajustados: number; sinCambio: number }> {
+    return this.http
+      .post<{ ajustados: number; sin_cambio: number }>(`${this.api}/stock/tomas`, {
+        deposito_id: depositoId,
+        conteos: conteos.map((c) => ({
+          articulo_id: c.articuloId,
+          cantidad: c.cantidad,
+        })),
+      })
+      .pipe(map((r) => ({ ajustados: r.ajustados, sinCambio: r.sin_cambio })));
+  }
+
   mapProveedores(): Observable<Record<string, string>> {
     return this.http
       .get<ProveedorPaginaDto>(`${this.api}/proveedores`, {

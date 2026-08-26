@@ -72,7 +72,7 @@
       <div class="dash__card dash__tabla">
         <div class="dash__card-head dash__card-head--tabla">
           <div class="dash__card-title">Últimos comprobantes</div>
-          <button type="button" class="dash__link" (click)="irAVentas()">Ver todos</button>
+          <button type="button" class="dash__link" (click)="irAComprobantes()">Ver todos</button>
         </div>
         @if (comprobantes().length === 0) {
           <p class="dash__empty dash__empty--pad">Todavía no hay comprobantes.</p>
@@ -88,7 +88,7 @@
             </thead>
             <tbody>
               @for (c of comprobantes(); track c.id) {
-                <tr>
+                <tr class="dash__row-link" (click)="irAComprobante(c.tipo)">
                   <td class="dash__td-strong">{{ c.numero }}</td>
                   <td>{{ c.cliente }}</td>
                   <td class="dash__td-right">{{ c.totalFmt }}</td>
@@ -132,7 +132,7 @@
             }
           </div>
         }
-        <button type="button" class="dash__link-btn" (click)="irAArticulos()">
+        <button type="button" class="dash__link-btn" (click)="irAStock()">
           Ver stock completo
         </button>
       </div>

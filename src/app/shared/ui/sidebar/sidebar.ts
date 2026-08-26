@@ -27,7 +27,7 @@ export class Sidebar {
   /** Iniciales del avatar del pie */
   readonly avatarIniciales = input('U');
   /** Texto del pie (visible solo expandido) */
-  readonly pieTexto = input('Suc. Central · Caja 1');
+  readonly pieTexto = input('Comercio');
 
   readonly itemSelected = output<string>();
   readonly avatarClicked = output<void>();

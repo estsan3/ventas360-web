@@ -1,9 +1,14 @@
 <section class="page lst">
   <header class="lst__header">
-    <h1 class="lst__title">Artículos y stock</h1>
+    <div>
+      <h1 class="lst__title">Artículos</h1>
+      <p class="lst__subtitle">Catálogo, costos y precios de lista</p>
+    </div>
     @if (esAdmin()) {
       <div class="lst__actions">
-        <button type="button" class="lst__btn lst__btn--ghost">Actualizar precios</button>
+        <button type="button" class="lst__btn lst__btn--ghost" (click)="irAActualizarPrecios()">
+          Actualizar precios
+        </button>
         <button type="button" class="lst__cta" (click)="abrirCrear()">+ Nuevo artículo</button>
       </div>
     }

@@ -97,7 +97,7 @@ export class RemitosPage {
         return chipDeEstado(p.estado) === c;
       })
       .map((p): FilaRemito => {
-        const dep = p.depositoId ? (depositos.get(p.depositoId) ?? 'Depósito') : 'Suc. Central';
+        const dep = p.depositoId ? (depositos.get(p.depositoId) ?? 'Depósito') : 'Sin depósito';
         const puedeFacturar = p.estado === 'confirmado';
         const puedeConfirmar = p.estado === 'borrador';
         return {
@@ -124,7 +124,7 @@ export class RemitosPage {
       this.store.clientesRef().find((c) => c.id === p.clienteId)?.nombre ?? p.clienteId.slice(0, 8);
     const dep = p.depositoId
       ? (this.store.depositosRef().find((d) => d.id === p.depositoId)?.nombre ?? 'Depósito')
-      : 'Suc. Central';
+      : 'Sin depósito';
     return {
       titulo: `Remito REM-${p.id.slice(0, 8).toUpperCase()}`,
       subtitulo: `${formatearFecha(p.fecha)} · ${cliente} · ${dep} · ${etiquetaEstado(p.estado)}`,

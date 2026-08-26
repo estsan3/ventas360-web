@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { AuthStore } from '../../core/state/auth.store';
 import { NotificationStore } from '../../notifications/state/notification.store';
@@ -90,6 +91,7 @@ export class ProductosPage {
   private readonly auth = inject(AuthStore);
   private readonly notifications = inject(NotificationStore);
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly router = inject(Router);
 
   protected readonly pedidosColumns = PEDIDOS_COLUMNS;
   protected readonly estado = this.store.productos;
@@ -188,6 +190,17 @@ export class ProductosPage {
         this.formDirty.set(true);
       }
     });
+  }
+
+  protected irAActualizarPrecios(): void {
+    if (!this.auth.puede('compras')) {
+      this.notifications.warning(
+        'Sin acceso a Compras',
+        'Los precios se actualizan importando la lista del proveedor en Compras.',
+      );
+      return;
+    }
+    void this.router.navigate(['/compras'], { queryParams: { tab: 'listas' } });
   }
 
   protected abrirCrear(): void {

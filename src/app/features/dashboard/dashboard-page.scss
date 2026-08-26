@@ -318,6 +318,10 @@ $dc-hover: #faf7f3;
     }
   }
 
+  &__row-link {
+    cursor: pointer;
+  }
+
   &__th-right,
   &__td-right {
     text-align: right;

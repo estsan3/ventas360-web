@@ -179,11 +179,35 @@ export class DashboardPage {
     this.router.navigate(['/ventas']);
   }
 
-  protected irAVentas(): void {
+  protected irAComprobantes(): void {
+    if (this.auth.puedeRuta('remitos')) {
+      this.router.navigate(['/remitos']);
+      return;
+    }
+    if (this.auth.puedeRuta('pedidos')) {
+      this.router.navigate(['/pedidos']);
+      return;
+    }
     this.router.navigate(['/ventas']);
   }
 
-  protected irAArticulos(): void {
+  protected irAComprobante(tipo: string): void {
+    if (tipo === 'pedido' && this.auth.puedeRuta('pedidos')) {
+      this.router.navigate(['/pedidos']);
+      return;
+    }
+    if (tipo === 'presupuesto' && this.auth.puedeRuta('presupuestos')) {
+      this.router.navigate(['/presupuestos']);
+      return;
+    }
+    this.irAComprobantes();
+  }
+
+  protected irAStock(): void {
+    if (this.auth.puedeRuta('inventario')) {
+      this.router.navigate(['/inventario'], { queryParams: { tab: 'alertas' } });
+      return;
+    }
     this.router.navigate(['/productos']);
   }
 

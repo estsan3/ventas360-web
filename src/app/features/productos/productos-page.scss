@@ -12,6 +12,12 @@
     @include dc.dc-list-title;
   }
 
+  &__subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: dc.$dc-muted;
+  }
+
   &__actions {
     display: flex;
     gap: 8px;

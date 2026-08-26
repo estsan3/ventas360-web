@@ -17,7 +17,7 @@
   </nav>
 
   <div class="topbar__right">
-    <div class="topbar__ctx">Suc. Central · Caja 1</div>
+    <div class="topbar__ctx">{{ ctxTexto() }}</div>
     @if (authStore.user(); as user) {
       <div class="topbar__perfil-wrap">
         <button

@@ -18,18 +18,18 @@
     </div>
     <div class="caja__kpi">
       <div class="caja__kpi-label">Cheques en cartera</div>
-      <div class="caja__kpi-val">{{ kpiCheques.valor }}</div>
-      <div class="caja__kpi-meta">{{ kpiCheques.meta }}</div>
+      <div class="caja__kpi-val">{{ kpiCheques().valor }}</div>
+      <div class="caja__kpi-meta">{{ kpiCheques().meta }}</div>
     </div>
     <div class="caja__kpi">
-      <div class="caja__kpi-label">Banco Nación c/c</div>
-      <div class="caja__kpi-val">{{ kpiBanco.valor }}</div>
-      <div class="caja__kpi-meta">{{ kpiBanco.meta }}</div>
+      <div class="caja__kpi-label">{{ kpiBanco().label }}</div>
+      <div class="caja__kpi-val">{{ kpiBanco().valor }}</div>
+      <div class="caja__kpi-meta">{{ kpiBanco().meta }}</div>
     </div>
     <div class="caja__kpi">
-      <div class="caja__kpi-label">Tarjetas a acreditar</div>
-      <div class="caja__kpi-val">{{ kpiTarjetas.valor }}</div>
-      <div class="caja__kpi-meta">{{ kpiTarjetas.meta }}</div>
+      <div class="caja__kpi-label">Tarjetas</div>
+      <div class="caja__kpi-val">{{ kpiTarjetas().valor }}</div>
+      <div class="caja__kpi-meta">{{ kpiTarjetas().meta }}</div>
     </div>
   </div>
 

@@ -50,6 +50,16 @@ export class Topbar {
     return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
   });
 
+  protected readonly ctxTexto = computed(() => {
+    const user = this.authStore.user();
+    const persona = user?.nombre.split(/\s+/)[0] ?? '';
+    if (this.authStore.esPlataforma()) {
+      return persona ? `Plataforma · ${persona}` : 'Plataforma';
+    }
+    const comercio = this.authStore.nombreComercio() ?? 'Comercio';
+    return persona ? `${comercio} · ${persona}` : comercio;
+  });
+
   protected seleccionar(id: string): void {
     this.itemSelected.emit(id);
   }

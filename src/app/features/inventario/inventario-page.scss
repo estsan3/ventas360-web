@@ -12,6 +12,12 @@
     @include dc.dc-list-title;
   }
 
+  &__subtitle-page {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: dc.$dc-muted;
+  }
+
   &__tabs {
     display: flex;
     gap: 2px;
@@ -69,13 +75,18 @@
     font-size: 13px;
     font-weight: 600;
 
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     &--ghost {
       border: 1px solid dc.$dc-border;
       background: #fff;
       color: dc.$dc-text;
       padding: 9px 14px;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: dc.$dc-hover;
       }
     }
@@ -87,7 +98,7 @@
       padding: 9px 16px;
       font-weight: 700;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: #000;
       }
     }

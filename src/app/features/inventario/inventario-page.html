@@ -1,6 +1,9 @@
 <section class="page inv">
   <header class="inv__header">
-    <h1 class="inv__title">Stock</h1>
+    <div>
+      <h1 class="inv__title">Stock</h1>
+      <p class="inv__subtitle-page">Toma de inventario, recepción y alertas</p>
+    </div>
   </header>
 
   <div class="inv__tabs">
@@ -32,10 +35,24 @@
 
   @if (tab() === 'toma') {
     <div class="inv__toma-head">
-      <div class="inv__subtitle">Toma en curso · iniciada hoy · {{ depositoActivoNombre() }}</div>
+      <div class="inv__subtitle">Contá el stock físico y comparalo con el sistema</div>
       <div class="inv__actions">
-        <button type="button" class="inv__btn inv__btn--ghost">Exportar valorizado</button>
-        <button type="button" class="inv__btn inv__btn--dark">Cerrar toma y ajustar</button>
+        <button
+          type="button"
+          class="inv__btn inv__btn--ghost"
+          [disabled]="filas().length === 0"
+          (click)="exportarValorizado()"
+        >
+          Exportar valorizado
+        </button>
+        <button
+          type="button"
+          class="inv__btn inv__btn--dark"
+          [disabled]="cerrando() || contados() === 0"
+          (click)="cerrarToma()"
+        >
+          {{ cerrando() ? 'Ajustando…' : 'Cerrar toma y ajustar' }}
+        </button>
       </div>
     </div>
 
@@ -117,7 +134,7 @@
                   inputmode="numeric"
                   [placeholder]="'—'"
                   [ngModel]="row.conteo"
-                  (ngModelChange)="actualizarConteo(row.codigo, $event)"
+                  (ngModelChange)="actualizarConteo(row.articuloId, $event)"
                 />
               </td>
               <td
@@ -332,7 +349,11 @@
               } @empty {
                 <tr>
                   <td colspan="5" class="inv__empty-cell">
-                    Sin alertas: todos los artículos tienen stock por encima del mínimo.
+                    {{
+                      filas().length === 0
+                        ? 'No hay artículos en este depósito.'
+                        : 'Sin alertas: el stock está por encima del mínimo.'
+                    }}
                   </td>
                 </tr>
               }
