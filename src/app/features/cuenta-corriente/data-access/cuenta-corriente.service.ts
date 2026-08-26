@@ -91,6 +91,7 @@ export class CuentaCorrienteService {
           medio: body.medio,
           observacion: body.observacion,
           imputaciones,
+          cheque: body.cheque,
         });
       }),
     );

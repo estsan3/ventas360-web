@@ -2,7 +2,7 @@
   <header class="page__header">
     <div>
       <h1>Bancos</h1>
-      <p class="page__subtitle">Cuentas bancarias y valores (cheques) en cartera</p>
+      <p class="page__subtitle">Cuentas bancarias y cartera de cheques (propios y de tercero)</p>
     </div>
     <app-button variant="primary" size="md" (clicked)="abrirValor()">
       <app-icon name="plus" />
@@ -50,6 +50,9 @@
           </ng-template>
           <ng-template appTableCell="acciones" let-row>
             @if ($any(row)['enCartera']) {
+              <app-button variant="outline" size="sm" (clicked)="abrirEntregar($any(row)['id'])">
+                Entregar
+              </app-button>
               <app-button variant="outline" size="sm" (clicked)="depositar($any(row)['id'])">
                 Depositar
               </app-button>
@@ -71,6 +74,9 @@
       <app-text-input label="Número" formControlName="numero" />
       <app-text-input label="Librador" formControlName="librador" />
       <app-text-input label="Banco emisor" formControlName="bancoEmisor" />
+      <app-text-input label="Recibido de" formControlName="recibidoDe" />
+      <app-text-input label="Fecha" type="date" formControlName="fecha" />
+      <app-text-input label="Vencimiento" type="date" formControlName="fechaVto" />
       <app-text-input label="Observación" formControlName="observacion" />
     </form>
     <div class="form-drawer__actions">
@@ -79,6 +85,28 @@
       </app-button>
       <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarValor()">
         Guardar
+      </app-button>
+    </div>
+  </app-side-drawer>
+
+  <app-side-drawer
+    [abierto]="drawerEntregar()"
+    titulo="Entregar cheque"
+    (cerrar)="drawerEntregar.set(false)"
+  >
+    <form class="form-drawer" [formGroup]="formEntregar">
+      <app-text-input
+        label="Entregado a"
+        formControlName="destinatario"
+        placeholder="Proveedor, persona, etc."
+      />
+    </form>
+    <div class="form-drawer__actions">
+      <app-button variant="outline" size="md" (clicked)="drawerEntregar.set(false)">
+        Cancelar
+      </app-button>
+      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarEntrega()">
+        Entregar
       </app-button>
     </div>
   </app-side-drawer>

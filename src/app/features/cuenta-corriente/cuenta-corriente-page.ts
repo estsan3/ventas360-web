@@ -12,6 +12,7 @@ import { CuentaCorrienteStore } from './data-access/cuenta-corriente.store';
 import {
   ClienteRef,
   ComprobanteCxc,
+  DatosCheque,
   MedioCobro,
   MovimientoCxc,
   SaldoCliente,
@@ -216,6 +217,11 @@ export class CuentaCorrientePage {
   protected readonly cobroMedio = signal<MedioCobro>('efectivo');
   protected readonly cobroObs = signal('');
   protected readonly cobroGuardando = signal(false);
+  protected readonly cobroChequeNumero = signal('');
+  protected readonly cobroChequeBanco = signal('');
+  protected readonly cobroChequeLibrador = signal('');
+  protected readonly cobroChequeFecha = signal('');
+  protected readonly cobroChequeVto = signal('');
 
   protected readonly clientes = computed(() => this.store.clientesRef());
   protected readonly zonas = computed(() => this.store.zonasRef());
@@ -600,6 +606,11 @@ export class CuentaCorrientePage {
     this.cobroMonto.set(this.montoInputDesdeNumero(saldo.saldo));
     this.cobroMedio.set('efectivo');
     this.cobroObs.set('');
+    this.cobroChequeNumero.set('');
+    this.cobroChequeBanco.set('');
+    this.cobroChequeLibrador.set(this.clientes().find((c) => c.id === id)?.nombre ?? '');
+    this.cobroChequeFecha.set('');
+    this.cobroChequeVto.set('');
     this.cobroOpen.set(true);
   }
 
@@ -630,6 +641,10 @@ export class CuentaCorrientePage {
       this.notifications.error('Monto inválido', 'Ingresá un monto mayor a cero');
       return;
     }
+    if (this.cobroMedio() === 'cheque' && !this.datosChequeCobro()) {
+      this.notifications.error('Cheque', 'Completá número y banco del cheque');
+      return;
+    }
     this.cobroGuardando.set(true);
     this.store
       .registrarCobro({
@@ -637,6 +652,7 @@ export class CuentaCorrientePage {
         monto,
         medio: this.cobroMedio(),
         observacion: this.cobroObs().trim() || undefined,
+        cheque: this.datosChequeCobro() ?? undefined,
       })
       .subscribe({
         next: (recibo) => {
@@ -653,6 +669,27 @@ export class CuentaCorrientePage {
           this.notifications.error('No se pudo registrar el cobro', err.message || 'Error');
         },
       });
+  }
+
+  private datosChequeCobro(): DatosCheque | null {
+    if (this.cobroMedio() !== 'cheque') {
+      return null;
+    }
+    const numero = this.cobroChequeNumero().trim();
+    const banco = this.cobroChequeBanco().trim();
+    if (!numero || !banco) {
+      return null;
+    }
+    return {
+      numero,
+      bancoEmisor: banco,
+      librador: this.cobroChequeLibrador().trim(),
+      fecha: this.cobroChequeFecha() || undefined,
+      fechaVto: this.cobroChequeVto() || undefined,
+      recibidoDe:
+        this.clientes().find((c) => c.id === this.cobroClienteId())?.nombre ??
+        this.cobroChequeLibrador().trim(),
+    };
   }
 
   private montoInputDesdeNumero(valor: number): string {

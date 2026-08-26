@@ -19,6 +19,7 @@ const NAV_COMERCIO: SidebarItem[] = [
   { id: 'inventario', label: 'Stock', icon: 'package' },
   { id: 'compras', label: 'Compras', icon: 'truck' },
   { id: 'caja', label: 'Caja', icon: 'dollar' },
+  { id: 'bancos', label: 'Cheques', icon: 'file-text' },
   { id: 'configuracion', label: 'Config.', icon: 'settings', section: 'bottom' },
 ];
 

@@ -90,7 +90,7 @@ export interface ReciboDto {
   cliente_id: string;
   fecha: string;
   monto: number;
-  medio: 'efectivo' | 'transferencia' | 'tarjeta';
+  medio: 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
   observacion: string;
 }
 

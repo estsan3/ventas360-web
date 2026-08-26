@@ -2,13 +2,41 @@
   <header class="caja__header">
     <div>
       <h1 class="caja__title">Caja y bancos</h1>
-      <p class="caja__subtitle">Caja del día · {{ usuarioNombre() }}</p>
+      <p class="caja__subtitle">Caja del día · {{ etiquetaEstado() }}</p>
     </div>
     <div class="caja__actions">
-      <button type="button" class="caja__btn caja__btn--ghost">Registrar egreso</button>
-      <button type="button" class="caja__btn caja__btn--dark">Cerrar caja del día</button>
+      @if (estadoCaja() === 'sin_abrir' || estadoCaja() === 'cerrada') {
+        <button type="button" class="caja__btn caja__btn--dark" (click)="abrirDrawer('abrir')">
+          Abrir caja
+        </button>
+      }
+      @if (estadoCaja() === 'abierta') {
+        <button type="button" class="caja__btn caja__btn--ghost" (click)="abrirDrawer('egreso')">
+          Registrar egreso
+        </button>
+        <button type="button" class="caja__btn caja__btn--dark" (click)="abrirDrawer('cerrar')">
+          Cerrar caja
+        </button>
+      }
     </div>
   </header>
+
+  @if (estadoCaja() === 'sin_abrir') {
+    <div class="caja__banner">
+      Abrí la caja con el fondo inicial para registrar egresos y cerrar el día con arqueo.
+    </div>
+  }
+  @if (estadoCaja() === 'cerrada') {
+    <div class="caja__banner caja__banner--cerrada">
+      Cerrada
+      @if (saldo()?.cerrada_por) {
+        por {{ saldo()!.cerrada_por }}
+      }
+      · efectivo {{ formatearMoneda(saldo()?.efectivo_contado ?? 0) }} · cheques
+      {{ formatearMoneda(saldo()?.cheques_contado ?? 0) }} · tarjetas
+      {{ formatearMoneda(saldo()?.tarjetas_contado ?? 0) }}. Podés abrir otro turno.
+    </div>
+  }
 
   <div class="caja__kpis">
     <div class="caja__kpi caja__kpi--dark">
@@ -33,47 +61,310 @@
     </div>
   </div>
 
-  <div class="caja__card">
-    <div class="caja__card-title">Movimientos de hoy</div>
-    @if (movimientos().length === 0) {
-      <div class="caja__empty">
-        {{ cargando() ? 'Cargando movimientos…' : 'No hay movimientos para hoy' }}
-      </div>
-    } @else {
-      <table class="caja__table">
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Concepto</th>
-            <th>Medio</th>
-            <th class="caja__th-right">Ingreso</th>
-            <th class="caja__th-right">Egreso</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of movimientos(); track row.id) {
-            <tr>
-              <td>{{ row.hora }}</td>
-              <td class="caja__concepto">{{ row.concepto }}</td>
-              <td>{{ row.medio }}</td>
-              <td
-                class="caja__td-right"
-                [class.caja__ingreso]="row.ingreso !== '—'"
-                [class.caja__dash]="row.ingreso === '—'"
-              >
-                {{ row.ingreso }}
-              </td>
-              <td
-                class="caja__td-right"
-                [class.caja__egreso]="row.egreso !== '—'"
-                [class.caja__dash]="row.egreso === '—'"
-              >
-                {{ row.egreso }}
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    }
+  <div class="caja__tabs">
+    <button
+      type="button"
+      class="caja__tab"
+      [class.caja__tab--on]="vista() === 'movimientos'"
+      (click)="vista.set('movimientos')"
+    >
+      Movimientos
+    </button>
+    <button
+      type="button"
+      class="caja__tab"
+      [class.caja__tab--on]="vista() === 'cheques'"
+      (click)="vista.set('cheques')"
+    >
+      Cartera de cheques
+    </button>
   </div>
+
+  @if (vista() === 'movimientos') {
+    <div class="caja__card">
+      <div class="caja__card-title">Movimientos de hoy</div>
+      @if (movimientos().length === 0) {
+        <div class="caja__empty">
+          {{ cargando() ? 'Cargando movimientos…' : 'No hay movimientos para hoy' }}
+        </div>
+      } @else {
+        <table class="caja__table">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Concepto</th>
+              <th>Medio</th>
+              <th class="caja__th-right">Ingreso</th>
+              <th class="caja__th-right">Egreso</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of movimientos(); track row.id) {
+              <tr>
+                <td>{{ row.hora }}</td>
+                <td class="caja__concepto">{{ row.concepto }}</td>
+                <td>{{ row.medio }}</td>
+                <td
+                  class="caja__td-right"
+                  [class.caja__ingreso]="row.ingreso !== '—'"
+                  [class.caja__dash]="row.ingreso === '—'"
+                >
+                  {{ row.ingreso }}
+                </td>
+                <td
+                  class="caja__td-right"
+                  [class.caja__egreso]="row.egreso !== '—'"
+                  [class.caja__dash]="row.egreso === '—'"
+                >
+                  {{ row.egreso }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  } @else {
+    <div class="caja__card">
+      <div class="caja__card-title">Cheques</div>
+      @if (valores().length === 0) {
+        <div class="caja__empty">No hay cheques cargados</div>
+      } @else {
+        <table class="caja__table">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Banco</th>
+              <th>Tipo</th>
+              <th>De / a</th>
+              <th class="caja__th-right">Monto</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of valores(); track v.id) {
+              <tr>
+                <td>{{ v.numero || '—' }}</td>
+                <td>{{ v.banco_emisor || '—' }}</td>
+                <td>{{ etiquetaTipoCheque(v.tipo) }}</td>
+                <td>
+                  @if (v.entregado_a) {
+                    Entregado a {{ v.entregado_a }}
+                  } @else {
+                    {{ v.recibido_de || v.librador || '—' }}
+                  }
+                </td>
+                <td class="caja__td-right">{{ formatearMoneda(v.monto) }}</td>
+                <td>{{ etiquetaEstadoValor(v.estado) }}</td>
+                <td class="caja__td-right">
+                  @if (v.estado === 'en_cartera') {
+                    <button type="button" class="caja__link" (click)="abrirEntregar(v.id)">
+                      Entregar
+                    </button>
+                    <button type="button" class="caja__link" (click)="depositarCheque(v.id)">
+                      Depositar
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
 </section>
+
+<app-side-drawer
+  [abierto]="drawer() !== null"
+  [titulo]="tituloDrawer()"
+  ancho="480px"
+  (cerrar)="cerrarDrawer()"
+>
+  @if (drawer() === 'abrir') {
+    <form class="form-drawer" [formGroup]="formAbrir">
+      <p class="caja__hint">El fondo es el efectivo con el que arranca la caja. Puede ser cero.</p>
+      <app-text-input
+        label="Fondo inicial"
+        type="number"
+        formControlName="fondoInicial"
+        placeholder="0"
+      />
+      <footer class="form-drawer__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
+          Cancelar
+        </app-button>
+        <app-button
+          variant="primary"
+          size="md"
+          [disabled]="guardando()"
+          (clicked)="confirmarAbrir()"
+        >
+          {{ guardando() ? 'Abriendo…' : 'Abrir caja' }}
+        </app-button>
+      </footer>
+    </form>
+  }
+
+  @if (drawer() === 'egreso') {
+    <form class="form-drawer" [formGroup]="formEgreso">
+      <p class="caja__hint">Sale de la caja. En efectivo no puede superar lo que hay.</p>
+      <app-select-input label="Medio" [options]="mediosEgreso" formControlName="medio" />
+      @if (medioEgreso() === 'cheque') {
+        <app-select-input
+          label="Origen del cheque"
+          [options]="modosCheque"
+          formControlName="modoCheque"
+        />
+        @if (modoCheque() === 'cartera') {
+          @if (opcionesChequesCartera().length === 0) {
+            <p class="caja__hint">No hay cheques en cartera para entregar.</p>
+          } @else {
+            <app-select-input
+              label="Cheque en cartera"
+              [options]="opcionesChequesCartera()"
+              formControlName="chequeId"
+            />
+          }
+        } @else {
+          <app-text-input label="Número" formControlName="numero" />
+          <app-text-input label="Banco" formControlName="bancoEmisor" />
+          <app-text-input label="Vencimiento" type="date" formControlName="fechaVto" />
+        }
+        <app-text-input
+          label="Entregado a"
+          formControlName="entregadoA"
+          placeholder="Proveedor, persona, etc."
+        />
+      }
+      <app-text-input label="Monto" type="number" formControlName="monto" placeholder="0" />
+      <app-text-input
+        label="Concepto"
+        formControlName="concepto"
+        placeholder="Flete, retiro, etc."
+      />
+      <footer class="form-drawer__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
+          Cancelar
+        </app-button>
+        <app-button
+          variant="primary"
+          size="md"
+          [disabled]="guardando()"
+          (clicked)="confirmarEgreso()"
+        >
+          {{ guardando() ? 'Guardando…' : 'Registrar egreso' }}
+        </app-button>
+      </footer>
+    </form>
+  }
+
+  @if (drawer() === 'cerrar') {
+    <form class="form-drawer" [formGroup]="formCerrar">
+      <div class="caja__arqueo">
+        <div class="caja__arqueo-row">
+          <span>Efectivo esperado</span>
+          <strong>{{ formatearMoneda(saldo()?.efectivo_esperado ?? 0) }}</strong>
+        </div>
+        <div class="caja__arqueo-row">
+          <span>Cheques del turno</span>
+          <strong>{{ formatearMoneda(saldo()?.cheques_esperado ?? 0) }}</strong>
+        </div>
+        <div class="caja__arqueo-row">
+          <span>Tarjetas del turno</span>
+          <strong>{{ formatearMoneda(saldo()?.tarjetas_esperado ?? 0) }}</strong>
+        </div>
+        <div class="caja__arqueo-row">
+          <span>Fondo inicial</span>
+          <strong>{{ formatearMoneda(saldo()?.fondo_inicial ?? 0) }}</strong>
+        </div>
+      </div>
+      <app-text-input
+        label="Efectivo contado"
+        type="number"
+        formControlName="efectivoContado"
+        placeholder="0"
+      />
+      @if (diferenciaCierre() !== null) {
+        <p
+          class="caja__dif"
+          [class.caja__dif--ok]="tonoDif(diferenciaCierre()) === 'ok'"
+          [class.caja__dif--neg]="tonoDif(diferenciaCierre()) === 'neg'"
+          [class.caja__dif--pos]="tonoDif(diferenciaCierre()) === 'pos'"
+        >
+          Efectivo · {{ textoDif(diferenciaCierre()) }}
+        </p>
+      }
+      <app-text-input
+        label="Cheques contados"
+        type="number"
+        formControlName="chequesContado"
+        placeholder="0"
+      />
+      @if (diferenciaCheques() !== null) {
+        <p
+          class="caja__dif"
+          [class.caja__dif--ok]="tonoDif(diferenciaCheques()) === 'ok'"
+          [class.caja__dif--neg]="tonoDif(diferenciaCheques()) === 'neg'"
+          [class.caja__dif--pos]="tonoDif(diferenciaCheques()) === 'pos'"
+        >
+          Cheques · {{ textoDif(diferenciaCheques()) }}
+        </p>
+      }
+      <app-text-input
+        label="Tarjetas contadas"
+        type="number"
+        formControlName="tarjetasContado"
+        placeholder="0"
+      />
+      @if (diferenciaTarjetas() !== null) {
+        <p
+          class="caja__dif"
+          [class.caja__dif--ok]="tonoDif(diferenciaTarjetas()) === 'ok'"
+          [class.caja__dif--neg]="tonoDif(diferenciaTarjetas()) === 'neg'"
+          [class.caja__dif--pos]="tonoDif(diferenciaTarjetas()) === 'pos'"
+        >
+          Tarjetas · {{ textoDif(diferenciaTarjetas()) }}
+        </p>
+      }
+      <footer class="form-drawer__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
+          Seguir contando
+        </app-button>
+        <app-button
+          variant="primary"
+          size="md"
+          [disabled]="guardando()"
+          (clicked)="confirmarCerrar()"
+        >
+          {{ guardando() ? 'Cerrando…' : 'Cerrar caja' }}
+        </app-button>
+      </footer>
+    </form>
+  }
+
+  @if (drawer() === 'entregar') {
+    <form class="form-drawer" [formGroup]="formEntregar">
+      <p class="caja__hint">Registrá a quién le das el cheque (propio o de tercero).</p>
+      <app-text-input
+        label="Entregado a"
+        formControlName="destinatario"
+        placeholder="Nombre o razón social"
+      />
+      <footer class="form-drawer__footer">
+        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
+          Cancelar
+        </app-button>
+        <app-button
+          variant="primary"
+          size="md"
+          [disabled]="guardando()"
+          (clicked)="confirmarEntregar()"
+        >
+          {{ guardando() ? 'Guardando…' : 'Entregar' }}
+        </app-button>
+      </footer>
+    </form>
+  }
+</app-side-drawer>

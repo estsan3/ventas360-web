@@ -23,16 +23,24 @@ export interface MovimientoBancarioDto {
   concepto: string;
 }
 
+export type TipoValor = 'cheque_tercero' | 'cheque_propio';
+export type EstadoValor = 'en_cartera' | 'depositado' | 'cobrado' | 'rechazado' | 'entregado';
+
 export interface ValorBancarioDto {
   id: string;
-  tipo: 'cheque_tercero' | 'cheque_propio';
-  estado: string;
+  tipo: TipoValor;
+  estado: EstadoValor | string;
   monto: number;
   fecha: string;
   fecha_vto: string | null;
   numero: string;
   librador: string;
   banco_emisor: string;
+  recibido_de: string;
+  entregado_a: string;
+  fecha_entrega: string | null;
+  origen: string;
+  origen_id: string;
   cuenta_destino_id: string | null;
   observacion: string;
 }
@@ -63,11 +71,14 @@ export class BancosService {
   }
 
   crearValor(body: {
-    tipo: 'cheque_tercero' | 'cheque_propio';
+    tipo: TipoValor;
     monto: number;
     numero?: string;
     librador?: string;
     banco_emisor?: string;
+    recibido_de?: string;
+    fecha?: string | null;
+    fecha_vto?: string | null;
     observacion?: string;
   }): Observable<ValorBancarioDto> {
     return this.http.post<ValorBancarioDto>(`${this.base}/valores`, body);
@@ -76,6 +87,17 @@ export class BancosService {
   depositar(valorId: string, cuentaId?: string): Observable<ValorBancarioDto> {
     return this.http.post<ValorBancarioDto>(`${this.base}/valores/${valorId}/depositar`, {
       cuenta_id: cuentaId ?? null,
+    });
+  }
+
+  entregar(
+    valorId: string,
+    destinatario: string,
+    fecha?: string | null,
+  ): Observable<ValorBancarioDto> {
+    return this.http.post<ValorBancarioDto>(`${this.base}/valores/${valorId}/entregar`, {
+      destinatario,
+      fecha: fecha ?? null,
     });
   }
 }

@@ -70,6 +70,16 @@ export function crearReciboToDto(model: CrearRecibo): CrearReciboDto {
       factura_id: i.facturaId,
       monto: i.monto,
     })),
+    cheque: model.cheque
+      ? {
+          numero: model.cheque.numero,
+          banco_emisor: model.cheque.bancoEmisor,
+          librador: model.cheque.librador ?? '',
+          fecha: model.cheque.fecha || null,
+          fecha_vto: model.cheque.fechaVto || null,
+          recibido_de: model.cheque.recibidoDe ?? '',
+        }
+      : undefined,
   };
 }
 

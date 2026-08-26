@@ -147,6 +147,16 @@ export class VentasService {
                 factura_id: i.facturaId,
                 monto: i.monto,
               })),
+              cheque: body.cheque
+                ? {
+                    numero: body.cheque.numero,
+                    banco_emisor: body.cheque.bancoEmisor,
+                    librador: body.cheque.librador ?? '',
+                    fecha: body.cheque.fecha || null,
+                    fecha_vto: body.cheque.fechaVto || null,
+                    recibido_de: body.cheque.recibidoDe ?? '',
+                  }
+                : null,
             })
             .pipe(
               map((r): ReciboRef => ({

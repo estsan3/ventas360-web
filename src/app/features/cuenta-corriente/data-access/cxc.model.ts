@@ -24,7 +24,16 @@ export interface EstadoCuenta {
   movimientos: MovimientoCxc[];
 }
 
-export type MedioCobro = 'efectivo' | 'transferencia' | 'tarjeta';
+export type MedioCobro = 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
+
+export interface DatosCheque {
+  numero: string;
+  bancoEmisor: string;
+  librador?: string;
+  fecha?: string;
+  fechaVto?: string;
+  recibidoDe?: string;
+}
 
 export interface Recibo {
   id: string;
@@ -46,6 +55,7 @@ export interface CrearRecibo {
   medio: MedioCobro;
   observacion?: string;
   imputaciones: ImputacionCobro[];
+  cheque?: DatosCheque;
 }
 
 export interface RegistrarCobro {
@@ -53,6 +63,7 @@ export interface RegistrarCobro {
   monto: number;
   medio: MedioCobro;
   observacion?: string;
+  cheque?: DatosCheque;
 }
 
 export interface ClienteRef {

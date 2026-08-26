@@ -720,6 +720,32 @@ $dc-placeholder: #b8b2ab;
     }
   }
 
+  &__cheque {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  &__cheque-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: $dc-muted;
+  }
+
+  &__cheque-input {
+    border: 1px solid $dc-border;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    color: $dc-text;
+    background: #fff;
+  }
+
   &__totales {
     background: $dc-text;
     border-radius: 12px;

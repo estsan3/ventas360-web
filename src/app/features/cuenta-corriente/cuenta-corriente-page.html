@@ -495,8 +495,54 @@
             <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia</option>
             <option value="tarjeta">Tarjeta</option>
+            <option value="cheque">Cheque</option>
           </select>
         </label>
+
+        @if (cobroMedio() === 'cheque') {
+          <label class="ctc__field">
+            <span class="ctc__field-label">Número</span>
+            <input
+              class="ctc__input"
+              [ngModel]="cobroChequeNumero()"
+              (ngModelChange)="cobroChequeNumero.set($event)"
+            />
+          </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Banco</span>
+            <input
+              class="ctc__input"
+              [ngModel]="cobroChequeBanco()"
+              (ngModelChange)="cobroChequeBanco.set($event)"
+            />
+          </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Librador</span>
+            <input
+              class="ctc__input"
+              [ngModel]="cobroChequeLibrador()"
+              (ngModelChange)="cobroChequeLibrador.set($event)"
+            />
+          </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Fecha</span>
+            <input
+              class="ctc__input"
+              type="date"
+              [ngModel]="cobroChequeFecha()"
+              (ngModelChange)="cobroChequeFecha.set($event)"
+            />
+          </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Vencimiento</span>
+            <input
+              class="ctc__input"
+              type="date"
+              [ngModel]="cobroChequeVto()"
+              (ngModelChange)="cobroChequeVto.set($event)"
+            />
+          </label>
+        }
 
         <label class="ctc__field">
           <span class="ctc__field-label">Observación (opcional)</span>

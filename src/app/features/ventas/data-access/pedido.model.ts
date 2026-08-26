@@ -70,7 +70,16 @@ export interface SaldoClienteRef {
   haberTotal: number;
 }
 
-export type MedioCobro = 'efectivo' | 'transferencia' | 'tarjeta';
+export type MedioCobro = 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
+
+export interface DatosCheque {
+  numero: string;
+  bancoEmisor: string;
+  librador?: string;
+  fecha?: string;
+  fechaVto?: string;
+  recibidoDe?: string;
+}
 
 export interface ReciboRef {
   id: string;
@@ -86,6 +95,7 @@ export interface RegistrarCobro {
   monto: number;
   medio: MedioCobro;
   observacion?: string;
+  cheque?: DatosCheque;
 }
 
 export interface ZonaRef {

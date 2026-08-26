@@ -412,6 +412,54 @@
               }
             </div>
           }
+          @if (isCheque()) {
+            <div class="fact__cheque">
+              <div class="fact__hint">El cheque entra a cartera y a caja como medio cheque.</div>
+              <label class="fact__cheque-field">
+                <span>Número</span>
+                <input
+                  class="fact__cheque-input"
+                  [value]="chequeNumero()"
+                  (input)="chequeNumero.set($any($event.target).value)"
+                />
+              </label>
+              <label class="fact__cheque-field">
+                <span>Banco</span>
+                <input
+                  class="fact__cheque-input"
+                  [value]="chequeBanco()"
+                  (input)="chequeBanco.set($any($event.target).value)"
+                />
+              </label>
+              <label class="fact__cheque-field">
+                <span>Librador</span>
+                <input
+                  class="fact__cheque-input"
+                  [value]="chequeLibrador()"
+                  (input)="chequeLibrador.set($any($event.target).value)"
+                  [placeholder]="clienteNombre()"
+                />
+              </label>
+              <label class="fact__cheque-field">
+                <span>Fecha</span>
+                <input
+                  class="fact__cheque-input"
+                  type="date"
+                  [value]="chequeFecha()"
+                  (input)="chequeFecha.set($any($event.target).value)"
+                />
+              </label>
+              <label class="fact__cheque-field">
+                <span>Vencimiento</span>
+                <input
+                  class="fact__cheque-input"
+                  type="date"
+                  [value]="chequeVto()"
+                  (input)="chequeVto.set($any($event.target).value)"
+                />
+              </label>
+            </div>
+          }
         </div>
       }
 
@@ -708,8 +756,53 @@
             <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia</option>
             <option value="tarjeta">Tarjeta</option>
+            <option value="cheque">Cheque</option>
           </select>
         </label>
+        @if (cobroMedio() === 'cheque') {
+          <label class="fact-cobro__field">
+            <span class="fact-cobro__label">Número</span>
+            <input
+              class="fact-modal__input"
+              [value]="cobroChequeNumero()"
+              (input)="cobroChequeNumero.set($any($event.target).value)"
+            />
+          </label>
+          <label class="fact-cobro__field">
+            <span class="fact-cobro__label">Banco</span>
+            <input
+              class="fact-modal__input"
+              [value]="cobroChequeBanco()"
+              (input)="cobroChequeBanco.set($any($event.target).value)"
+            />
+          </label>
+          <label class="fact-cobro__field">
+            <span class="fact-cobro__label">Librador</span>
+            <input
+              class="fact-modal__input"
+              [value]="cobroChequeLibrador()"
+              (input)="cobroChequeLibrador.set($any($event.target).value)"
+            />
+          </label>
+          <label class="fact-cobro__field">
+            <span class="fact-cobro__label">Fecha</span>
+            <input
+              class="fact-modal__input"
+              type="date"
+              [value]="cobroChequeFecha()"
+              (input)="cobroChequeFecha.set($any($event.target).value)"
+            />
+          </label>
+          <label class="fact-cobro__field">
+            <span class="fact-cobro__label">Vencimiento</span>
+            <input
+              class="fact-modal__input"
+              type="date"
+              [value]="cobroChequeVto()"
+              (input)="cobroChequeVto.set($any($event.target).value)"
+            />
+          </label>
+        }
         <label class="fact-cobro__field">
           <span class="fact-cobro__label">Observación (opcional)</span>
           <input

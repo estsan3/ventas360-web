@@ -31,13 +31,18 @@
     font-size: 13px;
     font-weight: 600;
 
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     &--ghost {
       border: 1px solid dc.$dc-border;
       background: #fff;
       color: dc.$dc-text;
       padding: 9px 14px;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: dc.$dc-hover;
       }
     }
@@ -49,9 +54,73 @@
       padding: 9px 16px;
       font-weight: 700;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: #000;
       }
+    }
+  }
+
+  &__banner {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: #fff6ee;
+    border: 1px solid #f0d9c4;
+    color: dc.$dc-text;
+    font-size: 13.5px;
+    line-height: 1.45;
+
+    &--cerrada {
+      background: dc.$dc-ok-bg;
+      border-color: #cfe3d6;
+    }
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 13px;
+    color: dc.$dc-muted;
+    line-height: 1.45;
+  }
+
+  &__arqueo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid dc.$dc-border;
+    border-radius: 10px;
+    background: #faf9f7;
+  }
+
+  &__arqueo-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13.5px;
+    color: dc.$dc-muted;
+
+    strong {
+      color: dc.$dc-text;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__dif {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 700;
+
+    &--ok {
+      color: dc.$dc-ok;
+    }
+
+    &--neg {
+      color: dc.$dc-danger;
+    }
+
+    &--pos {
+      color: dc.$dc-ok;
     }
   }
 
@@ -108,6 +177,42 @@
     color: dc.$dc-muted;
     margin-top: 4px;
     font-variant-numeric: tabular-nums;
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  &__tab {
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid dc.$dc-border;
+    background: #fff;
+    color: dc.$dc-muted;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+
+    &--on {
+      background: dc.$dc-text;
+      border-color: dc.$dc-text;
+      color: #fff;
+    }
+  }
+
+  &__link {
+    font-family: inherit;
+    cursor: pointer;
+    border: 0;
+    background: none;
+    color: dc.$dc-text;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-decoration: underline;
+    padding: 0 8px 0 0;
   }
 
   &__card {

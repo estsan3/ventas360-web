@@ -45,6 +45,8 @@ export class BancosPage {
   protected readonly cuentas = signal<CuentaBancariaDto[]>([]);
   protected readonly estadoValores = signal<AsyncState<ValorBancarioDto[]>>(asyncIdle());
   protected readonly drawerAbierto = signal(false);
+  protected readonly drawerEntregar = signal(false);
+  protected readonly chequeEntregarId = signal('');
   protected readonly guardando = signal(false);
 
   protected readonly tipoOptions: SelectOption[] = [
@@ -61,12 +63,14 @@ export class BancosPage {
   ];
 
   protected readonly columnasValores: TableColumn[] = [
-    { key: 'tipo', label: 'Tipo', width: '140px' },
-    { key: 'numero', label: 'Nº', width: '100px' },
-    { key: 'librador', label: 'Librador' },
-    { key: 'monto', label: 'Monto', width: '120px', align: 'right' },
+    { key: 'tipo', label: 'Tipo', width: '110px' },
+    { key: 'numero', label: 'Nº', width: '90px' },
+    { key: 'banco', label: 'Banco', width: '120px' },
+    { key: 'de', label: 'Recibido de' },
+    { key: 'a', label: 'Entregado a' },
+    { key: 'monto', label: 'Monto', width: '110px', align: 'right' },
     { key: 'estado', label: 'Estado', width: '120px' },
-    { key: 'acciones', label: '', width: '120px', align: 'right' },
+    { key: 'acciones', label: '', width: '180px', align: 'right' },
   ];
 
   protected readonly filasCuentas = computed(() =>
@@ -84,9 +88,11 @@ export class BancosPage {
       id: v.id,
       tipo: v.tipo === 'cheque_tercero' ? 'Tercero' : 'Propio',
       numero: v.numero || '—',
-      librador: v.librador || '—',
+      banco: v.banco_emisor || '—',
+      de: v.recibido_de || v.librador || '—',
+      a: v.entregado_a || '—',
       monto: this.fmt(v.monto),
-      estado: v.estado,
+      estado: this.etiquetaEstado(v.estado),
       enCartera: v.estado === 'en_cartera',
     })),
   );
@@ -94,10 +100,16 @@ export class BancosPage {
   protected readonly form = this.fb.nonNullable.group({
     tipo: ['cheque_tercero' as 'cheque_tercero' | 'cheque_propio', Validators.required],
     monto: ['', Validators.required],
-    numero: [''],
+    numero: ['', Validators.required],
     librador: [''],
-    bancoEmisor: [''],
+    bancoEmisor: ['', Validators.required],
+    recibidoDe: [''],
+    fecha: [''],
+    fechaVto: [''],
     observacion: [''],
+  });
+  protected readonly formEntregar = this.fb.nonNullable.group({
+    destinatario: ['', [Validators.required, Validators.minLength(2)]],
   });
 
   constructor() {
@@ -120,6 +132,9 @@ export class BancosPage {
       numero: '',
       librador: '',
       bancoEmisor: '',
+      recibidoDe: '',
+      fecha: '',
+      fechaVto: '',
       observacion: '',
     });
     this.drawerAbierto.set(true);
@@ -144,6 +159,9 @@ export class BancosPage {
         numero: raw.numero,
         librador: raw.librador,
         banco_emisor: raw.bancoEmisor,
+        recibido_de: raw.recibidoDe,
+        fecha: raw.fecha || null,
+        fecha_vto: raw.fechaVto || null,
         observacion: raw.observacion,
       })
       .subscribe({
@@ -164,6 +182,42 @@ export class BancosPage {
         this.cargar();
       },
     });
+  }
+
+  protected abrirEntregar(id: string): void {
+    this.chequeEntregarId.set(id);
+    this.formEntregar.reset({ destinatario: '' });
+    this.drawerEntregar.set(true);
+  }
+
+  protected guardarEntrega(): void {
+    const dest = this.formEntregar.controls.destinatario.value.trim();
+    const id = this.chequeEntregarId();
+    if (dest.length < 2 || !id) {
+      this.notifications.error('Destinatario', 'Indicá a quién se entrega el cheque');
+      return;
+    }
+    this.guardando.set(true);
+    this.api.entregar(id, dest).subscribe({
+      next: () => {
+        this.notifications.success('Cheque entregado', dest);
+        this.drawerEntregar.set(false);
+        this.guardando.set(false);
+        this.cargar();
+      },
+      error: () => this.guardando.set(false),
+    });
+  }
+
+  protected etiquetaEstado(estado: string): string {
+    const map: Record<string, string> = {
+      en_cartera: 'En cartera',
+      depositado: 'Depositado',
+      cobrado: 'Cobrado',
+      rechazado: 'Rechazado',
+      entregado: 'Entregado',
+    };
+    return map[estado] ?? estado;
   }
 
   protected fmt(valor: number): string {

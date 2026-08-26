@@ -22,6 +22,7 @@ import {
 import { NotificationStore } from '../../notifications/state/notification.store';
 import {
   ClienteRef,
+  DatosCheque,
   MedioCobro,
   ProductoRef,
   SaldoClienteRef,
@@ -149,6 +150,17 @@ export class VentasPage {
   protected readonly cobroMedio = signal<MedioCobro>('efectivo');
   protected readonly cobroObs = signal('');
   protected readonly cobroGuardando = signal(false);
+  protected readonly cobroChequeNumero = signal('');
+  protected readonly cobroChequeBanco = signal('');
+  protected readonly cobroChequeLibrador = signal('');
+  protected readonly cobroChequeFecha = signal('');
+  protected readonly cobroChequeVto = signal('');
+
+  protected readonly chequeNumero = signal('');
+  protected readonly chequeBanco = signal('');
+  protected readonly chequeLibrador = signal('');
+  protected readonly chequeFecha = signal('');
+  protected readonly chequeVto = signal('');
 
   protected readonly buscarClienteOpen = signal(false);
   protected readonly buscarArticuloOpen = signal(false);
@@ -247,6 +259,7 @@ export class VentasPage {
 
   protected readonly isContado = computed(() => this.condicion() === 'contado');
   protected readonly isCtaCte = computed(() => this.condicion() === 'ctacte');
+  protected readonly isCheque = computed(() => this.condicion() === 'cheque');
   protected readonly isPagoInmediato = computed(() => this.condicion() !== 'ctacte');
   protected readonly isEfectivo = computed(
     () => this.condicion() === 'contado' && this.medioPago() === 'efectivo',
@@ -637,6 +650,11 @@ export class VentasPage {
     );
     this.cobroMedio.set('efectivo');
     this.cobroObs.set('');
+    this.cobroChequeNumero.set('');
+    this.cobroChequeBanco.set('');
+    this.cobroChequeLibrador.set(this.clienteNombre());
+    this.cobroChequeFecha.set('');
+    this.cobroChequeVto.set('');
     this.cobroOpen.set(true);
   }
 
@@ -661,6 +679,10 @@ export class VentasPage {
       this.notifications.error('Monto inválido', 'Ingresá un monto mayor a cero');
       return;
     }
+    if (this.cobroMedio() === 'cheque' && !this.datosChequeCobro()) {
+      this.notifications.error('Cheque', 'Completá número y banco del cheque');
+      return;
+    }
     this.cobroGuardando.set(true);
     this.api
       .registrarCobroACuenta({
@@ -668,6 +690,7 @@ export class VentasPage {
         monto,
         medio: this.cobroMedio(),
         observacion: this.cobroObs().trim() || undefined,
+        cheque: this.datosChequeCobro() ?? undefined,
       })
       .subscribe({
         next: (recibo) => {
@@ -723,6 +746,10 @@ export class VentasPage {
       this.notifications.error('Sin depósito', 'Configurá un depósito para emitir remitos');
       return;
     }
+    if (conCobro && this.condicion() === 'cheque' && !this.datosChequeMostrador()) {
+      this.notifications.error('Cheque', 'Completá número y banco del cheque');
+      return;
+    }
 
     this.guardando.set(true);
     const tipo: TipoComprobante = esRemito ? 'remito' : 'factura';
@@ -749,6 +776,7 @@ export class VentasPage {
               monto: confirmado.total,
               medio: this.medioCobroDesdeCondicion(),
               observacion: this.obsCobroDesdeCondicion(),
+              cheque: this.datosChequeMostrador() ?? undefined,
             })
             .pipe(map(() => confirmado));
         }),
@@ -779,13 +807,15 @@ export class VentasPage {
     if (cond === 'tarjeta') {
       return 'tarjeta';
     }
+    if (cond === 'cheque') {
+      return 'cheque';
+    }
     if (cond === 'contado' && this.medioPago() === 'transferencia') {
       return 'transferencia';
     }
     if (cond === 'contado' && this.medioPago() === 'debito') {
       return 'tarjeta';
     }
-    // efectivo, cheque u otros → caja efectivo (cheque se aclara en observación)
     return 'efectivo';
   }
 
@@ -808,6 +838,55 @@ export class VentasPage {
       return 'Cobro en efectivo (mostrador)';
     }
     return 'Cobro mostrador';
+  }
+
+  private datosChequeMostrador(): DatosCheque | null {
+    if (this.condicion() !== 'cheque') {
+      return null;
+    }
+    return this.armarCheque(
+      this.chequeNumero(),
+      this.chequeBanco(),
+      this.chequeLibrador() || this.clienteNombre(),
+      this.chequeFecha(),
+      this.chequeVto(),
+      this.clienteNombre(),
+    );
+  }
+
+  private datosChequeCobro(): DatosCheque | null {
+    if (this.cobroMedio() !== 'cheque') {
+      return null;
+    }
+    return this.armarCheque(
+      this.cobroChequeNumero(),
+      this.cobroChequeBanco(),
+      this.cobroChequeLibrador() || this.clienteNombre(),
+      this.cobroChequeFecha(),
+      this.cobroChequeVto(),
+      this.clienteNombre(),
+    );
+  }
+
+  private armarCheque(
+    numero: string,
+    banco: string,
+    librador: string,
+    fecha: string,
+    fechaVto: string,
+    recibidoDe: string,
+  ): DatosCheque | null {
+    if (!numero.trim() || !banco.trim()) {
+      return null;
+    }
+    return {
+      numero: numero.trim(),
+      bancoEmisor: banco.trim(),
+      librador: librador.trim(),
+      fecha: fecha || undefined,
+      fechaVto: fechaVto || undefined,
+      recibidoDe: recibidoDe.trim(),
+    };
   }
 
   private resolverClienteId(): string | null {
