@@ -39,69 +39,7 @@
       </div>
     </div>
 
-    @if (resumenNarrativa(); as narrativa) {
-      <div class="dash__ia-resumen">
-        <div class="dash__ia-resumen-label">Resumen IA</div>
-        <p class="dash__ia-resumen-text">{{ narrativa }}</p>
-      </div>
-    }
-
-    @if (accionesList().length > 0) {
-      <div class="dash__ia-acciones">
-        <div class="dash__card-head">
-          <div class="dash__card-title">Acciones del día</div>
-          <div class="dash__card-meta">Priorizadas por reglas del negocio</div>
-        </div>
-        <div class="dash__ia-list">
-          @for (a of accionesList(); track a.id) {
-            <button type="button" class="dash__ia-action" (click)="irAccion(a.rutaWeb)">
-              <div>
-                <div class="dash__ia-action-title">{{ a.titulo }}</div>
-                <div class="dash__ia-action-sub">{{ a.detalle }}</div>
-              </div>
-              <span
-                class="dash__ia-pill"
-                [class.dash__ia-pill--alta]="a.prioridad === 'alta'"
-                [class.dash__ia-pill--media]="a.prioridad === 'media'"
-              >
-                {{ prioridadLabel(a.prioridad) }}
-              </span>
-            </button>
-          }
-        </div>
-      </div>
-    }
-
-    <div class="dash__grid">
-      <div class="dash__card dash__chart">
-        <div class="dash__card-head">
-          <div class="dash__card-title">Ventas de la semana</div>
-          <div class="dash__card-meta">
-            Total <b>{{ k.totalSemana }}</b>
-          </div>
-        </div>
-        @if (hayVentasSemana()) {
-          <div class="dash__bars">
-            @for (bar of barras(); track bar.label) {
-              <div class="dash__bar">
-                <div
-                  class="dash__bar-fill"
-                  [class.dash__bar-fill--light]="bar.tono === 'light'"
-                  [class.dash__bar-fill--mid]="bar.tono === 'mid'"
-                  [class.dash__bar-fill--today]="bar.tono === 'today'"
-                  [style.height.%]="bar.altura"
-                ></div>
-                <div class="dash__bar-label" [class.dash__bar-label--today]="bar.tono === 'today'">
-                  {{ bar.label }}
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="dash__empty">Todavía no hay ventas esta semana.</p>
-        }
-      </div>
-
+    <div class="dash__layout">
       <div class="dash__card dash__tabla">
         <div class="dash__card-head dash__card-head--tabla">
           <div class="dash__card-title">Últimos comprobantes</div>
@@ -142,56 +80,106 @@
         }
       </div>
 
-      <div class="dash__card dash__side dash__reposicion">
-        <div class="dash__card-title">Reposición urgente</div>
-        @if (stockUrgente().length === 0) {
-          <p class="dash__empty dash__empty--side">No hay artículos bajo mínimo.</p>
-        } @else {
-          <div class="dash__list">
-            @for (item of stockUrgente(); track item.nombre + item.detalle) {
-              <div class="dash__list-row">
-                <div>
-                  <div class="dash__list-main">{{ item.nombre }}</div>
-                  <div class="dash__list-sub">{{ item.detalle }}</div>
-                </div>
-                <span
-                  class="dash__pill"
-                  [class.dash__pill--danger]="item.tono === 'danger'"
-                  [class.dash__pill--warn]="item.tono === 'warning'"
-                >
-                  {{ item.stockFmt }}
-                </span>
-              </div>
-            }
+      <div class="dash__card dash__ia">
+        <div class="dash__card-head">
+          <div>
+            <div class="dash__card-title">Asistente del día</div>
+            <div class="dash__card-meta">Qué conviene hacer ahora</div>
           </div>
+          @if (k.totalSemana) {
+            <div class="dash__card-meta">
+              Semana <b>{{ k.totalSemana }}</b>
+            </div>
+          }
+        </div>
+
+        @if (resumenNarrativa(); as narrativa) {
+          <div class="dash__ia-resumen">
+            <div class="dash__ia-resumen-label">Resumen</div>
+            <p class="dash__ia-resumen-text">{{ narrativa }}</p>
+          </div>
+        } @else if (!cargando()) {
+          <p class="dash__empty dash__empty--side">Sin resumen por ahora.</p>
         }
-        <button type="button" class="dash__link-btn" (click)="irAStock()">
-          Ver stock completo
-        </button>
+
+        @if (accionesList().length > 0) {
+          <div class="dash__ia-acciones">
+            <div class="dash__ia-acciones-label">Acciones prioritarias</div>
+            <div class="dash__ia-list">
+              @for (a of accionesList(); track a.id) {
+                <button type="button" class="dash__ia-action" (click)="irAccion(a.rutaWeb)">
+                  <div>
+                    <div class="dash__ia-action-title">{{ a.titulo }}</div>
+                    <div class="dash__ia-action-sub">{{ a.detalle }}</div>
+                  </div>
+                  <span
+                    class="dash__ia-pill"
+                    [class.dash__ia-pill--alta]="a.prioridad === 'alta'"
+                    [class.dash__ia-pill--media]="a.prioridad === 'media'"
+                  >
+                    {{ prioridadLabel(a.prioridad) }}
+                  </span>
+                </button>
+              }
+            </div>
+          </div>
+        } @else if (!cargando()) {
+          <p class="dash__empty dash__empty--side">Sin pendientes urgentes.</p>
+        }
       </div>
 
-      <div class="dash__card dash__side dash__vencimientos">
-        <div class="dash__card-title">Cuentas con saldo</div>
-        @if (vencimientos().length === 0) {
-          <p class="dash__empty dash__empty--side">Nadie debe en cuenta corriente.</p>
-        } @else {
-          <div class="dash__list">
-            @for (v of vencimientos(); track v.cliente + v.fechaFmt) {
-              <div class="dash__list-row">
-                <div>
-                  <div class="dash__list-main">{{ v.cliente }}</div>
-                  <div class="dash__list-sub" [class.dash__list-sub--danger]="v.vencido">
-                    {{ v.fechaFmt }}
+      <div class="dash__col-right">
+        <div class="dash__card dash__side dash__reposicion">
+          <div class="dash__card-title">Reposición urgente</div>
+          @if (stockUrgente().length === 0) {
+            <p class="dash__empty dash__empty--side">No hay artículos bajo mínimo.</p>
+          } @else {
+            <div class="dash__list">
+              @for (item of stockUrgente(); track item.nombre + item.detalle) {
+                <div class="dash__list-row">
+                  <div>
+                    <div class="dash__list-main">{{ item.nombre }}</div>
+                    <div class="dash__list-sub">{{ item.detalle }}</div>
                   </div>
+                  <span
+                    class="dash__pill"
+                    [class.dash__pill--danger]="item.tono === 'danger'"
+                    [class.dash__pill--warn]="item.tono === 'warning'"
+                  >
+                    {{ item.stockFmt }}
+                  </span>
                 </div>
-                <div class="dash__list-amount">{{ v.montoFmt }}</div>
-              </div>
-            }
-          </div>
-        }
-        <button type="button" class="dash__link-btn" (click)="irACtacte()">
-          Ir a cuentas corrientes
-        </button>
+              }
+            </div>
+          }
+          <button type="button" class="dash__link-btn" (click)="irAStock()">
+            Ver stock completo
+          </button>
+        </div>
+
+        <div class="dash__card dash__side dash__vencimientos">
+          <div class="dash__card-title">Cuentas con saldo</div>
+          @if (vencimientos().length === 0) {
+            <p class="dash__empty dash__empty--side">Nadie debe en cuenta corriente.</p>
+          } @else {
+            <div class="dash__list">
+              @for (v of vencimientos(); track v.cliente + v.fechaFmt) {
+                <div class="dash__list-row">
+                  <div>
+                    <div class="dash__list-main">{{ v.cliente }}</div>
+                    <div class="dash__list-sub" [class.dash__list-sub--danger]="v.vencido">
+                      {{ v.fechaFmt }}
+                    </div>
+                  </div>
+                  <div class="dash__list-amount">{{ v.montoFmt }}</div>
+                </div>
+              }
+            </div>
+          }
+          <button type="button" class="dash__link-btn" (click)="irACtacte()">
+            Ir a cuentas corrientes
+          </button>
+        </div>
       </div>
     </div>
   }

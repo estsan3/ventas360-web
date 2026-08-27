@@ -1120,46 +1120,25 @@ $dc-placeholder: #b8b2ab;
     line-height: 1.4;
   }
 
-  &__ia-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  &__ia-card {
     margin-bottom: 14px;
-    padding: 12px 14px;
-    border: 1px dashed #e0b083;
-    border-radius: 12px;
-    background: #fff8f2;
-    flex-wrap: wrap;
-  }
-
-  &__ia-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: $dc-primary-deep;
-    white-space: nowrap;
-  }
-
-  &__ia-input {
-    flex: 1;
-    min-width: 220px;
-    border: 1px solid $dc-border;
-    border-radius: 9px;
-    padding: 9px 12px;
-    font-size: 13px;
-    font-family: inherit;
+    z-index: 5;
   }
 
   &__ia-preview {
     margin-bottom: 14px;
-    padding: 12px 14px;
-    border: 1px solid $dc-border;
-    border-radius: 12px;
-    background: #fff;
+    align-items: flex-start;
+  }
+
+  &__ia-preview-body {
+    flex: 1;
+    min-width: 0;
   }
 
   &__ia-preview-head {
     font-size: 13px;
     margin-bottom: 8px;
+    color: $dc-text;
   }
 
   &__ia-conf {
@@ -1180,6 +1159,7 @@ $dc-placeholder: #b8b2ab;
     margin: 0 0 10px;
     padding-left: 18px;
     font-size: 13px;
+    color: $dc-text;
   }
 
   &__ia-line--miss {

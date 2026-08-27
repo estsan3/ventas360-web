@@ -5,12 +5,6 @@ import { IaStore } from '../../ia/state/ia.store';
 import { DashboardStore } from './data-access/dashboard.store';
 import { KPIS_VACIOS } from './data-access/kpi.model';
 
-export interface BarraSemana {
-  label: string;
-  altura: number;
-  tono: 'light' | 'mid' | 'today';
-}
-
 function formatearMoneda(valor: number, moneda = 'ARS'): string {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -147,20 +141,6 @@ export class DashboardPage {
       ),
     };
   });
-
-  protected readonly barras = computed((): BarraSemana[] => {
-    const serie = this.kpis().serieSemana;
-    const max = Math.max(0, ...serie.map((p) => p.monto));
-    return serie.map((p, i) => ({
-      label: p.label,
-      altura: max <= 0 ? 0 : Math.max(8, Math.round((p.monto / max) * 100)),
-      tono: p.esHoy ? 'today' : i < 2 ? 'light' : 'mid',
-    }));
-  });
-
-  protected readonly hayVentasSemana = computed(() =>
-    this.kpis().serieSemana.some((p) => p.monto > 0),
-  );
 
   protected readonly comprobantes = computed(() =>
     this.kpis().ultimosComprobantes.map((c) => ({

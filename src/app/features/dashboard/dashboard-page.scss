@@ -126,30 +126,26 @@ $dc-hover: #faf7f3;
     }
   }
 
-  &__grid {
+  &__layout {
     display: grid;
     gap: 18px;
-    grid-template-columns: 1.4fr 1.4fr 1fr;
-    grid-template-areas:
-      'chart chart stock'
-      'tabla tabla accesos';
+    grid-template-columns: 1.15fr 1.35fr 1fr;
+    align-items: start;
 
     @media (max-width: t.$breakpoint-desktop) {
       grid-template-columns: 1fr 1fr;
-      grid-template-areas:
-        'chart chart'
-        'tabla tabla'
-        'stock accesos';
     }
 
     @media (max-width: t.$breakpoint-tablet) {
       grid-template-columns: 1fr;
-      grid-template-areas:
-        'chart'
-        'tabla'
-        'stock'
-        'accesos';
     }
+  }
+
+  &__col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
   }
 
   &__card {
@@ -158,14 +154,19 @@ $dc-hover: #faf7f3;
     border-radius: 12px;
   }
 
-  &__chart {
-    grid-area: chart;
+  &__ia {
     padding: 18px 20px;
+    min-height: 280px;
+    border-color: #f0dcc8;
+    background: linear-gradient(180deg, #fffaf5 0%, #fff 42%);
   }
 
   &__tabla {
-    grid-area: tabla;
     overflow: hidden;
+
+    @media (max-width: t.$breakpoint-desktop) {
+      grid-column: 1 / -1;
+    }
   }
 
   &__side {
@@ -175,11 +176,11 @@ $dc-hover: #faf7f3;
   }
 
   &__reposicion {
-    grid-area: stock;
+    /* right column */
   }
 
   &__vencimientos {
-    grid-area: accesos;
+    /* right column */
   }
 
   &__card-head {
@@ -457,11 +458,11 @@ $dc-hover: #faf7f3;
   }
 
   &__ia-resumen {
-    background: linear-gradient(135deg, #fff8f2 0%, #fff 100%);
-    border: 1px solid #f0dcc8;
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 16px;
+    background: #fff;
+    border: 1px solid $dc-border-soft;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
   }
 
   &__ia-resumen-label {
@@ -481,18 +482,20 @@ $dc-hover: #faf7f3;
   }
 
   &__ia-acciones {
-    background: #fff;
-    border: 1px solid $dc-border;
-    border-radius: 12px;
-    padding: 16px 18px 10px;
-    margin-bottom: 18px;
+    margin-top: 4px;
+  }
+
+  &__ia-acciones-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: $dc-muted;
+    margin-bottom: 8px;
   }
 
   &__ia-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 8px;
   }
 
   &__ia-action {
