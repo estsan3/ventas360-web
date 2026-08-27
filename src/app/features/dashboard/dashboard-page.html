@@ -1,83 +1,43 @@
 <section class="page dash">
-  <header class="dash__header">
-    <div>
-      <h1 class="dash__title">{{ saludo() ? 'Hola, ' + saludo() : 'Hola' }}</h1>
-      <p class="dash__subtitle">{{ fechaHoy }} · Resumen del día</p>
-    </div>
-    <button type="button" class="dash__cta" (click)="irAFacturacion()">+ Nueva venta</button>
-  </header>
+  <div class="dash__shell">
+    <header class="dash__header">
+      <div>
+        <h1 class="dash__title">{{ saludo() ? 'Hola, ' + saludo() : 'Hola' }}</h1>
+        <p class="dash__subtitle">{{ fechaHoy }} · Resumen del día</p>
+      </div>
+      <button type="button" class="dash__cta" (click)="irAFacturacion()">+ Nueva venta</button>
+    </header>
 
-  @if (error(); as err) {
-    <p class="dash__error">No se pudo cargar el resumen: {{ err }}</p>
-  }
+    @if (error(); as err) {
+      <p class="dash__error">No se pudo cargar el resumen: {{ err }}</p>
+    }
 
-  @if (kpisVista(); as k) {
-    <div class="dash__kpis" [class.dash__kpis--loading]="cargando()">
-      <div class="dash__kpi">
-        <div class="dash__kpi-label">Ventas de hoy</div>
-        <div class="dash__kpi-value">{{ k.ventasHoy }}</div>
-        <div class="dash__kpi-foot" [class.dash__kpi-foot--ok]="k.ventasHoyOk">
-          {{ k.ventasHoyFoot }}
+    @if (kpisVista(); as k) {
+      <div class="dash__kpis" [class.dash__kpis--loading]="cargando()">
+        <div class="dash__kpi">
+          <div class="dash__kpi-label">Ventas de hoy</div>
+          <div class="dash__kpi-value">{{ k.ventasHoy }}</div>
+          <div class="dash__kpi-foot" [class.dash__kpi-foot--ok]="k.ventasHoyOk">
+            {{ k.ventasHoyFoot }}
+          </div>
         </div>
-      </div>
-      <div class="dash__kpi">
-        <div class="dash__kpi-label">Pedidos pendientes</div>
-        <div class="dash__kpi-value">{{ k.pedidos }}</div>
-        <div class="dash__kpi-foot">{{ k.pedidosFoot }}</div>
-      </div>
-      <div class="dash__kpi">
-        <div class="dash__kpi-label">Saldo a cobrar</div>
-        <div class="dash__kpi-value">{{ k.saldoCobrar }}</div>
-        <div class="dash__kpi-foot" [class.dash__kpi-foot--alert]="k.saldoAlerta">
-          {{ k.saldoFoot }}
+        <div class="dash__kpi">
+          <div class="dash__kpi-label">Pedidos pendientes</div>
+          <div class="dash__kpi-value">{{ k.pedidos }}</div>
+          <div class="dash__kpi-foot">{{ k.pedidosFoot }}</div>
         </div>
-      </div>
-      <div class="dash__kpi">
-        <div class="dash__kpi-label">Bajo stock mínimo</div>
-        <div class="dash__kpi-value">{{ k.bajoStock }}</div>
-        <div class="dash__kpi-foot">{{ k.bajoStockFoot }}</div>
-      </div>
-    </div>
-
-    <div class="dash__layout">
-      <div class="dash__card dash__tabla">
-        <div class="dash__card-head dash__card-head--tabla">
-          <div class="dash__card-title">Últimos comprobantes</div>
-          <button type="button" class="dash__link" (click)="irAComprobantes()">Ver todos</button>
+        <div class="dash__kpi">
+          <div class="dash__kpi-label">Saldo a cobrar</div>
+          <div class="dash__kpi-value">{{ k.saldoCobrar }}</div>
+          <div class="dash__kpi-foot" [class.dash__kpi-foot--alert]="k.saldoAlerta">
+            {{ k.saldoFoot }}
+          </div>
         </div>
-        @if (comprobantes().length === 0) {
-          <p class="dash__empty dash__empty--pad">Todavía no hay comprobantes.</p>
-        } @else {
-          <table class="dash__table">
-            <thead>
-              <tr>
-                <th>Comprobante</th>
-                <th>Cliente</th>
-                <th class="dash__th-right">Total</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (c of comprobantes(); track c.id) {
-                <tr class="dash__row-link" (click)="irAComprobante(c.tipo)">
-                  <td class="dash__td-strong">{{ c.numero }}</td>
-                  <td>{{ c.cliente }}</td>
-                  <td class="dash__td-right">{{ c.totalFmt }}</td>
-                  <td>
-                    <span
-                      class="dash__badge"
-                      [class.dash__badge--success]="c.badge === 'success'"
-                      [class.dash__badge--warning]="c.badge === 'warning'"
-                      [class.dash__badge--neutral]="c.badge === 'neutral'"
-                    >
-                      {{ c.estado }}
-                    </span>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        }
+        <div class="dash__kpi">
+          <div class="dash__kpi-label">Bajo stock mínimo</div>
+          <div class="dash__kpi-value">{{ k.bajoStock }}</div>
+          <div class="dash__kpi-foot">{{ k.bajoStockFoot }}</div>
+        </div>
       </div>
 
       <div class="dash__card dash__ia">
@@ -86,11 +46,6 @@
             <div class="dash__card-title">Asistente del día</div>
             <div class="dash__card-meta">Qué conviene hacer ahora</div>
           </div>
-          @if (k.totalSemana) {
-            <div class="dash__card-meta">
-              Semana <b>{{ k.totalSemana }}</b>
-            </div>
-          }
         </div>
 
         @if (resumenNarrativa(); as narrativa) {
@@ -99,7 +54,7 @@
             <p class="dash__ia-resumen-text">{{ narrativa }}</p>
           </div>
         } @else if (!cargando()) {
-          <p class="dash__empty dash__empty--side">Sin resumen por ahora.</p>
+          <p class="dash__empty">Sin resumen por ahora.</p>
         }
 
         @if (accionesList().length > 0) {
@@ -124,13 +79,69 @@
             </div>
           </div>
         } @else if (!cargando()) {
-          <p class="dash__empty dash__empty--side">Sin pendientes urgentes.</p>
+          <p class="dash__empty">Sin pendientes urgentes.</p>
         }
       </div>
 
-      <div class="dash__col-right">
-        <div class="dash__card dash__side dash__reposicion">
-          <div class="dash__card-title">Reposición urgente</div>
+      <div class="dash__panels">
+        <div class="dash__card dash__panel">
+          <div class="dash__card-head">
+            <div>
+              <div class="dash__card-title">Remitos de compra</div>
+              <div class="dash__card-meta">
+                @if (remitosPendientesCount() > 0) {
+                  {{ remitosPendientesCount() }} pendiente(s) de impactar stock
+                } @else {
+                  Recepción y stock
+                }
+              </div>
+            </div>
+            <button type="button" class="dash__link" (click)="irARecepcion()">Ver recepción</button>
+          </div>
+          @if (remitosVista().length === 0) {
+            <p class="dash__empty dash__empty--pad">No hay remitos de compra cargados.</p>
+          } @else {
+            <table class="dash__table">
+              <thead>
+                <tr>
+                  <th>Remito</th>
+                  <th>Proveedor</th>
+                  <th>Estado</th>
+                  <th class="dash__th-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of remitosVista(); track r.id) {
+                  <tr class="dash__row-link" (click)="irARecepcion()">
+                    <td>
+                      <div class="dash__td-strong">{{ r.comprobante }}</div>
+                      <div class="dash__list-sub">
+                        {{ r.fechaFmt }} · {{ r.renglones }} renglones
+                      </div>
+                    </td>
+                    <td>{{ r.proveedor }}</td>
+                    <td>
+                      <span
+                        class="dash__badge"
+                        [class.dash__badge--success]="r.badge === 'success'"
+                        [class.dash__badge--warning]="r.badge === 'warning'"
+                      >
+                        {{ r.estadoLabel }}
+                      </span>
+                    </td>
+                    <td class="dash__td-right">{{ r.totalFmt }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <div class="dash__card dash__side dash__panel">
+          <div class="dash__card-title">Reposiciones urgentes</div>
+          <div class="dash__card-meta dash__card-meta--block">
+            Alertas de stock bajo / sin stock
+          </div>
           @if (stockUrgente().length === 0) {
             <p class="dash__empty dash__empty--side">No hay artículos bajo mínimo.</p>
           } @else {
@@ -152,18 +163,17 @@
               }
             </div>
           }
-          <button type="button" class="dash__link-btn" (click)="irAStock()">
-            Ver stock completo
-          </button>
+          <button type="button" class="dash__link-btn" (click)="irAStock()">Ver alertas</button>
         </div>
 
-        <div class="dash__card dash__side dash__vencimientos">
-          <div class="dash__card-title">Cuentas con saldo</div>
-          @if (vencimientos().length === 0) {
+        <div class="dash__card dash__side dash__panel">
+          <div class="dash__card-title">Cuentas corrientes</div>
+          <div class="dash__card-meta dash__card-meta--block">Ordenadas de mayor a menor saldo</div>
+          @if (cuentasCorrientes().length === 0) {
             <p class="dash__empty dash__empty--side">Nadie debe en cuenta corriente.</p>
           } @else {
             <div class="dash__list">
-              @for (v of vencimientos(); track v.cliente + v.fechaFmt) {
+              @for (v of cuentasCorrientes(); track v.cliente + v.fechaFmt) {
                 <div class="dash__list-row">
                   <div>
                     <div class="dash__list-main">{{ v.cliente }}</div>
@@ -181,6 +191,6 @@
           </button>
         </div>
       </div>
-    </div>
-  }
+    }
+  </div>
 </section>

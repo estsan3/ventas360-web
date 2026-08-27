@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../core/state/auth.store';
 import { IaStore } from '../../ia/state/ia.store';
+import { DashboardService, RemitoCompraDash } from './data-access/dashboard.service';
 import { DashboardStore } from './data-access/dashboard.store';
 import { KPIS_VACIOS } from './data-access/kpi.model';
 
@@ -15,15 +16,12 @@ function formatearMoneda(valor: number, moneda = 'ARS'): string {
     .replace(/\u00a0/g, ' ');
 }
 
-function badgeEstado(estado: string): 'success' | 'warning' | 'neutral' {
-  const e = estado.toLowerCase();
-  if (e.includes('confirm') || e.includes('entreg') || e.includes('factur')) {
-    return 'success';
+function formatearFechaCorta(iso: string): string {
+  const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(d.getTime())) {
+    return iso.slice(0, 10);
   }
-  if (e.includes('borrador') || e.includes('vigente') || e.includes('acept')) {
-    return 'warning';
-  }
-  return 'neutral';
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
 }
 
 function formatearVencimiento(fecha: string | null, vencido: boolean): string {
@@ -45,20 +43,20 @@ function formatearVencimiento(fecha: string | null, vencido: boolean): string {
 })
 export class DashboardPage {
   private readonly store = inject(DashboardStore);
+  private readonly dashboardApi = inject(DashboardService);
   private readonly iaStore = inject(IaStore);
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
 
-  protected readonly accionesIa = computed(() => this.iaStore.acciones());
-  protected readonly resumenIa = computed(() => this.iaStore.resumen());
+  protected readonly remitosCompra = signal<RemitoCompraDash[]>([]);
 
   protected readonly accionesList = computed(() => {
-    const s = this.accionesIa();
+    const s = this.iaStore.acciones();
     return s.status === 'ready' ? s.data.acciones : [];
   });
 
   protected readonly resumenNarrativa = computed(() => {
-    const s = this.resumenIa();
+    const s = this.iaStore.resumen();
     return s.status === 'ready' ? (s.data.narrativa ?? null) : null;
   });
 
@@ -135,19 +133,30 @@ export class DashboardPage {
             : k.articulosSinStock === 1
               ? '1 sin stock'
               : `${k.articulosSinStock} sin stock`,
-      totalSemana: formatearMoneda(
-        k.serieSemana.reduce((acc, p) => acc + p.monto, 0),
-        moneda,
-      ),
     };
   });
 
-  protected readonly comprobantes = computed(() =>
-    this.kpis().ultimosComprobantes.map((c) => ({
-      ...c,
-      totalFmt: formatearMoneda(c.total, this.kpis().moneda),
-      badge: badgeEstado(c.estado),
-    })),
+  protected readonly remitosVista = computed(() => {
+    const moneda = this.kpis().moneda || 'ARS';
+    return this.remitosCompra()
+      .slice(0, 8)
+      .map((r) => ({
+        ...r,
+        fechaFmt: formatearFechaCorta(r.fecha),
+        totalFmt: formatearMoneda(r.total, moneda),
+        estadoLabel: r.pendienteStock
+          ? 'Pendiente de stock'
+          : r.estado === 'confirmado'
+            ? 'Stock actualizado'
+            : r.estado === 'facturado'
+              ? 'Facturado'
+              : r.estado,
+        badge: r.pendienteStock ? ('warning' as const) : ('success' as const),
+      }));
+  });
+
+  protected readonly remitosPendientesCount = computed(
+    () => this.remitosCompra().filter((r) => r.pendienteStock).length,
   );
 
   protected readonly stockUrgente = computed(() =>
@@ -158,57 +167,48 @@ export class DashboardPage {
     })),
   );
 
-  protected readonly vencimientos = computed(() =>
-    this.kpis().vencimientos.map((v) => ({
-      ...v,
-      fechaFmt: formatearVencimiento(v.fecha, v.vencido),
-      montoFmt: formatearMoneda(v.monto, this.kpis().moneda),
-    })),
+  /** CxC de mayor a menor importe */
+  protected readonly cuentasCorrientes = computed(() =>
+    [...this.kpis().vencimientos]
+      .sort((a, b) => b.monto - a.monto)
+      .map((v) => ({
+        ...v,
+        fechaFmt: formatearVencimiento(v.fecha, v.vencido),
+        montoFmt: formatearMoneda(v.monto, this.kpis().moneda),
+      })),
   );
 
   constructor() {
     this.store.cargar();
     this.iaStore.cargarDashboard();
+    this.dashboardApi.listarRemitosCompra().subscribe({
+      next: (items) => this.remitosCompra.set(items),
+      error: () => this.remitosCompra.set([]),
+    });
   }
 
   protected irAFacturacion(): void {
     this.router.navigate(['/ventas']);
   }
 
-  protected irAComprobantes(): void {
-    if (this.auth.puedeRuta('remitos')) {
-      this.router.navigate(['/remitos']);
+  protected irARecepcion(): void {
+    if (this.auth.puedeRuta('inventario')) {
+      void this.router.navigate(['/inventario'], { queryParams: { tab: 'recepcion' } });
       return;
     }
-    if (this.auth.puedeRuta('pedidos')) {
-      this.router.navigate(['/pedidos']);
-      return;
-    }
-    this.router.navigate(['/ventas']);
-  }
-
-  protected irAComprobante(tipo: string): void {
-    if (tipo === 'pedido' && this.auth.puedeRuta('pedidos')) {
-      this.router.navigate(['/pedidos']);
-      return;
-    }
-    if (tipo === 'presupuesto' && this.auth.puedeRuta('presupuestos')) {
-      this.router.navigate(['/presupuestos']);
-      return;
-    }
-    this.irAComprobantes();
+    void this.router.navigate(['/compras']);
   }
 
   protected irAStock(): void {
     if (this.auth.puedeRuta('inventario')) {
-      this.router.navigate(['/inventario'], { queryParams: { tab: 'alertas' } });
+      void this.router.navigate(['/inventario'], { queryParams: { tab: 'alertas' } });
       return;
     }
-    this.router.navigate(['/productos']);
+    void this.router.navigate(['/productos']);
   }
 
   protected irACtacte(): void {
-    this.router.navigate(['/cuenta-corriente']);
+    void this.router.navigate(['/cuenta-corriente']);
   }
 
   protected irAccion(ruta: string): void {
