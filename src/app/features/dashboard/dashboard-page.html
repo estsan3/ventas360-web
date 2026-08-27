@@ -13,7 +13,12 @@
     }
 
     @if (kpisVista(); as k) {
-      <div class="dash__kpis" [class.dash__kpis--loading]="cargando()">
+      <div
+        class="dash__kpis"
+        [class.dash__kpis--loading]="cargando() || !kpisListos()"
+        [class.dash__kpis--clickable]="!kpisListos() && !cargando()"
+        (click)="!kpisListos() && !cargando() && cargarKpisCabecera()"
+      >
         <div class="dash__kpi">
           <div class="dash__kpi-label">Ventas de hoy</div>
           <div class="dash__kpi-value">{{ k.ventasHoy }}</div>
@@ -40,155 +45,242 @@
         </div>
       </div>
 
-      <div class="dash__card dash__ia">
-        <div class="dash__card-head">
-          <div>
-            <div class="dash__card-title">Asistente del día</div>
-            <div class="dash__card-meta">Qué conviene hacer ahora</div>
-          </div>
-        </div>
+      <div class="dash__stack">
+        <!-- Asistente del día -->
+        <div
+          class="dash__card dash__ia dash__acordeon"
+          [class.dash__acordeon--abierto]="abierta('asistente')"
+        >
+          <button
+            type="button"
+            class="dash__acordeon-btn"
+            [attr.aria-expanded]="abierta('asistente')"
+            (click)="toggleSeccion('asistente')"
+          >
+            <div class="dash__acordeon-copy">
+              <div class="dash__card-title">Asistente del día</div>
+              <div class="dash__card-meta">Qué conviene hacer ahora</div>
+            </div>
+            <span class="dash__acordeon-chevron" aria-hidden="true">
+              <app-icon name="chevron-down" />
+            </span>
+          </button>
 
-        @if (resumenNarrativa(); as narrativa) {
-          <div class="dash__ia-resumen">
-            <div class="dash__ia-resumen-label">Resumen</div>
-            <p class="dash__ia-resumen-text">{{ narrativa }}</p>
-          </div>
-        } @else if (!cargando()) {
-          <p class="dash__empty">Sin resumen por ahora.</p>
-        }
-
-        @if (accionesList().length > 0) {
-          <div class="dash__ia-acciones">
-            <div class="dash__ia-acciones-label">Acciones prioritarias</div>
-            <div class="dash__ia-list">
-              @for (a of accionesList(); track a.id) {
-                <button type="button" class="dash__ia-action" (click)="irAccion(a.rutaWeb)">
-                  <div>
-                    <div class="dash__ia-action-title">{{ a.titulo }}</div>
-                    <div class="dash__ia-action-sub">{{ a.detalle }}</div>
+          @if (abierta('asistente')) {
+            <div class="dash__acordeon-body">
+              @if (iaCargando()) {
+                <p class="dash__empty">Cargando asistente…</p>
+              } @else {
+                @if (resumenNarrativa(); as narrativa) {
+                  <div class="dash__ia-resumen">
+                    <div class="dash__ia-resumen-label">Resumen</div>
+                    <p class="dash__ia-resumen-text">{{ narrativa }}</p>
                   </div>
-                  <span
-                    class="dash__ia-pill"
-                    [class.dash__ia-pill--alta]="a.prioridad === 'alta'"
-                    [class.dash__ia-pill--media]="a.prioridad === 'media'"
-                  >
-                    {{ prioridadLabel(a.prioridad) }}
-                  </span>
-                </button>
+                } @else {
+                  <p class="dash__empty">Sin resumen por ahora.</p>
+                }
+
+                @if (accionesList().length > 0) {
+                  <div class="dash__ia-acciones">
+                    <div class="dash__ia-acciones-label">Acciones prioritarias</div>
+                    <div class="dash__ia-list">
+                      @for (a of accionesList(); track a.id) {
+                        <button type="button" class="dash__ia-action" (click)="irAccion(a.rutaWeb)">
+                          <div>
+                            <div class="dash__ia-action-title">{{ a.titulo }}</div>
+                            <div class="dash__ia-action-sub">{{ a.detalle }}</div>
+                          </div>
+                          <span
+                            class="dash__ia-pill"
+                            [class.dash__ia-pill--alta]="a.prioridad === 'alta'"
+                            [class.dash__ia-pill--media]="a.prioridad === 'media'"
+                          >
+                            {{ prioridadLabel(a.prioridad) }}
+                          </span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <p class="dash__empty">Sin pendientes urgentes.</p>
+                }
               }
             </div>
-          </div>
-        } @else if (!cargando()) {
-          <p class="dash__empty">Sin pendientes urgentes.</p>
-        }
-      </div>
+          }
+        </div>
 
-      <div class="dash__panels">
-        <div class="dash__card dash__panel">
-          <div class="dash__card-head">
-            <div>
+        <!-- Remitos de compra -->
+        <div
+          class="dash__card dash__panel dash__acordeon"
+          [class.dash__acordeon--abierto]="abierta('remitos')"
+        >
+          <button
+            type="button"
+            class="dash__acordeon-btn"
+            [attr.aria-expanded]="abierta('remitos')"
+            (click)="toggleSeccion('remitos')"
+          >
+            <div class="dash__acordeon-copy">
               <div class="dash__card-title">Remitos de compra</div>
               <div class="dash__card-meta">
-                @if (remitosPendientesCount() > 0) {
+                @if (remitosStatus() === 'ready' && remitosPendientesCount() > 0) {
                   {{ remitosPendientesCount() }} pendiente(s) de impactar stock
                 } @else {
                   Recepción y stock
                 }
               </div>
             </div>
-            <button type="button" class="dash__link" (click)="irARecepcion()">Ver recepción</button>
-          </div>
-          @if (remitosVista().length === 0) {
-            <p class="dash__empty dash__empty--pad">No hay remitos de compra cargados.</p>
-          } @else {
-            <table class="dash__table">
-              <thead>
-                <tr>
-                  <th>Remito</th>
-                  <th>Proveedor</th>
-                  <th>Estado</th>
-                  <th class="dash__th-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (r of remitosVista(); track r.id) {
-                  <tr class="dash__row-link" (click)="irARecepcion()">
-                    <td>
-                      <div class="dash__td-strong">{{ r.comprobante }}</div>
-                      <div class="dash__list-sub">
-                        {{ r.fechaFmt }} · {{ r.renglones }} renglones
-                      </div>
-                    </td>
-                    <td>{{ r.proveedor }}</td>
-                    <td>
-                      <span
-                        class="dash__badge"
-                        [class.dash__badge--success]="r.badge === 'success'"
-                        [class.dash__badge--warning]="r.badge === 'warning'"
-                      >
-                        {{ r.estadoLabel }}
-                      </span>
-                    </td>
-                    <td class="dash__td-right">{{ r.totalFmt }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
-        </div>
-
-        <div class="dash__card dash__side dash__panel">
-          <div class="dash__card-title">Reposiciones urgentes</div>
-          <div class="dash__card-meta dash__card-meta--block">
-            Alertas de stock bajo / sin stock
-          </div>
-          @if (stockUrgente().length === 0) {
-            <p class="dash__empty dash__empty--side">No hay artículos bajo mínimo.</p>
-          } @else {
-            <div class="dash__list">
-              @for (item of stockUrgente(); track item.nombre + item.detalle) {
-                <div class="dash__list-row">
-                  <div>
-                    <div class="dash__list-main">{{ item.nombre }}</div>
-                    <div class="dash__list-sub">{{ item.detalle }}</div>
-                  </div>
-                  <span
-                    class="dash__pill"
-                    [class.dash__pill--danger]="item.tono === 'danger'"
-                    [class.dash__pill--warn]="item.tono === 'warning'"
-                  >
-                    {{ item.stockFmt }}
-                  </span>
-                </div>
-              }
-            </div>
-          }
-          <button type="button" class="dash__link-btn" (click)="irAStock()">Ver alertas</button>
-        </div>
-
-        <div class="dash__card dash__side dash__panel">
-          <div class="dash__card-title">Cuentas corrientes</div>
-          <div class="dash__card-meta dash__card-meta--block">Ordenadas de mayor a menor saldo</div>
-          @if (cuentasCorrientes().length === 0) {
-            <p class="dash__empty dash__empty--side">Nadie debe en cuenta corriente.</p>
-          } @else {
-            <div class="dash__list">
-              @for (v of cuentasCorrientes(); track v.cliente + v.fechaFmt) {
-                <div class="dash__list-row">
-                  <div>
-                    <div class="dash__list-main">{{ v.cliente }}</div>
-                    <div class="dash__list-sub" [class.dash__list-sub--danger]="v.vencido">
-                      {{ v.fechaFmt }}
-                    </div>
-                  </div>
-                  <div class="dash__list-amount">{{ v.montoFmt }}</div>
-                </div>
-              }
-            </div>
-          }
-          <button type="button" class="dash__link-btn" (click)="irACtacte()">
-            Ir a cuentas corrientes
+            <span class="dash__acordeon-chevron" aria-hidden="true">
+              <app-icon name="chevron-down" />
+            </span>
           </button>
+
+          @if (abierta('remitos')) {
+            <div class="dash__acordeon-body">
+              <div class="dash__acordeon-actions">
+                <button type="button" class="dash__link" (click)="irARecepcion()">
+                  Ver recepción
+                </button>
+              </div>
+              @if (remitosStatus() === 'loading' || remitosStatus() === 'idle') {
+                <p class="dash__empty">Cargando remitos…</p>
+              } @else if (remitosVista().length === 0) {
+                <p class="dash__empty">No hay remitos de compra cargados.</p>
+              } @else {
+                <table class="dash__table">
+                  <thead>
+                    <tr>
+                      <th>Remito</th>
+                      <th>Proveedor</th>
+                      <th>Estado</th>
+                      <th class="dash__th-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (r of remitosVista(); track r.id) {
+                      <tr class="dash__row-link" (click)="irARecepcion()">
+                        <td>
+                          <div class="dash__td-strong">{{ r.comprobante }}</div>
+                          <div class="dash__list-sub">
+                            {{ r.fechaFmt }} · {{ r.renglones }} renglones
+                          </div>
+                        </td>
+                        <td>{{ r.proveedor }}</td>
+                        <td>
+                          <span
+                            class="dash__badge"
+                            [class.dash__badge--success]="r.badge === 'success'"
+                            [class.dash__badge--warning]="r.badge === 'warning'"
+                          >
+                            {{ r.estadoLabel }}
+                          </span>
+                        </td>
+                        <td class="dash__td-right">{{ r.totalFmt }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Reposiciones urgentes -->
+        <div
+          class="dash__card dash__panel dash__acordeon"
+          [class.dash__acordeon--abierto]="abierta('reposicion')"
+        >
+          <button
+            type="button"
+            class="dash__acordeon-btn"
+            [attr.aria-expanded]="abierta('reposicion')"
+            (click)="toggleSeccion('reposicion')"
+          >
+            <div class="dash__acordeon-copy">
+              <div class="dash__card-title">Reposiciones urgentes</div>
+              <div class="dash__card-meta">Alertas de stock bajo / sin stock</div>
+            </div>
+            <span class="dash__acordeon-chevron" aria-hidden="true">
+              <app-icon name="chevron-down" />
+            </span>
+          </button>
+
+          @if (abierta('reposicion')) {
+            <div class="dash__acordeon-body">
+              @if (cargando()) {
+                <p class="dash__empty">Cargando alertas…</p>
+              } @else if (stockUrgente().length === 0) {
+                <p class="dash__empty">No hay artículos bajo mínimo.</p>
+              } @else {
+                <div class="dash__list">
+                  @for (item of stockUrgente(); track item.nombre + item.detalle) {
+                    <div class="dash__list-row">
+                      <div>
+                        <div class="dash__list-main">{{ item.nombre }}</div>
+                        <div class="dash__list-sub">{{ item.detalle }}</div>
+                      </div>
+                      <span
+                        class="dash__pill"
+                        [class.dash__pill--danger]="item.tono === 'danger'"
+                        [class.dash__pill--warn]="item.tono === 'warning'"
+                      >
+                        {{ item.stockFmt }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              }
+              <button type="button" class="dash__link-btn" (click)="irAStock()">Ver alertas</button>
+            </div>
+          }
+        </div>
+
+        <!-- Cuentas corrientes -->
+        <div
+          class="dash__card dash__panel dash__acordeon"
+          [class.dash__acordeon--abierto]="abierta('cxc')"
+        >
+          <button
+            type="button"
+            class="dash__acordeon-btn"
+            [attr.aria-expanded]="abierta('cxc')"
+            (click)="toggleSeccion('cxc')"
+          >
+            <div class="dash__acordeon-copy">
+              <div class="dash__card-title">Cuentas corrientes</div>
+              <div class="dash__card-meta">Ordenadas de mayor a menor saldo</div>
+            </div>
+            <span class="dash__acordeon-chevron" aria-hidden="true">
+              <app-icon name="chevron-down" />
+            </span>
+          </button>
+
+          @if (abierta('cxc')) {
+            <div class="dash__acordeon-body">
+              @if (cargando()) {
+                <p class="dash__empty">Cargando cuentas…</p>
+              } @else if (cuentasCorrientes().length === 0) {
+                <p class="dash__empty">Nadie debe en cuenta corriente.</p>
+              } @else {
+                <div class="dash__list">
+                  @for (v of cuentasCorrientes(); track v.cliente + v.fechaFmt) {
+                    <div class="dash__list-row">
+                      <div>
+                        <div class="dash__list-main">{{ v.cliente }}</div>
+                        <div class="dash__list-sub" [class.dash__list-sub--danger]="v.vencido">
+                          {{ v.fechaFmt }}
+                        </div>
+                      </div>
+                      <div class="dash__list-amount">{{ v.montoFmt }}</div>
+                    </div>
+                  }
+                </div>
+              }
+              <button type="button" class="dash__link-btn" (click)="irACtacte()">
+                Ir a cuentas corrientes
+              </button>
+            </div>
+          }
         </div>
       </div>
     }

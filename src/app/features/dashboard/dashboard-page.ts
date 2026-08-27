@@ -2,9 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router } from '@angular/router';
 import { AuthStore } from '../../core/state/auth.store';
 import { IaStore } from '../../ia/state/ia.store';
+import { Icon } from '../../shared/ui/icon/icon';
 import { DashboardService, RemitoCompraDash } from './data-access/dashboard.service';
 import { DashboardStore } from './data-access/dashboard.store';
 import { KPIS_VACIOS } from './data-access/kpi.model';
+
+type SeccionDash = 'asistente' | 'remitos' | 'reposicion' | 'cxc';
 
 function formatearMoneda(valor: number, moneda = 'ARS'): string {
   return new Intl.NumberFormat('es-AR', {
@@ -40,6 +43,7 @@ function formatearVencimiento(fecha: string | null, vencido: boolean): string {
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Icon],
 })
 export class DashboardPage {
   private readonly store = inject(DashboardStore);
@@ -49,6 +53,11 @@ export class DashboardPage {
   private readonly router = inject(Router);
 
   protected readonly remitosCompra = signal<RemitoCompraDash[]>([]);
+  protected readonly remitosStatus = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  protected readonly seccionesAbiertas = signal<ReadonlySet<SeccionDash>>(new Set());
+
+  private iaPedida = false;
+  private remitosPedidos = false;
 
   protected readonly accionesList = computed(() => {
     const s = this.iaStore.acciones();
@@ -60,10 +69,15 @@ export class DashboardPage {
     return s.status === 'ready' ? (s.data.narrativa ?? null) : null;
   });
 
-  protected readonly cargando = computed(() => {
-    const s = this.store.kpis().status;
-    return s === 'idle' || s === 'loading';
+  protected readonly iaCargando = computed(() => {
+    const a = this.iaStore.acciones().status;
+    const r = this.iaStore.resumen().status;
+    return a === 'loading' || r === 'loading';
   });
+
+  protected readonly cargando = computed(() => this.store.kpis().status === 'loading');
+
+  protected readonly kpisListos = computed(() => this.store.kpis().status === 'success');
 
   protected readonly error = computed(() =>
     this.store.kpis().status === 'error' ? this.store.kpis().error : null,
@@ -100,6 +114,21 @@ export class DashboardPage {
   })();
 
   protected readonly kpisVista = computed(() => {
+    const status = this.store.kpis().status;
+    if (status === 'idle') {
+      return {
+        ventasHoy: '—',
+        ventasHoyFoot: 'Expandí una sección para cargar',
+        ventasHoyOk: false,
+        pedidos: '—',
+        pedidosFoot: 'Sin cargar',
+        saldoCobrar: '—',
+        saldoFoot: 'Sin cargar',
+        saldoAlerta: false,
+        bajoStock: '—',
+        bajoStockFoot: 'Sin cargar',
+      };
+    }
     const k = this.kpis();
     const moneda = k.moneda || 'ARS';
     const ventasHoy = formatearMoneda(k.montoVentasDia, moneda);
@@ -112,27 +141,37 @@ export class DashboardPage {
           : `${k.remitosPorFacturar} remitos por facturar`;
     return {
       ventasHoy,
-      ventasHoyFoot: k.ventasDia === 0 ? 'Sin ventas hoy' : comprobantesHoy,
+      ventasHoyFoot:
+        status === 'loading' ? 'Cargando…' : k.ventasDia === 0 ? 'Sin ventas hoy' : comprobantesHoy,
       ventasHoyOk: k.ventasDia > 0,
-      pedidos: String(k.pedidosPendientes),
-      pedidosFoot: pendientesRemitos,
-      saldoCobrar: formatearMoneda(k.saldoCobrar, moneda),
+      pedidos: status === 'loading' ? '—' : String(k.pedidosPendientes),
+      pedidosFoot: status === 'loading' ? 'Cargando…' : pendientesRemitos,
+      saldoCobrar: status === 'loading' ? '—' : formatearMoneda(k.saldoCobrar, moneda),
       saldoFoot:
-        k.saldoCobrar === 0
-          ? 'Sin deuda'
-          : k.saldoVencido > 0
-            ? `${formatearMoneda(k.saldoVencido, moneda)} vencido`
-            : 'Sin deuda vencida',
+        status === 'loading'
+          ? 'Cargando…'
+          : k.saldoCobrar === 0
+            ? 'Sin deuda'
+            : k.saldoVencido > 0
+              ? `${formatearMoneda(k.saldoVencido, moneda)} vencido`
+              : 'Sin deuda vencida',
       saldoAlerta: k.saldoVencido > 0,
-      bajoStock: k.articulosBajoStock === 1 ? '1 artículo' : `${k.articulosBajoStock} artículos`,
+      bajoStock:
+        status === 'loading'
+          ? '—'
+          : k.articulosBajoStock === 1
+            ? '1 artículo'
+            : `${k.articulosBajoStock} artículos`,
       bajoStockFoot:
-        k.productosActivos === 0
-          ? 'Todavía no hay artículos'
-          : k.articulosSinStock === 0
-            ? 'Ninguno sin stock'
-            : k.articulosSinStock === 1
-              ? '1 sin stock'
-              : `${k.articulosSinStock} sin stock`,
+        status === 'loading'
+          ? 'Cargando…'
+          : k.productosActivos === 0
+            ? 'Todavía no hay artículos'
+            : k.articulosSinStock === 0
+              ? 'Ninguno sin stock'
+              : k.articulosSinStock === 1
+                ? '1 sin stock'
+                : `${k.articulosSinStock} sin stock`,
     };
   });
 
@@ -178,12 +217,68 @@ export class DashboardPage {
       })),
   );
 
-  constructor() {
+  protected abierta(id: SeccionDash): boolean {
+    return this.seccionAbierta() === id;
+  }
+
+  protected toggleSeccion(id: SeccionDash): void {
+    if (this.seccionAbierta() === id) {
+      this.seccionAbierta.set(null);
+      return;
+    }
+    this.seccionAbierta.set(id);
+    this.cargarSeccion(id);
+  }
+
+  private cargarSeccion(id: SeccionDash): void {
+    if (id === 'asistente') {
+      this.asegurarIa();
+      return;
+    }
+    if (id === 'remitos') {
+      this.asegurarRemitos();
+      return;
+    }
+    // Reposición y CxC salen de /reporteria/kpis
+    this.asegurarKpis();
+  }
+
+  private asegurarKpis(): void {
+    const status = this.store.kpis().status;
+    if (status === 'success' || status === 'loading') {
+      return;
+    }
     this.store.cargar();
+  }
+
+  /** Cabecera de KPIs: se pide al tocar las cards o al abrir reposición/CxC. */
+  protected cargarKpisCabecera(): void {
+    this.asegurarKpis();
+  }
+
+  private asegurarIa(): void {
+    if (this.iaPedida) {
+      return;
+    }
+    this.iaPedida = true;
     this.iaStore.cargarDashboard();
+  }
+
+  private asegurarRemitos(): void {
+    if (this.remitosPedidos) {
+      return;
+    }
+    this.remitosPedidos = true;
+    this.remitosStatus.set('loading');
     this.dashboardApi.listarRemitosCompra().subscribe({
-      next: (items) => this.remitosCompra.set(items),
-      error: () => this.remitosCompra.set([]),
+      next: (items) => {
+        this.remitosCompra.set(items);
+        this.remitosStatus.set('ready');
+      },
+      error: () => {
+        this.remitosCompra.set([]);
+        this.remitosStatus.set('error');
+      },
     });
   }
 
