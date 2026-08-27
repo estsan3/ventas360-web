@@ -14,17 +14,67 @@
 
   <div class="ctc__toolbar card">
     <div class="ctc__search-row">
-      <label class="ctc__search">
-        <span class="ctc__search-icon" aria-hidden="true"><app-icon name="search" /></span>
-        <input
-          class="ctc__search-input"
-          type="search"
-          [ngModel]="qCliente()"
-          (ngModelChange)="onBusquedaChange($event)"
-          placeholder="Buscar por nombre o CUIT…"
-          autocomplete="off"
-        />
-      </label>
+      <div class="ctc__combo">
+        <label class="ctc__search">
+          <span class="ctc__search-icon" aria-hidden="true"><app-icon name="search" /></span>
+          <input
+            class="ctc__search-input"
+            type="search"
+            role="combobox"
+            [attr.aria-expanded]="comboOpen()"
+            aria-autocomplete="list"
+            [ngModel]="qCliente()"
+            (ngModelChange)="onComboInput($event)"
+            (focus)="onComboFocus()"
+            (blur)="onComboBlur()"
+            placeholder="Buscar por nombre o CUIT…"
+            autocomplete="off"
+          />
+          @if (qCliente()) {
+            <button
+              type="button"
+              class="ctc__combo-clear"
+              title="Limpiar"
+              (mousedown)="limpiarCombo($event)"
+            >
+              ✕
+            </button>
+          }
+        </label>
+        @if (comboOpen()) {
+          <div class="ctc__dropdown" role="listbox">
+            <div class="ctc__dropdown-head">
+              @if (comboBuscando()) {
+                Buscando…
+              } @else if (qCliente().trim().length < minChars) {
+                Autocompletado · escribí al menos {{ minChars }} caracteres
+              } @else {
+                Sugerencias
+              }
+            </div>
+            @for (c of sugerencias(); track c.id) {
+              <button
+                type="button"
+                class="ctc__dropdown-item"
+                role="option"
+                (mousedown)="elegirSugerencia(c)"
+              >
+                <div>
+                  <div class="ctc__dropdown-name">{{ c.nombre }}</div>
+                  <div class="ctc__dropdown-sub">{{ metaDeCliente(c) }}</div>
+                </div>
+                @if (c.bloqueado) {
+                  <span class="ctc__pill ctc__pill--debe">Bloqueado</span>
+                }
+              </button>
+            } @empty {
+              @if (!comboBuscando() && qCliente().trim().length >= minChars) {
+                <div class="ctc__dropdown-empty">Sin coincidencias</div>
+              }
+            }
+          </div>
+        }
+      </div>
       <button
         type="button"
         class="ctc__btn ctc__btn--ghost ctc__btn--filtros"

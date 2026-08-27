@@ -8,9 +8,19 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import {
+  EMPTY,
+  Subject,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  of,
+  switchMap,
+} from 'rxjs';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Icon } from '../../shared/ui/icon/icon';
+import { CuentaCorrienteService } from './data-access/cuenta-corriente.service';
 import { CuentaCorrienteStore } from './data-access/cuenta-corriente.store';
 import {
   ClienteRef,
@@ -219,11 +229,16 @@ function saldoVacio(clienteId: string): SaldoCliente {
 })
 export class CuentaCorrientePage {
   private readonly store = inject(CuentaCorrienteStore);
+  private readonly api = inject(CuentaCorrienteService);
   private readonly notifications = inject(NotificationStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly busqueda$ = new Subject<string>();
+  private readonly comboAutocomplete$ = new Subject<string>();
 
   protected readonly qCliente = signal('');
+  protected readonly comboOpen = signal(false);
+  protected readonly comboBuscando = signal(false);
+  protected readonly sugerencias = signal<ClienteRef[]>([]);
   protected readonly filtrosAvanzados = signal(false);
   protected readonly plazo = signal<PlazoFiltro>('todo');
   protected readonly montoMin = signal('');
@@ -589,11 +604,70 @@ export class CuentaCorrientePage {
         }
         this.store.buscarPorTexto(termino);
       });
+
+    this.comboAutocomplete$
+      .pipe(
+        debounceTime(280),
+        distinctUntilChanged(),
+        switchMap((raw) => {
+          const q = raw.trim();
+          if (q.length < MIN_CHARS_BUSQUEDA) {
+            this.sugerencias.set([]);
+            this.comboBuscando.set(false);
+            return EMPTY;
+          }
+          this.comboBuscando.set(true);
+          return this.api.listarClientesRef({ q, pageSize: 12 }).pipe(
+            catchError(() => of([] as ClienteRef[])),
+            finalize(() => this.comboBuscando.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((items) => {
+        this.sugerencias.set(items);
+        this.comboOpen.set(true);
+      });
   }
 
-  protected onBusquedaChange(valor: string): void {
+  protected onComboInput(valor: string): void {
     this.qCliente.set(valor);
+    this.comboOpen.set(true);
+    this.comboAutocomplete$.next(valor);
     this.busqueda$.next(valor);
+  }
+
+  protected onComboFocus(): void {
+    this.store.cargarZonasSiHaceFalta();
+    this.comboOpen.set(true);
+  }
+
+  protected limpiarCombo(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.qCliente.set('');
+    this.sugerencias.set([]);
+    this.comboOpen.set(false);
+    this.busqueda$.next('');
+    this.store.limpiarBusqueda();
+  }
+
+  protected onComboBlur(): void {
+    setTimeout(() => this.comboOpen.set(false), 180);
+  }
+
+  protected elegirSugerencia(c: ClienteRef): void {
+    const termino = c.cuit?.trim() || c.nombre;
+    this.qCliente.set(c.nombre);
+    this.comboOpen.set(false);
+    this.sugerencias.set([]);
+    this.busqueda$.next(termino);
+  }
+
+  protected metaDeCliente(c: ClienteRef): string {
+    const cuit = c.cuit?.trim() || 'Sin CUIT';
+    const zona = c.zonaId ? this.zonaNombre().get(c.zonaId) : null;
+    return zona ? `${cuit} · ${zona}` : cuit;
   }
 
   protected toggleFiltrosAvanzados(): void {
@@ -636,6 +710,8 @@ export class CuentaCorrientePage {
 
   protected limpiarFiltros(): void {
     this.qCliente.set('');
+    this.sugerencias.set([]);
+    this.comboOpen.set(false);
     this.busqueda$.next('');
     this.plazo.set('todo');
     this.montoMin.set('');
