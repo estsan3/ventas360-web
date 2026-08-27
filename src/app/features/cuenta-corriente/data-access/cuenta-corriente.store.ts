@@ -20,6 +20,17 @@ import {
 } from './cxc.model';
 import { CuentaCorrienteService } from './cuenta-corriente.service';
 
+function emptySaldo(clienteId: string): SaldoCliente {
+  return {
+    clienteId,
+    saldo: 0,
+    debeTotal: 0,
+    haberTotal: 0,
+    fechaUltimoMovimiento: null,
+    fechaDebeMasAntigua: null,
+  };
+}
+
 export interface ResultadoBusquedaCxc {
   clientes: ClienteRef[];
   saldos: SaldoCliente[];
@@ -109,6 +120,99 @@ export class CuentaCorrienteStore {
     this._estadoCuenta.set(null);
     this._remitos.set([]);
     this._facturas.set([]);
+  }
+
+  /** Solo resetea el estado del informe (no afecta cliente seleccionado en tab Cuenta). */
+  limpiarInformeBusqueda(): void {
+    this._busqueda.set(asyncIdle());
+  }
+
+  /** Selección desde combobox: un cliente + su saldo (sin listado). */
+  seleccionarCliente(cliente: ClienteRef): void {
+    this._clientesRef.set([cliente]);
+    this._busqueda.set(asyncIdle());
+    this.api.obtenerSaldo(cliente.id).subscribe({
+      next: (saldo) => this._saldos.set(asyncSuccess([saldo])),
+      error: () => this._saldos.set(asyncSuccess([{ ...emptySaldo(cliente.id) }])),
+    });
+    this.cargarEstado(cliente.id);
+  }
+
+  limpiarSeleccion(): void {
+    this._clientesRef.set([]);
+    this._saldos.set(asyncIdle());
+    this._estadoCuenta.set(null);
+    this._remitos.set([]);
+    this._facturas.set([]);
+  }
+
+  /** Informes: carga saldos + clientes (opcional q) para filtrar en pantalla. */
+  buscarInforme(q?: string): void {
+    const termino = q?.trim() ?? '';
+    this._busqueda.set(asyncLoading());
+    if (termino.length >= 3) {
+      this.api
+        .listarClientesRef({ q: termino, pageSize: 200 })
+        .pipe(
+          switchMap((clientes) => {
+            if (clientes.length === 0) {
+              return of({ clientes, saldos: [] as SaldoCliente[] });
+            }
+            const ids = new Set(clientes.map((c) => c.id));
+            return this.api.listarSaldos().pipe(
+              tap((todos) => {
+                this.saldosCache = todos;
+              }),
+              map((todos) => ({
+                clientes,
+                saldos: todos.filter((s) => ids.has(s.clienteId)),
+              })),
+              catchError(() => of({ clientes, saldos: [] as SaldoCliente[] })),
+            );
+          }),
+        )
+        .subscribe({
+          next: (resultado) => this.aplicarResultadoInforme(resultado),
+          error: (error: Error) => {
+            this._busqueda.set(asyncError(error.message));
+            this._clientesRef.set([]);
+            this._saldos.set(asyncError(error.message));
+          },
+        });
+      return;
+    }
+
+    this.api
+      .listarSaldos()
+      .pipe(
+        switchMap((saldos) => {
+          this.saldosCache = saldos;
+          const ids = new Set(saldos.map((s) => s.clienteId));
+          return this.api.listarClientesRef({ pageSize: 200 }).pipe(
+            map((clientes) => ({
+              clientes: clientes.filter((c) => ids.has(c.id)),
+              saldos,
+            })),
+          );
+        }),
+        catchError((error: Error) => {
+          this._busqueda.set(asyncError(error.message));
+          throw error;
+        }),
+      )
+      .subscribe({
+        next: (resultado) => this.aplicarResultadoInforme(resultado),
+        error: () => {
+          this._clientesRef.set([]);
+          this._saldos.set(asyncIdle());
+        },
+      });
+  }
+
+  private aplicarResultadoInforme(resultado: ResultadoBusquedaCxc): void {
+    this._clientesRef.set(resultado.clientes);
+    this._saldos.set(asyncSuccess(resultado.saldos));
+    this._busqueda.set(asyncSuccess(resultado));
   }
 
   /** Refresca saldos del comercio (p. ej. tras un cobro). */
