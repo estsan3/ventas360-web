@@ -455,4 +455,95 @@ $dc-hover: #faf7f3;
       margin: 0;
     }
   }
+
+  &__ia-resumen {
+    background: linear-gradient(135deg, #fff8f2 0%, #fff 100%);
+    border: 1px solid #f0dcc8;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+
+  &__ia-resumen-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $dc-primary-deep;
+    margin-bottom: 6px;
+  }
+
+  &__ia-resumen-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: $dc-text;
+  }
+
+  &__ia-acciones {
+    background: #fff;
+    border: 1px solid $dc-border;
+    border-radius: 12px;
+    padding: 16px 18px 10px;
+    margin-bottom: 18px;
+  }
+
+  &__ia-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  &__ia-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    border: 1px solid $dc-border-soft;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+
+    &:hover {
+      background: $dc-hover;
+      border-color: $dc-border;
+    }
+  }
+
+  &__ia-action-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: $dc-text;
+  }
+
+  &__ia-action-sub {
+    font-size: 12px;
+    color: $dc-muted;
+    margin-top: 2px;
+  }
+
+  &__ia-pill {
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 99px;
+    padding: 4px 10px;
+    background: $dc-neutral-bg;
+    color: $dc-neutral;
+    white-space: nowrap;
+
+    &--alta {
+      background: $dc-danger-bg;
+      color: $dc-danger;
+    }
+
+    &--media {
+      background: $dc-warn-bg;
+      color: $dc-warn;
+    }
+  }
 }

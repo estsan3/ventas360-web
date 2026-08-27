@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -20,6 +21,8 @@ import {
   switchMap,
 } from 'rxjs';
 import { NotificationStore } from '../../notifications/state/notification.store';
+import { IaService } from '../../ia/data-access/ia.service';
+import { InterpretarMostradorResultado } from '../../ia/data-access/ia.model';
 import {
   ClienteRef,
   DatosCheque,
@@ -101,7 +104,7 @@ function metaCliente(c: ClienteRef, zonaNombre?: string | null): string {
  */
 @Component({
   selector: 'app-ventas-page',
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './ventas-page.html',
   styleUrl: './ventas-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -111,6 +114,7 @@ export class VentasPage {
   private readonly router = inject(Router);
   private readonly store = inject(VentasStore);
   private readonly api = inject(VentasService);
+  private readonly ia = inject(IaService);
   private readonly notifications = inject(NotificationStore);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -170,6 +174,9 @@ export class VentasPage {
   protected readonly modalVendedorId = signal('');
   protected readonly modalBuscando = signal(false);
   protected readonly modalResultados = signal<ClienteRef[]>([]);
+  protected readonly textoIa = signal('');
+  protected readonly interpretandoIa = signal(false);
+  protected readonly previewIa = signal<InterpretarMostradorResultado | null>(null);
   protected readonly zonasRef = signal<ZonaRef[]>([]);
   protected readonly usuariosRef = signal<UsuarioRef[]>([]);
 
@@ -474,6 +481,64 @@ export class VentasPage {
     this.buscarClienteOpen.set(false);
     this.clientesAutocomplete.set([]);
     this.cargarSaldo(c.id);
+  }
+
+  protected interpretarIa(): void {
+    const texto = this.textoIa().trim();
+    if (texto.length < 3) {
+      this.notifications.warning('Escribí un pedido', 'Ej: 2 mouse para García');
+      return;
+    }
+    this.interpretandoIa.set(true);
+    this.previewIa.set(null);
+    this.ia.interpretarMostrador(texto).subscribe({
+      next: (resultado) => {
+        this.interpretandoIa.set(false);
+        this.previewIa.set(resultado);
+        this.notifications.success(
+          'Pedido interpretado',
+          resultado.modoParser === 'anthropic' ? 'Claude Haiku' : 'Modo demo',
+        );
+      },
+      error: () => {
+        this.interpretandoIa.set(false);
+      },
+    });
+  }
+
+  protected aplicarPreviewIa(): void {
+    const preview = this.previewIa();
+    if (!preview) {
+      return;
+    }
+    if (preview.clienteId && preview.clienteNombre) {
+      this.elegirCliente(preview.clienteId, preview.clienteNombre);
+    }
+    let agregados = 0;
+    for (const linea of preview.lineas) {
+      if (!linea.productoId) {
+        continue;
+      }
+      const producto = this.productosRef().find((p) => p.id === linea.productoId);
+      if (producto) {
+        this.agregarProducto(producto, linea.cantidad);
+        agregados += 1;
+      }
+    }
+    if (agregados === 0) {
+      this.notifications.warning(
+        'Sin artículos',
+        'Ninguna línea matcheó productos del catálogo. Revisá el texto.',
+      );
+      return;
+    }
+    this.previewIa.set(null);
+    this.textoIa.set('');
+    this.notifications.success('Ticket actualizado', `Se agregaron ${agregados} línea(s).`);
+  }
+
+  protected descartarPreviewIa(): void {
+    this.previewIa.set(null);
   }
 
   protected abrirBuscarCliente(): void {
