@@ -52,4 +52,6 @@ export interface ResumenDia {
   narrativa: string | null;
   modoNarrativa: string | null;
   accionesDestacadas: string[];
+  acciones: AccionDia[];
+  generadoEn: string | null;
 }

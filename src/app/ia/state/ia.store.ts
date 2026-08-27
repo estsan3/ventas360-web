@@ -18,19 +18,26 @@ export class IaStore {
   readonly acciones = this._acciones.asReadonly();
   readonly resumen = this._resumen.asReadonly();
 
+  /** Una sola llamada a /ai/resumen-dia (evita recalcular KPIs 2 veces). */
   cargarDashboard(): void {
     this._acciones.set({ status: 'loading' });
-    this.api.accionesDelDia().subscribe({
-      next: (data) => this._acciones.set({ status: 'ready', data }),
-      error: (err: Error) =>
-        this._acciones.set({ status: 'error', error: err.message ?? 'Error al cargar acciones' }),
-    });
-
     this._resumen.set({ status: 'loading' });
     this.api.resumenDia(true).subscribe({
-      next: (data) => this._resumen.set({ status: 'ready', data }),
-      error: (err: Error) =>
-        this._resumen.set({ status: 'error', error: err.message ?? 'Error al cargar resumen IA' }),
+      next: (data) => {
+        this._resumen.set({ status: 'ready', data });
+        this._acciones.set({
+          status: 'ready',
+          data: {
+            acciones: data.acciones,
+            generadoEn: data.generadoEn ?? new Date().toISOString(),
+          },
+        });
+      },
+      error: (err: Error) => {
+        const msg = err.message ?? 'Error al cargar IA del día';
+        this._resumen.set({ status: 'error', error: msg });
+        this._acciones.set({ status: 'error', error: msg });
+      },
     });
   }
 }

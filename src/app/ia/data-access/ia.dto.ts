@@ -54,4 +54,6 @@ export interface ResumenDiaResponseDto {
   narrativa: string | null;
   modo_narrativa: string | null;
   acciones_destacadas: string[];
+  acciones?: AccionDiaDto[];
+  generado_en?: string | null;
 }

@@ -62,5 +62,16 @@ export function resumenDiaToModel(dto: ResumenDiaResponseDto): ResumenDia {
     narrativa: dto.narrativa,
     modoNarrativa: dto.modo_narrativa,
     accionesDestacadas: dto.acciones_destacadas ?? [],
+    acciones: (dto.acciones ?? []).map((a) => ({
+      id: a.id,
+      tipo: a.tipo,
+      prioridad: a.prioridad,
+      titulo: a.titulo,
+      detalle: a.detalle,
+      cantidad: a.cantidad,
+      monto: a.monto,
+      rutaWeb: a.ruta_web,
+    })),
+    generadoEn: dto.generado_en ?? null,
   };
 }
