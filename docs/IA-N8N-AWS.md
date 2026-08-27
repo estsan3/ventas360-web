@@ -49,12 +49,16 @@ Respuesta:
 }
 ```
 
-Workflow típico n8n:
+### Workflows listos para importar
 
-1. **Schedule** → 20:00 AR
-2. **HTTP Request** → webhook resumen-dia
-3. **IF** → `metricas.saldo_vencido > 0`
-4. **WhatsApp / Email** → enviar `narrativa` al dueño
+Ver carpeta [`docs/n8n/`](./n8n/README.md):
+
+| Archivo                                  | Canal                     |
+| ---------------------------------------- | ------------------------- |
+| `n8n/ventas360-cierre-dia-whatsapp.json` | WhatsApp (Meta Cloud API) |
+| `n8n/ventas360-cierre-dia-email.json`    | Email SMTP / SES          |
+
+Import: n8n → Workflows → **Import from File**.
 
 Alternativa con JWT (sin webhook secret): nodo **HTTP Request** login + Bearer en siguientes nodos.
 
