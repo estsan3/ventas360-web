@@ -42,6 +42,57 @@
     </div>
   </header>
 
+  @if (esFactura()) {
+    <div class="fact__ia-bar">
+      <div class="fact__ia-label">Asistente IA</div>
+      <input
+        class="fact__ia-input"
+        type="text"
+        placeholder="Ej: 2 mouse inalámbrico para Distribuidora Norte"
+        [value]="textoIa()"
+        (input)="textoIa.set($any($event.target).value)"
+        (keydown.enter)="interpretarIa()"
+      />
+      <button
+        type="button"
+        class="fact__btn fact__btn--outline"
+        [disabled]="interpretandoIa()"
+        (click)="interpretarIa()"
+      >
+        {{ interpretandoIa() ? 'Interpretando…' : 'Interpretar' }}
+      </button>
+    </div>
+    @if (previewIa(); as preview) {
+      <div class="fact__ia-preview">
+        <div class="fact__ia-preview-head">
+          <strong>Vista previa</strong>
+          @if (preview.clienteNombre) {
+            <span> · {{ preview.clienteNombre }}</span>
+          }
+          <span class="fact__ia-conf"> {{ preview.confianza * 100 | number: '1.0-0' }}%</span>
+        </div>
+        @for (adv of preview.advertencias; track adv) {
+          <div class="fact__ia-warn">{{ adv }}</div>
+        }
+        <ul class="fact__ia-lines">
+          @for (l of preview.lineas; track l.descripcion) {
+            <li [class.fact__ia-line--miss]="!l.productoId">
+              {{ l.cantidad }} × {{ l.productoNombre || l.descripcion }}
+            </li>
+          }
+        </ul>
+        <div class="fact__ia-preview-actions">
+          <button type="button" class="fact__btn fact__btn--dark" (click)="aplicarPreviewIa()">
+            Aplicar al ticket
+          </button>
+          <button type="button" class="fact__btn fact__btn--outline" (click)="descartarPreviewIa()">
+            Descartar
+          </button>
+        </div>
+      </div>
+    }
+  }
+
   <div class="fact__body">
     <div class="fact__main">
       <div class="fact__search-card fact__search-card--cliente">

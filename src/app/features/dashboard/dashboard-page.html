@@ -39,6 +39,39 @@
       </div>
     </div>
 
+    @if (resumenNarrativa(); as narrativa) {
+      <div class="dash__ia-resumen">
+        <div class="dash__ia-resumen-label">Resumen IA</div>
+        <p class="dash__ia-resumen-text">{{ narrativa }}</p>
+      </div>
+    }
+
+    @if (accionesList().length > 0) {
+      <div class="dash__ia-acciones">
+        <div class="dash__card-head">
+          <div class="dash__card-title">Acciones del día</div>
+          <div class="dash__card-meta">Priorizadas por reglas del negocio</div>
+        </div>
+        <div class="dash__ia-list">
+          @for (a of accionesList(); track a.id) {
+            <button type="button" class="dash__ia-action" (click)="irAccion(a.rutaWeb)">
+              <div>
+                <div class="dash__ia-action-title">{{ a.titulo }}</div>
+                <div class="dash__ia-action-sub">{{ a.detalle }}</div>
+              </div>
+              <span
+                class="dash__ia-pill"
+                [class.dash__ia-pill--alta]="a.prioridad === 'alta'"
+                [class.dash__ia-pill--media]="a.prioridad === 'media'"
+              >
+                {{ prioridadLabel(a.prioridad) }}
+              </span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
     <div class="dash__grid">
       <div class="dash__card dash__chart">
         <div class="dash__card-head">

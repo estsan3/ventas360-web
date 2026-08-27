@@ -1,0 +1,138 @@
+{
+  "name": "Ventas360 · Cierre del día Email",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 20 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-email",
+      "name": "Cron 20:00 AR",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.VENTAS360_API_URL }}/api/v1/ai/webhook/resumen-dia",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "narrativa",
+              "value": "true"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Ventas360-Webhook-Secret",
+              "value": "={{ $env.VENTAS360_N8N_WEBHOOK_SECRET }}"
+            },
+            {
+              "name": "X-Tenant-Slug",
+              "value": "={{ $env.VENTAS360_TENANT_SLUG }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-resumen-email",
+      "name": "GET resumen-dia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\nconst m = body.metricas || {};\nconst acciones = (body.acciones_destacadas || []).slice(0, 5);\nconst narrativa = (body.narrativa || '').trim();\n\nconst subject = `Ventas360 · Cierre ${new Date().toLocaleDateString('es-AR')} · ${m.ventas_dia ?? 0} ventas`;\n\nconst html = `\n<p><strong>Resumen</strong></p>\n<p>${narrativa.replace(/\\n/g, '<br/>')}</p>\n<ul>\n  <li>Ventas: ${m.ventas_dia ?? 0} — $${Number(m.monto_ventas_dia || 0).toLocaleString('es-AR')}</li>\n  <li>Pedidos pendientes: ${m.pedidos_pendientes ?? 0}</li>\n  <li>Remitos por facturar: ${m.remitos_por_facturar ?? 0}</li>\n  <li>Saldo a cobrar: $${Number(m.saldo_cobrar || 0).toLocaleString('es-AR')} (vencido $${Number(m.saldo_vencido || 0).toLocaleString('es-AR')})</li>\n  <li>Bajo stock: ${m.articulos_bajo_stock ?? 0} · Sin stock: ${m.articulos_sin_stock ?? 0}</li>\n</ul>\n${acciones.length ? `<p><strong>Prioridades</strong></p><ol>${acciones.map((a) => `<li>${a}</li>`).join('')}</ol>` : ''}\n<p style=\"color:#78716c;font-size:12px\">Generado por n8n · Ventas360</p>\n`;\n\nreturn [{ json: { subject, html, narrativa, metricas: m } }];\n"
+      },
+      "id": "code-email",
+      "name": "Armar email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 0]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.VENTAS360_MAIL_FROM }}",
+        "toEmail": "={{ $env.VENTAS360_MAIL_TO }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Enviar email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [780, 0],
+      "notes": "Configurá credenciales SMTP en n8n (o SES). Variables VENTAS360_MAIL_FROM / VENTAS360_MAIL_TO.",
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_SMTP_CREDENTIAL_ID",
+          "name": "SMTP Ventas360"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron 20:00 AR": {
+      "main": [
+        [
+          {
+            "node": "GET resumen-dia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET resumen-dia": {
+      "main": [
+        [
+          {
+            "node": "Armar email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar email": {
+      "main": [
+        [
+          {
+            "node": "Enviar email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires"
+  },
+  "meta": {
+    "description": "Cierre del día Ventas360 por email (SMTP / SES)"
+  },
+  "tags": [
+    {
+      "name": "ventas360"
+    }
+  ]
+}

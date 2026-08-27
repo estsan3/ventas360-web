@@ -1,0 +1,212 @@
+{
+  "name": "Ventas360 · Cierre del día WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 20 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-cierre",
+      "name": "Cron 20:00 AR",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "notes": "Timezone del workflow: America/Argentina/Buenos_Aires (Settings → Timezone)."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.VENTAS360_API_URL }}/api/v1/ai/webhook/resumen-dia",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "narrativa",
+              "value": "true"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Ventas360-Webhook-Secret",
+              "value": "={{ $env.VENTAS360_N8N_WEBHOOK_SECRET }}"
+            },
+            {
+              "name": "X-Tenant-Slug",
+              "value": "={{ $env.VENTAS360_TENANT_SLUG }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-resumen",
+      "name": "GET resumen-dia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, 0],
+      "notes": "Variables: VENTAS360_API_URL (https://api…), VENTAS360_N8N_WEBHOOK_SECRET, VENTAS360_TENANT_SLUG (ej. demo)."
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\nconst m = body.metricas || {};\nconst acciones = (body.acciones_destacadas || []).slice(0, 3);\nconst narrativa = (body.narrativa || '').trim();\n\nconst fmt = (n) =>\n  new Intl.NumberFormat('es-AR', {\n    style: 'currency',\n    currency: m.moneda || 'ARS',\n    maximumFractionDigits: 0,\n  }).format(Number(n || 0));\n\nconst lineas = [\n  `📊 *Ventas360 · Cierre del día*`,\n  '',\n  narrativa || 'Sin narrativa.',\n  '',\n  `• Ventas: ${m.ventas_dia ?? 0} (${fmt(m.monto_ventas_dia)})`,\n  `• Pedidos pendientes: ${m.pedidos_pendientes ?? 0}`,\n  `• Remitos por facturar: ${m.remitos_por_facturar ?? 0}`,\n  `• A cobrar: ${fmt(m.saldo_cobrar)} (vencido ${fmt(m.saldo_vencido)})`,\n  `• Bajo stock: ${m.articulos_bajo_stock ?? 0} · Sin stock: ${m.articulos_sin_stock ?? 0}`,\n];\n\nif (acciones.length) {\n  lineas.push('', '*Prioridades:*');\n  for (const a of acciones) lineas.push(`· ${a}`);\n}\n\nlineas.push('', '_Entrá a Inicio en Ventas360 para actuar._');\n\nconst texto = lineas.join('\\n');\nconst urgente =\n  Number(m.saldo_vencido || 0) > 0 ||\n  Number(m.articulos_sin_stock || 0) > 0 ||\n  Number(m.remitos_por_facturar || 0) > 0;\n\nreturn [\n  {\n    json: {\n      texto,\n      urgente,\n      metricas: m,\n      acciones_destacadas: acciones,\n      modo_narrativa: body.modo_narrativa || null,\n    },\n  },\n];\n"
+      },
+      "id": "code-formato",
+      "name": "Armar mensaje WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-urgente",
+              "leftValue": "={{ $json.urgente }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-urgente",
+      "name": "¿Hay urgencias?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [780, 0],
+      "notes": "Solo envía si hay CxC vencida, sin stock o remitos por facturar. Para enviar siempre: conectá directo el Code → WhatsApp y desactivá este IF."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.WHATSAPP_ACCESS_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $env.WHATSAPP_TO }}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"preview_url\": false,\n    \"body\": {{ JSON.stringify($json.texto) }}\n  }\n}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "http-whatsapp",
+      "name": "Enviar WhatsApp (Cloud API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, -80],
+      "notes": "Meta Cloud API. WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_ACCESS_TOKEN, WHATSAPP_TO (54911…). Fuera de la ventana de 24h necesitás template aprobado."
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "id": "noop-skip",
+      "name": "Sin urgencias · no enviar",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1040, 120]
+    }
+  ],
+  "connections": {
+    "Cron 20:00 AR": {
+      "main": [
+        [
+          {
+            "node": "GET resumen-dia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET resumen-dia": {
+      "main": [
+        [
+          {
+            "node": "Armar mensaje WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar mensaje WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "¿Hay urgencias?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay urgencias?": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp (Cloud API)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sin urgencias · no enviar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "description": "Cierre del día Ventas360 → WhatsApp (Meta Cloud API) vía webhook /ai/webhook/resumen-dia"
+  },
+  "tags": [
+    {
+      "name": "ventas360"
+    },
+    {
+      "name": "ia"
+    }
+  ]
+}

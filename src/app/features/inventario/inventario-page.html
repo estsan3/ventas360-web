@@ -189,7 +189,13 @@
                 <td>{{ r.proveedor }}</td>
                 <td class="inv__td-right">{{ r.renglones }}</td>
                 <td>
-                  <span class="inv__pill inv__pill--neutral">Manual</span>
+                  <span
+                    class="inv__pill"
+                    [class.inv__pill--ia]="r.cargaIa"
+                    [class.inv__pill--neutral]="!r.cargaIa"
+                  >
+                    {{ r.cargaIa ? 'Foto IA' : 'Manual' }}
+                  </span>
                 </td>
                 <td>
                   <span
@@ -226,11 +232,127 @@
       </div>
 
       <div class="inv__side-panels">
-        <div class="inv__card inv__card--pad">
-          <div class="inv__card-title">Recepción de mercadería</div>
+        <div class="inv__ia-card">
+          <div class="inv__ia-icon">📷</div>
+          <div class="inv__ia-title">Cargar remito con IA</div>
           <div class="inv__ia-text">
-            Importá la lista del proveedor (artículos + costo), luego cargá un remito de compra y
-            confirmalo para ingresar stock al depósito.
+            Sacá una foto del remito del proveedor. Claude Haiku lee las líneas y las cruza con tu
+            catálogo antes de impactar stock.
+          </div>
+
+          <label class="inv__field-label" for="inv-prov-ia">Proveedor</label>
+          <select
+            id="inv-prov-ia"
+            class="inv__select-full"
+            [ngModel]="proveedorIa()"
+            (ngModelChange)="proveedorIa.set($event)"
+          >
+            <option value="">Elegir proveedor…</option>
+            @for (p of proveedores(); track p.id) {
+              <option [value]="p.id">{{ p.nombre }}</option>
+            }
+          </select>
+
+          <div class="inv__ia-note">Depósito: {{ depositoActivoNombre() }}</div>
+
+          <label class="inv__upload-btn">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+              [disabled]="parseando() || !proveedorIa() || !depActivo()"
+              (change)="onArchivoRemito($event)"
+            />
+            {{ parseando() ? 'Leyendo remito…' : 'Subir foto del remito' }}
+          </label>
+
+          @if (nombreArchivoIa()) {
+            <div class="inv__ia-note">{{ nombreArchivoIa() }}</div>
+          }
+        </div>
+
+        @if (previewIa(); as preview) {
+          <div class="inv__card inv__card--pad inv__preview-ia">
+            <div class="inv__card-head inv__card-head--tight">
+              <div>
+                <div class="inv__card-title">Vista previa</div>
+                <div class="inv__card-sub">
+                  @if (preview.numeroRemito) {
+                    {{ preview.numeroRemito }}
+                  }
+                  @if (preview.fecha) {
+                    · {{ preview.fecha }}
+                  }
+                  · {{ lineasIaMatcheadas() }}/{{ lineasIa().length }} artículos
+                </div>
+              </div>
+              <button
+                type="button"
+                class="inv__accion inv__accion--muted"
+                (click)="descartarPreviewIa()"
+              >
+                Descartar
+              </button>
+            </div>
+
+            @for (adv of preview.advertencias; track adv) {
+              <div class="inv__alert-ia">{{ adv }}</div>
+            }
+
+            <table class="inv__table inv__table--compact">
+              <thead>
+                <tr>
+                  <th>Detectado</th>
+                  <th>Artículo</th>
+                  <th class="inv__th-right">Cant.</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of lineasIa(); track $index) {
+                  <tr [class.inv__row--warn]="!l.productoId">
+                    <td>
+                      <div class="inv__articulo">{{ l.descripcionExtraida }}</div>
+                      @if (l.skuExtraido) {
+                        <div class="inv__codigo">SKU {{ l.skuExtraido }}</div>
+                      }
+                    </td>
+                    <td>
+                      @if (l.productoId) {
+                        <div class="inv__articulo">{{ l.productoNombre }}</div>
+                        <div class="inv__codigo">{{ l.matchTipo }} · {{ l.confianza }}</div>
+                      } @else {
+                        <span class="inv__pill inv__pill--warn">Sin match</span>
+                      }
+                    </td>
+                    <td class="inv__td-right">
+                      <input
+                        class="inv__conteo inv__conteo--sm"
+                        type="text"
+                        inputmode="numeric"
+                        [ngModel]="l.cantidad"
+                        (ngModelChange)="actualizarCantidadIa($index, $event)"
+                      />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <button
+              type="button"
+              class="inv__btn inv__btn--dark inv__btn--full inv__btn--spaced"
+              [disabled]="!puedeCrearRemitoIa()"
+              (click)="crearRemitoDesdeIa()"
+            >
+              {{ creandoRemito() ? 'Creando…' : 'Crear remito borrador' }}
+            </button>
+          </div>
+        }
+
+        <div class="inv__card inv__card--pad">
+          <div class="inv__card-title">Carga manual</div>
+          <div class="inv__ia-text">
+            También podés cargar un remito en Compras e importar listas de precios del proveedor.
           </div>
           <button type="button" class="inv__btn inv__btn--outline-full" (click)="irCompras()">
             Ir a Compras

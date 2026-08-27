@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../core/state/auth.store';
+import { IaStore } from '../../ia/state/ia.store';
 import { DashboardStore } from './data-access/dashboard.store';
 import { KPIS_VACIOS } from './data-access/kpi.model';
 
@@ -50,8 +51,22 @@ function formatearVencimiento(fecha: string | null, vencido: boolean): string {
 })
 export class DashboardPage {
   private readonly store = inject(DashboardStore);
+  private readonly iaStore = inject(IaStore);
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
+
+  protected readonly accionesIa = computed(() => this.iaStore.acciones());
+  protected readonly resumenIa = computed(() => this.iaStore.resumen());
+
+  protected readonly accionesList = computed(() => {
+    const s = this.accionesIa();
+    return s.status === 'ready' ? s.data.acciones : [];
+  });
+
+  protected readonly resumenNarrativa = computed(() => {
+    const s = this.resumenIa();
+    return s.status === 'ready' ? (s.data.narrativa ?? null) : null;
+  });
 
   protected readonly cargando = computed(() => {
     const s = this.store.kpis().status;
@@ -173,6 +188,7 @@ export class DashboardPage {
 
   constructor() {
     this.store.cargar();
+    this.iaStore.cargarDashboard();
   }
 
   protected irAFacturacion(): void {
@@ -213,5 +229,25 @@ export class DashboardPage {
 
   protected irACtacte(): void {
     this.router.navigate(['/cuenta-corriente']);
+  }
+
+  protected irAccion(ruta: string): void {
+    const [path, query] = ruta.split('?');
+    if (query) {
+      const params = Object.fromEntries(new URLSearchParams(query).entries());
+      void this.router.navigate([path], { queryParams: params });
+      return;
+    }
+    void this.router.navigateByUrl(ruta.startsWith('/') ? ruta : `/${ruta}`);
+  }
+
+  protected prioridadLabel(prioridad: string): string {
+    if (prioridad === 'alta') {
+      return 'Alta';
+    }
+    if (prioridad === 'media') {
+      return 'Media';
+    }
+    return 'Baja';
   }
 }
