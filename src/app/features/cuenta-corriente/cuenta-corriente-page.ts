@@ -1,13 +1,26 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   computed,
-  effect,
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import {
+  EMPTY,
+  Subject,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  of,
+  switchMap,
+} from 'rxjs';
 import { NotificationStore } from '../../notifications/state/notification.store';
+import { Icon } from '../../shared/ui/icon/icon';
+import { CuentaCorrienteService } from './data-access/cuenta-corriente.service';
 import { CuentaCorrienteStore } from './data-access/cuenta-corriente.store';
 import {
   ClienteRef,
@@ -24,15 +37,24 @@ export type TipoMovFiltro = 'todos' | 'debe' | 'haber' | 'factura' | 'recibo' | 
 export type SituacionFiltro = 'todos' | 'debe' | 'favor' | 'al_dia';
 export type BloqueoFiltro = 'todos' | 'bloqueados' | 'habilitados';
 export type PanelDetalle = 'comprobantes' | 'movimientos';
+export type TabCxc = 'cuenta' | 'informes';
+
+const MIN_CHARS_BUSQUEDA = 3;
 
 export interface FilaClienteCxc {
   cliente: ClienteRef;
   saldo: SaldoCliente;
   saldoFmt: string;
+  debeFmt: string;
+  haberFmt: string;
   situacion: 'debe' | 'favor' | 'al_dia';
   situacionLabel: string;
   antiguedadDias: number | null;
+  antiguedadLabel: string;
+  ultimoMovFmt: string;
   zonaNombre: string;
+  limiteFmt: string;
+  disponibleFmt: string;
 }
 
 export interface FilaMovimiento {
@@ -187,27 +209,49 @@ function coincidePlazo(dias: number | null, plazo: PlazoFiltro): boolean {
   return dias > 90;
 }
 
+function saldoVacio(clienteId: string): SaldoCliente {
+  return {
+    clienteId,
+    saldo: 0,
+    debeTotal: 0,
+    haberTotal: 0,
+    fechaUltimoMovimiento: null,
+    fechaDebeMasAntigua: null,
+  };
+}
+
 @Component({
   selector: 'app-cuenta-corriente-page',
-  imports: [FormsModule],
+  imports: [FormsModule, Icon],
   templateUrl: './cuenta-corriente-page.html',
   styleUrl: './cuenta-corriente-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CuentaCorrientePage {
   private readonly store = inject(CuentaCorrienteStore);
+  private readonly api = inject(CuentaCorrienteService);
   private readonly notifications = inject(NotificationStore);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly comboAutocomplete$ = new Subject<string>();
 
+  protected readonly tab = signal<TabCxc>('cuenta');
   protected readonly qCliente = signal('');
+  protected readonly comboOpen = signal(false);
+  protected readonly comboBuscando = signal(false);
+  protected readonly sugerencias = signal<ClienteRef[]>([]);
+
+  protected readonly infQ = signal('');
+  protected readonly informeEjecutado = signal(false);
   protected readonly plazo = signal<PlazoFiltro>('todo');
   protected readonly montoMin = signal('');
   protected readonly montoMax = signal('');
   protected readonly situacion = signal<SituacionFiltro>('todos');
-  protected readonly tipoMov = signal<TipoMovFiltro>('todos');
   protected readonly zonaId = signal('');
   protected readonly bloqueo = signal<BloqueoFiltro>('todos');
-  protected readonly clienteId = signal<string>('');
+
+  protected readonly clienteId = signal('');
   protected readonly panel = signal<PanelDetalle>('comprobantes');
+  protected readonly tipoMov = signal<TipoMovFiltro>('todos');
   protected readonly detalleOpen = signal(false);
   protected readonly detalleComprobante = signal<ComprobanteCxc | null>(null);
 
@@ -223,6 +267,8 @@ export class CuentaCorrientePage {
   protected readonly cobroChequeFecha = signal('');
   protected readonly cobroChequeVto = signal('');
 
+  protected readonly minChars = MIN_CHARS_BUSQUEDA;
+
   protected readonly clientes = computed(() => this.store.clientesRef());
   protected readonly zonas = computed(() => this.store.zonasRef());
   protected readonly saldos = computed(() => this.store.saldos().data ?? []);
@@ -230,85 +276,40 @@ export class CuentaCorrientePage {
   protected readonly listaPrecio = this.store.listaPrecio;
   protected readonly preciosActuales = this.store.preciosActuales;
 
+  protected readonly informeStatus = computed(() => this.store.busqueda().status);
+  protected readonly informeError = computed(() =>
+    this.store.busqueda().status === 'error' ? this.store.busqueda().error : null,
+  );
+
   protected readonly zonaNombre = computed(() => {
     const map = new Map(this.zonas().map((z) => [z.id, z.nombre]));
     return map;
   });
 
-  protected readonly clientesFiltrados = computed((): FilaClienteCxc[] => {
-    const hoy = new Date();
-    const q = this.qCliente().trim().toLowerCase();
-    const plazo = this.plazo();
-    const min = parseMontoInput(this.montoMin());
-    const max = parseMontoInput(this.montoMax());
-    const situacion = this.situacion();
-    const zona = this.zonaId();
-    const bloqueo = this.bloqueo();
-    const porId = new Map(this.clientes().map((c) => [c.id, c]));
+  protected readonly filtrosActivosCount = computed(() => {
+    let n = 0;
+    if (this.infQ().trim()) n++;
+    if (this.plazo() !== 'todo') n++;
+    if (this.situacion() !== 'todos') n++;
+    if (this.montoMin().trim()) n++;
+    if (this.montoMax().trim()) n++;
+    if (this.zonaId()) n++;
+    if (this.bloqueo() !== 'todos') n++;
+    return n;
+  });
 
-    const filas: FilaClienteCxc[] = [];
-    for (const saldo of this.saldos()) {
-      const cliente = porId.get(saldo.clienteId);
-      if (!cliente) {
-        continue;
-      }
-      if (q) {
-        const hay =
-          cliente.nombre.toLowerCase().includes(q) ||
-          cliente.cuit.toLowerCase().includes(q) ||
-          cliente.email.toLowerCase().includes(q) ||
-          cliente.telefono.toLowerCase().includes(q);
-        if (!hay) {
-          continue;
-        }
-      }
-      if (zona && cliente.zonaId !== zona) {
-        continue;
-      }
-      if (bloqueo === 'bloqueados' && !cliente.bloqueado) {
-        continue;
-      }
-      if (bloqueo === 'habilitados' && cliente.bloqueado) {
-        continue;
-      }
-
-      const sit: 'debe' | 'favor' | 'al_dia' =
-        saldo.saldo > 0 ? 'debe' : saldo.saldo < 0 ? 'favor' : 'al_dia';
-      if (situacion !== 'todos' && sit !== situacion) {
-        continue;
-      }
-
-      const absSaldo = Math.abs(saldo.saldo);
-      if (min !== null && absSaldo < min) {
-        continue;
-      }
-      if (max !== null && absSaldo > max) {
-        continue;
-      }
-
-      // Aging: clientes con deuda usan fecha_debe_mas_antigua; a favor/al día usan último mov.
-      const refFecha = sit === 'debe' ? saldo.fechaDebeMasAntigua : saldo.fechaUltimoMovimiento;
-      const antiguedad = diasDesde(refFecha, hoy);
-      if (!coincidePlazo(antiguedad, plazo)) {
-        continue;
-      }
-
-      filas.push({
-        cliente,
-        saldo,
-        saldoFmt: formatearMoneda(saldo.saldo),
-        situacion: sit,
-        situacionLabel: sit === 'debe' ? 'Debe' : sit === 'favor' ? 'A favor' : 'Al día',
-        antiguedadDias: antiguedad,
-        zonaNombre: cliente.zonaId ? (this.zonaNombre().get(cliente.zonaId) ?? '—') : '—',
-      });
+  protected readonly informesFiltrados = computed((): FilaClienteCxc[] => {
+    if (!this.informeEjecutado() || this.informeStatus() !== 'success') {
+      return [];
     }
-
-    return filas.sort((a, b) => Math.abs(b.saldo.saldo) - Math.abs(a.saldo.saldo));
+    return this.filasDesdeClientes(this.clientes(), this.saldos());
   });
 
   protected readonly clienteActual = computed(() => {
     const id = this.clienteId();
+    if (!id) {
+      return null;
+    }
     return this.clientes().find((c) => c.id === id) ?? null;
   });
 
@@ -424,25 +425,6 @@ export class CuentaCorrientePage {
     };
   });
 
-  protected readonly clientesConDeuda = computed(() => {
-    const porId = new Map(this.clientes().map((c) => [c.id, c]));
-    return this.saldos()
-      .filter((s) => s.saldo > 0)
-      .map((s) => {
-        const cliente = porId.get(s.clienteId);
-        if (!cliente) {
-          return null;
-        }
-        return {
-          cliente,
-          saldo: s,
-          saldoFmt: formatearMoneda(s.saldo),
-        };
-      })
-      .filter((f): f is { cliente: ClienteRef; saldo: SaldoCliente; saldoFmt: string } => !!f)
-      .sort((a, b) => b.saldo.saldo - a.saldo.saldo);
-  });
-
   protected readonly cobroSaldoFmt = computed(() => {
     const id = this.cobroClienteId();
     const s = this.saldos().find((x) => x.clienteId === id);
@@ -455,14 +437,10 @@ export class CuentaCorrientePage {
   protected readonly filas = computed(() => {
     const estado = this.estadoCuenta();
     const tipoFiltro = this.tipoMov();
-    const plazo = this.plazo();
-    const min = parseMontoInput(this.montoMin());
-    const max = parseMontoInput(this.montoMax());
     if (!estado) {
       return [] as FilaMovimiento[];
     }
 
-    const ahora = new Date();
     let saldoCorrido = 0;
     const rows: FilaMovimiento[] = [];
 
@@ -471,18 +449,6 @@ export class CuentaCorrientePage {
     );
 
     for (const m of ordenados) {
-      const dias = diasDesde(m.fecha, ahora);
-      if (!coincidePlazo(dias, plazo)) {
-        continue;
-      }
-
-      if (min !== null && m.monto < min) {
-        continue;
-      }
-      if (max !== null && m.monto > max) {
-        continue;
-      }
-
       const tipoMov = tipoDesdeMov(m);
       const ref = (m.referenciaTipo || '').toLowerCase();
       if (tipoFiltro === 'debe' && m.tipo !== 'debe') {
@@ -531,33 +497,118 @@ export class CuentaCorrientePage {
   });
 
   constructor() {
-    this.store.cargarSaldos();
-    this.store.cargarReferencias();
-
-    effect(() => {
-      const filtrados = this.clientesFiltrados();
-      const actual = this.clienteId();
-      if (!actual && filtrados[0]) {
-        this.clienteId.set(filtrados[0].cliente.id);
-        return;
-      }
-      if (actual && filtrados.length > 0 && !filtrados.some((f) => f.cliente.id === actual)) {
-        this.clienteId.set(filtrados[0].cliente.id);
-      }
-    });
-
-    effect(() => {
-      const id = this.clienteId();
-      if (id) {
-        this.store.cargarEstado(id);
-      }
-    });
+    this.comboAutocomplete$
+      .pipe(
+        debounceTime(280),
+        distinctUntilChanged(),
+        switchMap((raw) => {
+          const q = raw.trim();
+          if (q.length < MIN_CHARS_BUSQUEDA) {
+            this.sugerencias.set([]);
+            this.comboBuscando.set(false);
+            return EMPTY;
+          }
+          this.comboBuscando.set(true);
+          return this.api.listarClientesRef({ q, pageSize: 12 }).pipe(
+            catchError(() => of([] as ClienteRef[])),
+            finalize(() => this.comboBuscando.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((items) => {
+        this.sugerencias.set(items);
+        this.comboOpen.set(true);
+      });
   }
 
-  protected elegirCliente(id: string): void {
-    this.clienteId.set(id);
+  protected setTab(next: TabCxc): void {
+    this.tab.set(next);
+    if (next === 'informes') {
+      this.store.cargarZonasSiHaceFalta();
+    }
+  }
+
+  protected onComboInput(valor: string): void {
+    this.qCliente.set(valor);
+    this.comboOpen.set(true);
+    this.comboAutocomplete$.next(valor);
+    if (!valor.trim()) {
+      this.limpiarSeleccionCliente();
+    }
+  }
+
+  protected onComboFocus(): void {
+    this.comboOpen.set(true);
+  }
+
+  protected limpiarCombo(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.qCliente.set('');
+    this.sugerencias.set([]);
+    this.comboOpen.set(false);
+    this.limpiarSeleccionCliente();
+  }
+
+  protected onComboBlur(): void {
+    setTimeout(() => this.comboOpen.set(false), 180);
+  }
+
+  protected elegirSugerencia(c: ClienteRef): void {
+    this.qCliente.set(c.nombre);
+    this.comboOpen.set(false);
+    this.sugerencias.set([]);
+    this.clienteId.set(c.id);
+    this.panel.set('comprobantes');
     this.detalleOpen.set(false);
     this.detalleComprobante.set(null);
+    this.store.seleccionarCliente(c);
+  }
+
+  protected limpiarSeleccionCliente(): void {
+    this.clienteId.set('');
+    this.panel.set('comprobantes');
+    this.detalleOpen.set(false);
+    this.detalleComprobante.set(null);
+    this.store.limpiarSeleccion();
+  }
+
+  protected metaDeCliente(c: ClienteRef): string {
+    const cuit = c.cuit?.trim() || 'Sin CUIT';
+    const zona = c.zonaId ? this.zonaNombre().get(c.zonaId) : null;
+    return zona ? `${cuit} · ${zona}` : cuit;
+  }
+
+  protected ejecutarInforme(): void {
+    this.informeEjecutado.set(true);
+    this.store.buscarInforme(this.infQ());
+  }
+
+  protected limpiarInforme(): void {
+    this.infQ.set('');
+    this.plazo.set('todo');
+    this.montoMin.set('');
+    this.montoMax.set('');
+    this.situacion.set('todos');
+    this.zonaId.set('');
+    this.bloqueo.set('todos');
+    this.informeEjecutado.set(false);
+    this.store.limpiarInformeBusqueda();
+  }
+
+  protected abrirClienteDesdeInforme(id: string): void {
+    const cliente = this.clientes().find((c) => c.id === id);
+    if (!cliente) {
+      return;
+    }
+    this.tab.set('cuenta');
+    this.qCliente.set(cliente.nombre);
+    this.clienteId.set(id);
+    this.panel.set('comprobantes');
+    this.detalleOpen.set(false);
+    this.detalleComprobante.set(null);
+    this.store.seleccionarCliente(cliente);
   }
 
   protected setPanel(p: PanelDetalle): void {
@@ -574,27 +625,10 @@ export class CuentaCorrientePage {
     this.detalleComprobante.set(null);
   }
 
-  protected limpiarFiltros(): void {
-    this.qCliente.set('');
-    this.plazo.set('todo');
-    this.montoMin.set('');
-    this.montoMax.set('');
-    this.situacion.set('todos');
-    this.tipoMov.set('todos');
-    this.zonaId.set('');
-    this.bloqueo.set('todos');
-  }
-
   protected abrirCobro(clienteId?: string): void {
-    const id =
-      clienteId ||
-      (this.saldoCliente()?.saldo && this.saldoCliente()!.saldo > 0
-        ? this.clienteId()
-        : this.clientesConDeuda()[0]?.cliente.id) ||
-      this.clienteId() ||
-      '';
+    const id = clienteId || this.clienteId();
     if (!id) {
-      this.notifications.error('Sin cliente', 'Seleccioná un cliente con saldo deudor');
+      this.notifications.error('Sin cliente', 'Seleccioná un cliente para registrar el cobro');
       return;
     }
     const saldo = this.saldos().find((s) => s.clienteId === id);
@@ -608,16 +642,10 @@ export class CuentaCorrientePage {
     this.cobroObs.set('');
     this.cobroChequeNumero.set('');
     this.cobroChequeBanco.set('');
-    this.cobroChequeLibrador.set(this.clientes().find((c) => c.id === id)?.nombre ?? '');
+    this.cobroChequeLibrador.set(this.clienteActual()?.nombre ?? '');
     this.cobroChequeFecha.set('');
     this.cobroChequeVto.set('');
     this.cobroOpen.set(true);
-  }
-
-  protected onCobroClienteChange(id: string): void {
-    this.cobroClienteId.set(id);
-    const saldo = this.saldos().find((s) => s.clienteId === id);
-    this.cobroMonto.set(saldo && saldo.saldo > 0 ? this.montoInputDesdeNumero(saldo.saldo) : '');
   }
 
   protected cerrarCobro(): void {
@@ -671,6 +699,72 @@ export class CuentaCorrientePage {
       });
   }
 
+  private filasDesdeClientes(clientes: ClienteRef[], saldos: SaldoCliente[]): FilaClienteCxc[] {
+    const hoy = new Date();
+    const plazo = this.plazo();
+    const min = parseMontoInput(this.montoMin());
+    const max = parseMontoInput(this.montoMax());
+    const situacion = this.situacion();
+    const zona = this.zonaId();
+    const bloqueo = this.bloqueo();
+    const saldosPorId = new Map(saldos.map((s) => [s.clienteId, s]));
+
+    const filas: FilaClienteCxc[] = [];
+    for (const cliente of clientes) {
+      if (zona && cliente.zonaId !== zona) {
+        continue;
+      }
+      if (bloqueo === 'bloqueados' && !cliente.bloqueado) {
+        continue;
+      }
+      if (bloqueo === 'habilitados' && cliente.bloqueado) {
+        continue;
+      }
+
+      const saldo = saldosPorId.get(cliente.id) ?? saldoVacio(cliente.id);
+      const sit: 'debe' | 'favor' | 'al_dia' =
+        saldo.saldo > 0 ? 'debe' : saldo.saldo < 0 ? 'favor' : 'al_dia';
+      if (situacion !== 'todos' && sit !== situacion) {
+        continue;
+      }
+
+      const absSaldo = Math.abs(saldo.saldo);
+      if (min !== null && absSaldo < min) {
+        continue;
+      }
+      if (max !== null && absSaldo > max) {
+        continue;
+      }
+
+      const refFecha = sit === 'debe' ? saldo.fechaDebeMasAntigua : saldo.fechaUltimoMovimiento;
+      const antiguedad = diasDesde(refFecha, hoy);
+      if (!coincidePlazo(antiguedad, plazo)) {
+        continue;
+      }
+
+      const disponible = cliente.limiteCredito - Math.max(0, saldo.saldo);
+      filas.push({
+        cliente,
+        saldo,
+        saldoFmt: formatearMoneda(saldo.saldo),
+        debeFmt: formatearMoneda(saldo.debeTotal),
+        haberFmt: formatearMoneda(saldo.haberTotal),
+        situacion: sit,
+        situacionLabel: sit === 'debe' ? 'Debe' : sit === 'favor' ? 'A favor' : 'Al día',
+        antiguedadDias: antiguedad,
+        antiguedadLabel: antiguedad === null ? '—' : `${antiguedad}d`,
+        ultimoMovFmt: saldo.fechaUltimoMovimiento
+          ? formatearFecha(saldo.fechaUltimoMovimiento)
+          : 'Sin mov.',
+        zonaNombre: cliente.zonaId ? (this.zonaNombre().get(cliente.zonaId) ?? '—') : '—',
+        limiteFmt: formatearMoneda(cliente.limiteCredito),
+        disponibleFmt: formatearMoneda(disponible),
+      });
+    }
+
+    return filas.sort((a, b) => Math.abs(b.saldo.saldo) - Math.abs(a.saldo.saldo));
+  }
+
   private datosChequeCobro(): DatosCheque | null {
     if (this.cobroMedio() !== 'cheque') {
       return null;
@@ -686,9 +780,7 @@ export class CuentaCorrientePage {
       librador: this.cobroChequeLibrador().trim(),
       fecha: this.cobroChequeFecha() || undefined,
       fechaVto: this.cobroChequeVto() || undefined,
-      recibidoDe:
-        this.clientes().find((c) => c.id === this.cobroClienteId())?.nombre ??
-        this.cobroChequeLibrador().trim(),
+      recibidoDe: this.clienteActual()?.nombre ?? this.cobroChequeLibrador().trim(),
     };
   }
 

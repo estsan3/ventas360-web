@@ -2,6 +2,8 @@
 
 .ctc {
   @include dc.dc-list-page;
+  max-width: none;
+  width: 100%;
 
   &__header {
     @include dc.dc-list-header;
@@ -15,6 +17,40 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+  }
+
+  &__subtitle {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: dc.$dc-muted;
+  }
+
+  &__main-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 14px;
+    background: #efece7;
+    border-radius: 10px;
+    padding: 3px;
+    width: fit-content;
+  }
+
+  &__main-tab {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    background: transparent;
+    color: dc.$dc-neutral;
+
+    &--on {
+      background: #fff;
+      color: dc.$dc-text;
+      box-shadow: 0 1px 3px rgb(28 25 23 / 8%);
+    }
   }
 
   &__btn {
@@ -54,33 +90,237 @@
         background: dc.$dc-hover;
       }
     }
+
+    &--filtros {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    &--filtros-on {
+      border-color: #f0dcc8;
+      background: #fffaf5;
+      color: dc.$dc-primary-deep;
+    }
   }
 
-  &__filters {
+  &__toolbar {
     background: #fff;
     border: 1px solid dc.$dc-border;
     border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 18px;
-  }
-
-  &__filters-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    padding: 14px 16px;
     margin-bottom: 14px;
   }
 
-  &__filters-title {
+  &__search-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  &__combo {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+    z-index: 10;
+  }
+
+  &__search {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid dc.$dc-border;
+    border-radius: 9px;
+    padding: 0 12px;
+    background: #fff;
+
+    &:focus-within {
+      border-color: #f0dcc8;
+      box-shadow: 0 0 0 3px rgb(232 100 18 / 12%);
+    }
+
+    &--inf {
+      flex: 1;
+    }
+  }
+
+  &__inf-search-row {
+    margin-bottom: 14px;
+  }
+
+  &__inf-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  &__inf-hint {
+    font-size: 12px;
+    color: dc.$dc-muted;
+  }
+
+  &__mov-toolbar {
+    margin-bottom: 10px;
+  }
+
+  &__field--inline {
+    max-width: 240px;
+  }
+
+  &__search-icon {
+    display: inline-flex;
+    color: dc.$dc-subtle;
+    font-size: 16px;
+  }
+
+  &__search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 10px 0;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: dc.$dc-text;
+
+    &::placeholder {
+      color: #b8b2ab;
+    }
+  }
+
+  &__combo-clear {
+    border: none;
+    background: none;
+    color: dc.$dc-subtle;
+    cursor: pointer;
     font-size: 14px;
+    line-height: 1;
+    padding: 4px;
+
+    &:hover {
+      color: dc.$dc-text;
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid dc.$dc-border;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgb(28 25 23 / 14%);
+    overflow: hidden;
+    z-index: 20;
+    max-height: min(320px, 50vh);
+    overflow-y: auto;
+  }
+
+  &__dropdown-head {
+    padding: 9px 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: dc.$dc-subtle;
+    border-bottom: 1px solid dc.$dc-border-soft;
+  }
+
+  &__dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border: none;
+    border-top: 1px solid dc.$dc-border-soft;
+    background: #fff;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+
+    &:first-of-type {
+      border-top: none;
+    }
+
+    &:hover {
+      background: dc.$dc-hover;
+    }
+  }
+
+  &__dropdown-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: dc.$dc-text;
+  }
+
+  &__dropdown-sub {
+    font-size: 11.5px;
+    color: dc.$dc-subtle;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__dropdown-empty {
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: dc.$dc-subtle;
+  }
+
+  &__chevron {
+    display: inline-flex;
+    font-size: 16px;
+    transition: transform 0.15s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__filtros-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 99px;
+    background: dc.$dc-primary;
+    color: #fff;
+    font-size: 11px;
     font-weight: 700;
   }
 
-  &__filters-sub {
-    font-size: 12px;
-    color: dc.$dc-muted;
-    margin-top: 2px;
+  &__avanzado {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid dc.$dc-border-soft;
+  }
+
+  &__avanzado-foot {
+    margin-top: 12px;
+  }
+
+  &__link {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: dc.$dc-primary-deep;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &__filters-grid {
@@ -102,14 +342,6 @@
     flex-direction: column;
     gap: 5px;
     min-width: 0;
-
-    &--wide {
-      grid-column: span 2;
-
-      @media (max-width: 640px) {
-        grid-column: span 1;
-      }
-    }
   }
 
   &__field-label {
@@ -137,91 +369,45 @@
   }
 
   &__filters-meta {
-    margin-top: 12px;
+    margin-top: 10px;
     font-size: 12px;
     color: dc.$dc-muted;
   }
 
-  &__layout {
-    display: grid;
-    grid-template-columns: minmax(260px, 320px) 1fr;
-    gap: 16px;
-    align-items: start;
-
-    @media (max-width: 960px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  &__listado {
+  &__listado-full {
     background: #fff;
     border: 1px solid dc.$dc-border;
     border-radius: 12px;
     overflow: hidden;
-    max-height: min(70vh, 720px);
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__listado-head {
-    padding: 12px 16px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: dc.$dc-subtle;
-    border-bottom: 1px solid dc.$dc-border-soft;
-  }
-
-  &__listado-scroll {
-    overflow-y: auto;
-    flex: 1;
-  }
-
-  &__cli {
-    display: block;
     width: 100%;
-    text-align: left;
-    border: none;
-    border-bottom: 1px solid dc.$dc-border-soft;
-    background: #fff;
-    padding: 12px 16px;
-    font-family: inherit;
+  }
+
+  &__table-wrap {
+    width: 100%;
+    overflow: auto;
+    max-height: min(72vh, 820px);
+  }
+
+  &__row-link {
     cursor: pointer;
 
     &:hover {
       background: dc.$dc-hover;
     }
-
-    &--on {
-      background: #fff8f2;
-      box-shadow: inset 3px 0 0 dc.$dc-primary;
-    }
   }
 
-  &__cli-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    align-items: flex-start;
-  }
-
-  &__cli-nombre {
-    font-size: 13px;
+  &__td-strong {
     font-weight: 700;
-    color: dc.$dc-text;
+    font-size: 12.5px;
   }
 
-  &__cli-meta {
-    font-size: 11.5px;
+  &__td-sub {
+    font-size: 11px;
     color: dc.$dc-subtle;
-    margin-top: 3px;
-    font-variant-numeric: tabular-nums;
+    margin-top: 1px;
   }
 
   &__cli-saldo {
-    margin-top: 6px;
-    font-size: 13.5px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 
@@ -255,6 +441,18 @@
 
   &__detalle {
     min-width: 0;
+
+    &--full {
+      width: 100%;
+    }
+  }
+
+  &__detalle-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
   }
 
   &__cliente {
@@ -350,6 +548,33 @@
 
   &__table {
     @include dc.dc-list-table;
+
+    &--full {
+      width: 100%;
+    }
+
+    &--compact {
+      th {
+        padding: 8px 10px;
+        font-size: 10.5px;
+      }
+
+      td {
+        padding: 7px 10px;
+        font-size: 12.5px;
+        line-height: 1.25;
+      }
+
+      th:first-child,
+      td:first-child {
+        padding-left: 14px;
+      }
+
+      th:last-child,
+      td:last-child {
+        padding-right: 14px;
+      }
+    }
   }
 
   &__th-right,
@@ -415,6 +640,13 @@
     &--sm {
       padding: 24px 16px;
       font-size: 12.5px;
+    }
+
+    &--hero {
+      background: #fff;
+      border: 1px solid dc.$dc-border;
+      border-radius: 12px;
+      padding: 56px 24px;
     }
   }
 

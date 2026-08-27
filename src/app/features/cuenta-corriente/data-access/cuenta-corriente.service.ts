@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map, of, switchMap, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { armarImputacionesDesdeDeudas } from '../../../core/utils/imputacion-cobro';
 import { environment } from '../../../../environments/environment';
 import {
@@ -97,12 +98,45 @@ export class CuentaCorrienteService {
     );
   }
 
-  listarClientesRef(): Observable<ClienteRef[]> {
+  listarClientesRef(opts: { q?: string; pageSize?: number } = {}): Observable<ClienteRef[]> {
+    let params = new HttpParams().set('page_size', String(opts.pageSize ?? 50));
+    const q = opts.q?.trim();
+    if (q) {
+      params = params.set('q', q);
+    }
     return this.http
-      .get<PaginaItemsDto<ClienteRefDto>>(`${this.api}/clientes`, {
-        params: new HttpParams().set('page_size', '200'),
-      })
+      .get<PaginaItemsDto<ClienteRefDto>>(`${this.api}/clientes`, { params })
       .pipe(map((p) => p.items.map(clienteRefToModel)));
+  }
+
+  /** Saldos de un conjunto de clientes (paralelo, acotado a la búsqueda). */
+  listarSaldosDeClientes(clienteIds: string[]): Observable<SaldoCliente[]> {
+    const ids = [...new Set(clienteIds.filter(Boolean))];
+    if (ids.length === 0) {
+      return of([]);
+    }
+    return forkJoin(
+      ids.map((id) =>
+        this.obtenerSaldo(id).pipe(
+          catchError(() =>
+            of({
+              clienteId: id,
+              saldo: 0,
+              debeTotal: 0,
+              haberTotal: 0,
+              fechaUltimoMovimiento: null,
+              fechaDebeMasAntigua: null,
+            } satisfies SaldoCliente),
+          ),
+        ),
+      ),
+    );
+  }
+
+  obtenerSaldo(clienteId: string): Observable<SaldoCliente> {
+    return this.http
+      .get<SaldoClienteDto>(`${this.api}/cxc/clientes/${clienteId}/saldo`)
+      .pipe(map(saldoToModel));
   }
 
   listarZonasRef(): Observable<ZonaRef[]> {
