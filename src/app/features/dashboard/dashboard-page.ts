@@ -218,15 +218,19 @@ export class DashboardPage {
   );
 
   protected abierta(id: SeccionDash): boolean {
-    return this.seccionAbierta() === id;
+    return this.seccionesAbiertas().has(id);
   }
 
   protected toggleSeccion(id: SeccionDash): void {
-    if (this.seccionAbierta() === id) {
-      this.seccionAbierta.set(null);
+    const actual = this.seccionesAbiertas();
+    const siguiente = new Set(actual);
+    if (siguiente.has(id)) {
+      siguiente.delete(id);
+      this.seccionesAbiertas.set(siguiente);
       return;
     }
-    this.seccionAbierta.set(id);
+    siguiente.add(id);
+    this.seccionesAbiertas.set(siguiente);
     this.cargarSeccion(id);
   }
 
