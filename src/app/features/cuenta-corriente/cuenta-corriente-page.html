@@ -1,6 +1,9 @@
 <section class="page ctc">
   <header class="ctc__header">
-    <h1 class="ctc__title">Cuenta corriente</h1>
+    <div>
+      <h1 class="ctc__title">Cuenta corriente</h1>
+      <p class="ctc__subtitle">Buscá por nombre o CUIT y abrí el resumen de cada cuenta</p>
+    </div>
     <div class="ctc__actions">
       <button type="button" class="ctc__btn ctc__btn--ghost">Imprimir resumen</button>
       <button type="button" class="ctc__btn ctc__btn--primary" (click)="abrirCobro()">
@@ -9,184 +12,246 @@
     </div>
   </header>
 
-  <div class="ctc__filters">
-    <div class="ctc__filters-head">
-      <div>
-        <div class="ctc__filters-title">Buscar cuentas</div>
-        <div class="ctc__filters-sub">
-          Filtrá por cliente, plazo, montos y datos del cliente / movimiento
-        </div>
-      </div>
-      <button type="button" class="ctc__btn ctc__btn--sm" (click)="limpiarFiltros()">
-        Limpiar filtros
+  <div class="ctc__toolbar card">
+    <div class="ctc__search-row">
+      <label class="ctc__search">
+        <span class="ctc__search-icon" aria-hidden="true"><app-icon name="search" /></span>
+        <input
+          class="ctc__search-input"
+          type="search"
+          [ngModel]="qCliente()"
+          (ngModelChange)="onBusquedaChange($event)"
+          placeholder="Buscar por nombre o CUIT…"
+          autocomplete="off"
+        />
+      </label>
+      <button
+        type="button"
+        class="ctc__btn ctc__btn--ghost ctc__btn--filtros"
+        [class.ctc__btn--filtros-on]="filtrosAvanzados()"
+        (click)="toggleFiltrosAvanzados()"
+      >
+        Filtros avanzados
+        @if (filtrosActivosCount() > 0) {
+          <span class="ctc__filtros-count">{{ filtrosActivosCount() }}</span>
+        }
+        <span
+          class="ctc__chevron"
+          [class.ctc__chevron--open]="filtrosAvanzados()"
+          aria-hidden="true"
+        >
+          <app-icon name="chevron-down" />
+        </span>
       </button>
     </div>
 
-    <div class="ctc__filters-grid">
-      <label class="ctc__field ctc__field--wide">
-        <span class="ctc__field-label">Cliente</span>
-        <input
-          class="ctc__input"
-          type="search"
-          [ngModel]="qCliente()"
-          (ngModelChange)="qCliente.set($event)"
-          placeholder="Nombre, CUIT, email o teléfono…"
-        />
-      </label>
+    @if (filtrosAvanzados()) {
+      <div class="ctc__avanzado">
+        <div class="ctc__filters-grid">
+          <label class="ctc__field">
+            <span class="ctc__field-label">Plazo (días)</span>
+            <select
+              class="ctc__select"
+              [ngModel]="plazo()"
+              (ngModelChange)="plazo.set($any($event))"
+            >
+              <option value="todo">Todos los plazos</option>
+              <option value="30">0 – 30 días</option>
+              <option value="60">31 – 60 días</option>
+              <option value="90">61 – 90 días</option>
+              <option value="mas90">Más de 90 días</option>
+            </select>
+          </label>
 
-      <label class="ctc__field">
-        <span class="ctc__field-label">Plazo (días)</span>
-        <select class="ctc__select" [ngModel]="plazo()" (ngModelChange)="plazo.set($any($event))">
-          <option value="todo">Todos los plazos</option>
-          <option value="30">0 – 30 días</option>
-          <option value="60">31 – 60 días</option>
-          <option value="90">61 – 90 días</option>
-          <option value="mas90">Más de 90 días</option>
-        </select>
-      </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Situación</span>
+            <select
+              class="ctc__select"
+              [ngModel]="situacion()"
+              (ngModelChange)="situacion.set($any($event))"
+            >
+              <option value="todos">Todas</option>
+              <option value="debe">Debe</option>
+              <option value="favor">A favor</option>
+              <option value="al_dia">Al día</option>
+            </select>
+          </label>
 
-      <label class="ctc__field">
-        <span class="ctc__field-label">Situación</span>
-        <select
-          class="ctc__select"
-          [ngModel]="situacion()"
-          (ngModelChange)="situacion.set($any($event))"
-        >
-          <option value="todos">Todas</option>
-          <option value="debe">Debe</option>
-          <option value="favor">A favor</option>
-          <option value="al_dia">Al día</option>
-        </select>
-      </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Monto mínimo</span>
+            <input
+              class="ctc__input"
+              type="text"
+              inputmode="decimal"
+              [ngModel]="montoMin()"
+              (ngModelChange)="montoMin.set($event)"
+              placeholder="Ej. 10000"
+            />
+          </label>
 
-      <label class="ctc__field">
-        <span class="ctc__field-label">Monto mínimo</span>
-        <input
-          class="ctc__input"
-          type="text"
-          inputmode="decimal"
-          [ngModel]="montoMin()"
-          (ngModelChange)="montoMin.set($event)"
-          placeholder="Ej. 10000"
-        />
-      </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Monto máximo</span>
+            <input
+              class="ctc__input"
+              type="text"
+              inputmode="decimal"
+              [ngModel]="montoMax()"
+              (ngModelChange)="montoMax.set($event)"
+              placeholder="Ej. 500000"
+            />
+          </label>
 
-      <label class="ctc__field">
-        <span class="ctc__field-label">Monto máximo</span>
-        <input
-          class="ctc__input"
-          type="text"
-          inputmode="decimal"
-          [ngModel]="montoMax()"
-          (ngModelChange)="montoMax.set($event)"
-          placeholder="Ej. 500000"
-        />
-      </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Zona</span>
+            <select class="ctc__select" [ngModel]="zonaId()" (ngModelChange)="zonaId.set($event)">
+              <option value="">Todas las zonas</option>
+              @for (z of zonas(); track z.id) {
+                <option [value]="z.id">{{ z.nombre }}</option>
+              }
+            </select>
+          </label>
 
-      <label class="ctc__field">
-        <span class="ctc__field-label">Tipo movimiento</span>
-        <select
-          class="ctc__select"
-          [ngModel]="tipoMov()"
-          (ngModelChange)="tipoMov.set($any($event))"
-        >
-          <option value="todos">Todos</option>
-          <option value="debe">Solo debe</option>
-          <option value="haber">Solo haber</option>
-          <option value="factura">Facturas</option>
-          <option value="recibo">Recibos</option>
-          <option value="ajuste">Ajustes</option>
-        </select>
-      </label>
+          <label class="ctc__field">
+            <span class="ctc__field-label">Estado cliente</span>
+            <select
+              class="ctc__select"
+              [ngModel]="bloqueo()"
+              (ngModelChange)="bloqueo.set($any($event))"
+            >
+              <option value="todos">Todos</option>
+              <option value="habilitados">Habilitados</option>
+              <option value="bloqueados">Bloqueados</option>
+            </select>
+          </label>
 
-      <label class="ctc__field">
-        <span class="ctc__field-label">Zona</span>
-        <select class="ctc__select" [ngModel]="zonaId()" (ngModelChange)="zonaId.set($event)">
-          <option value="">Todas las zonas</option>
-          @for (z of zonas(); track z.id) {
-            <option [value]="z.id">{{ z.nombre }}</option>
+          @if (vista() === 'detalle') {
+            <label class="ctc__field">
+              <span class="ctc__field-label">Tipo movimiento</span>
+              <select
+                class="ctc__select"
+                [ngModel]="tipoMov()"
+                (ngModelChange)="tipoMov.set($any($event))"
+              >
+                <option value="todos">Todos</option>
+                <option value="debe">Solo debe</option>
+                <option value="haber">Solo haber</option>
+                <option value="factura">Facturas</option>
+                <option value="recibo">Recibos</option>
+                <option value="ajuste">Ajustes</option>
+              </select>
+            </label>
           }
-        </select>
-      </label>
-
-      <label class="ctc__field">
-        <span class="ctc__field-label">Estado cliente</span>
-        <select
-          class="ctc__select"
-          [ngModel]="bloqueo()"
-          (ngModelChange)="bloqueo.set($any($event))"
-        >
-          <option value="todos">Todos</option>
-          <option value="habilitados">Habilitados</option>
-          <option value="bloqueados">Bloqueados</option>
-        </select>
-      </label>
-    </div>
+        </div>
+        <div class="ctc__avanzado-foot">
+          <button type="button" class="ctc__link" (click)="limpiarFiltrosAvanzados()">
+            Limpiar filtros avanzados
+          </button>
+        </div>
+      </div>
+    }
 
     <div class="ctc__filters-meta">
-      {{ clientesFiltrados().length }} cuenta(s) coinciden con los filtros
+      @if (qInsuficiente()) {
+        Escribí al menos {{ minChars }} caracteres para buscar
+      } @else if (busquedaStatus() === 'loading') {
+        Buscando cuentas…
+      } @else if (busquedaStatus() === 'success') {
+        {{ clientesFiltrados().length }} cuenta(s) encontradas
+      } @else if (busquedaError(); as err) {
+        No se pudo buscar: {{ err }}
+      } @else {
+        Sin datos precargados · buscá para ver cuentas
+      }
     </div>
   </div>
 
-  <div class="ctc__layout">
-    <aside class="ctc__listado">
-      <div class="ctc__listado-head">Clientes</div>
-      @if (clientesFiltrados().length === 0) {
-        <div class="ctc__empty ctc__empty--sm">Ninguna cuenta con esos criterios</div>
+  @if (vista() === 'listado') {
+    <div class="ctc__listado-full">
+      @if (sinBusqueda() || qInsuficiente()) {
+        <div class="ctc__empty">
+          Escribí el nombre o CUIT del cliente (mín. {{ minChars }} caracteres) para cargar cuentas.
+        </div>
+      } @else if (busquedaStatus() === 'loading') {
+        <div class="ctc__empty">Cargando resultados…</div>
+      } @else if (clientesFiltrados().length === 0) {
+        <div class="ctc__empty">Ninguna cuenta coincide con la búsqueda</div>
       } @else {
-        <div class="ctc__listado-scroll">
-          @for (fila of clientesFiltrados(); track fila.cliente.id) {
-            <button
-              type="button"
-              class="ctc__cli"
-              [class.ctc__cli--on]="clienteId() === fila.cliente.id"
-              (click)="elegirCliente(fila.cliente.id)"
-            >
-              <div class="ctc__cli-top">
-                <span class="ctc__cli-nombre">{{ fila.cliente.nombre }}</span>
-                <span
-                  class="ctc__pill"
-                  [class.ctc__pill--debe]="fila.situacion === 'debe'"
-                  [class.ctc__pill--favor]="fila.situacion === 'favor'"
-                  [class.ctc__pill--ok]="fila.situacion === 'al_dia'"
-                >
-                  {{ fila.situacionLabel }}
-                </span>
-              </div>
-              <div class="ctc__cli-meta">
-                {{ fila.cliente.cuit || 'Sin CUIT' }} · {{ fila.zonaNombre }}
-                @if (fila.antiguedadDias !== null) {
-                  · {{ fila.antiguedadDias }}d
-                }
-              </div>
-              <div
-                class="ctc__cli-saldo"
-                [class.ctc__cli-saldo--debe]="fila.situacion === 'debe'"
-                [class.ctc__cli-saldo--favor]="fila.situacion === 'favor'"
-              >
-                {{ fila.saldoFmt }}
-              </div>
-            </button>
-          }
+        <div class="ctc__table-wrap">
+          <table class="ctc__table ctc__table--compact ctc__table--full">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>CUIT</th>
+                <th>Situación</th>
+                <th>Antigüedad</th>
+                <th>Último mov.</th>
+                <th class="ctc__th-right">Debe</th>
+                <th class="ctc__th-right">Haber</th>
+                <th class="ctc__th-right">Saldo</th>
+                <th class="ctc__th-right">Disp. crédito</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of clientesFiltrados(); track fila.cliente.id) {
+                <tr class="ctc__row-link" (click)="abrirDetalleCliente(fila.cliente.id)">
+                  <td>
+                    <div class="ctc__td-strong">{{ fila.cliente.nombre }}</div>
+                    <div class="ctc__td-sub">
+                      {{ fila.zonaNombre }}
+                      @if (fila.cliente.bloqueado) {
+                        · Bloqueado
+                      }
+                    </div>
+                  </td>
+                  <td>{{ fila.cliente.cuit || '—' }}</td>
+                  <td>
+                    <span
+                      class="ctc__pill"
+                      [class.ctc__pill--debe]="fila.situacion === 'debe'"
+                      [class.ctc__pill--favor]="fila.situacion === 'favor'"
+                      [class.ctc__pill--ok]="fila.situacion === 'al_dia'"
+                    >
+                      {{ fila.situacionLabel }}
+                    </span>
+                  </td>
+                  <td>{{ fila.antiguedadLabel }}</td>
+                  <td>{{ fila.ultimoMovFmt }}</td>
+                  <td class="ctc__td-right">{{ fila.debeFmt }}</td>
+                  <td class="ctc__td-right">{{ fila.haberFmt }}</td>
+                  <td
+                    class="ctc__td-right ctc__saldo"
+                    [class.ctc__cli-saldo--debe]="fila.situacion === 'debe'"
+                    [class.ctc__cli-saldo--favor]="fila.situacion === 'favor'"
+                  >
+                    {{ fila.saldoFmt }}
+                  </td>
+                  <td class="ctc__td-right">{{ fila.disponibleFmt }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
-    </aside>
+    </div>
+  } @else {
+    <div class="ctc__detalle ctc__detalle--full">
+      <div class="ctc__detalle-bar">
+        <button type="button" class="ctc__btn ctc__btn--ghost" (click)="volverAlListado()">
+          ← Volver al listado
+        </button>
+        <button type="button" class="ctc__btn ctc__btn--primary" (click)="abrirCobro(clienteId())">
+          + Registrar cobro
+        </button>
+      </div>
 
-    <div class="ctc__detalle">
       <div class="ctc__cliente">
         <div class="ctc__cliente-izq">
           <div class="ctc__avatar" aria-hidden="true">{{ inicialesCliente() }}</div>
           <div>
             <div class="ctc__cliente-nombre">
-              {{ clienteActual()?.nombre ?? 'Seleccioná un cliente' }}
+              {{ clienteActual()?.nombre ?? 'Cliente' }}
             </div>
-            <div class="ctc__cliente-meta">
-              @if (clienteActual()) {
-                {{ metaCliente() }}
-              } @else {
-                Sin cliente seleccionado
-              }
-            </div>
+            <div class="ctc__cliente-meta">{{ metaCliente() }}</div>
           </div>
         </div>
         <div class="ctc__kpis">
@@ -233,9 +298,7 @@
               ({{ lista.codigo }})
             </div>
           }
-          @if (!clienteId()) {
-            <div class="ctc__empty">Elegí un cliente de la lista</div>
-          } @else if (comprobantesVista().length === 0) {
+          @if (comprobantesVista().length === 0) {
             <div class="ctc__empty">Este cliente no tiene remitos ni facturas</div>
           } @else {
             <table class="ctc__table">
@@ -298,9 +361,7 @@
         </div>
       } @else {
         <div class="ctc__card">
-          @if (!clienteId()) {
-            <div class="ctc__empty">Elegí un cliente de la lista</div>
-          } @else if (filas().length === 0) {
+          @if (filas().length === 0) {
             <div class="ctc__empty">No hay movimientos con los filtros actuales</div>
           } @else {
             <table class="ctc__table">
@@ -351,7 +412,7 @@
         </div>
       }
     </div>
-  </div>
+  }
 </section>
 
 @if (detalleOpen() && detalleTotales(); as det) {
