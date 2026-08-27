@@ -61,25 +61,32 @@ export function reciboToModel(dto: ReciboDto): Recibo {
 }
 
 export function crearReciboToDto(model: CrearRecibo): CrearReciboDto {
+  const chequeToDto = (cheque: CrearRecibo['cheque']) =>
+    cheque
+      ? {
+          numero: cheque.numero,
+          banco_emisor: cheque.bancoEmisor,
+          librador: cheque.librador ?? '',
+          fecha: cheque.fecha || null,
+          fecha_vto: cheque.fechaVto || null,
+          recibido_de: cheque.recibidoDe ?? '',
+        }
+      : undefined;
   return {
     cliente_id: model.clienteId,
     monto: model.monto,
-    medio: model.medio,
+    medio: model.medio ?? 'efectivo',
     observacion: model.observacion ?? '',
     imputaciones: model.imputaciones.map((i) => ({
       factura_id: i.facturaId,
       monto: i.monto,
     })),
-    cheque: model.cheque
-      ? {
-          numero: model.cheque.numero,
-          banco_emisor: model.cheque.bancoEmisor,
-          librador: model.cheque.librador ?? '',
-          fecha: model.cheque.fecha || null,
-          fecha_vto: model.cheque.fechaVto || null,
-          recibido_de: model.cheque.recibidoDe ?? '',
-        }
-      : undefined,
+    cheque: chequeToDto(model.cheque),
+    medios: model.medios?.map((m) => ({
+      medio: m.medio,
+      monto: m.monto,
+      cheque: chequeToDto(m.cheque),
+    })),
   };
 }
 

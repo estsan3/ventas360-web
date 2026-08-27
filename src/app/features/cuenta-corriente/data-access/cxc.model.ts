@@ -25,6 +25,7 @@ export interface EstadoCuenta {
 }
 
 export type MedioCobro = 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
+export type MedioRecibo = MedioCobro | 'mixto';
 
 export interface DatosCheque {
   numero: string;
@@ -40,7 +41,7 @@ export interface Recibo {
   clienteId: string;
   fecha: string;
   monto: number;
-  medio: MedioCobro;
+  medio: MedioRecibo;
   observacion: string;
 }
 
@@ -49,13 +50,20 @@ export interface ImputacionCobro {
   monto: number;
 }
 
+export interface MedioPagoRecibo {
+  medio: MedioCobro;
+  monto: number;
+  cheque?: DatosCheque;
+}
+
 export interface CrearRecibo {
   clienteId: string;
   monto: number;
-  medio: MedioCobro;
+  medio?: MedioCobro;
   observacion?: string;
   imputaciones: ImputacionCobro[];
   cheque?: DatosCheque;
+  medios?: MedioPagoRecibo[];
 }
 
 export interface RegistrarCobro {

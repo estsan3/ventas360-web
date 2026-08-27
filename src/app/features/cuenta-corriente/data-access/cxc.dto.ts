@@ -35,7 +35,7 @@ export interface ReciboDto {
   cliente_id: string;
   fecha: string;
   monto: number;
-  medio: 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
+  medio: 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque' | 'mixto';
   observacion: string;
   imputaciones: ImputacionReciboDto[];
 }
@@ -43,7 +43,7 @@ export interface ReciboDto {
 export interface CrearReciboDto {
   cliente_id: string;
   monto: number;
-  medio: 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
+  medio?: 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
   observacion?: string;
   fecha?: string | null;
   imputaciones: { factura_id: string; monto: number }[];
@@ -55,6 +55,11 @@ export interface CrearReciboDto {
     fecha_vto?: string | null;
     recibido_de?: string;
   };
+  medios?: {
+    medio: 'efectivo' | 'transferencia' | 'tarjeta' | 'cheque';
+    monto: number;
+    cheque?: CrearReciboDto['cheque'];
+  }[];
 }
 
 export interface ClienteRefDto {

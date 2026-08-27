@@ -224,32 +224,18 @@ export class InventarioPage {
     if (tab === 'toma' || tab === 'recepcion' || tab === 'alertas') {
       this.tab.set(tab);
     }
-    this.stockApi.mapProveedores().subscribe({
-      next: (m) => {
-        this.nombresProv.set(m);
-        this.proveedores.set(
-          Object.entries(m)
-            .map(([id, nombre]) => ({ id, nombre }))
-            .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
-        );
-      },
-    });
     this.depositosApi.listar().subscribe({
       next: (items) => {
         const activos = items.filter((d) => d.activo);
         const lista = activos.length > 0 ? activos : items;
         this.depositos.set(lista);
-        const central =
-          lista.find((d) => d.codigo.toUpperCase() === 'CENTRAL') ??
-          lista.find((d) => d.nombre.toLowerCase().includes('central')) ??
-          lista[0];
-        if (central) {
-          this.setDep(central.id);
-        }
       },
       error: () => this.depositos.set([]),
     });
-    this.cargarRemitos();
+    if (this.tab() === 'recepcion') {
+      this.cargarMapProveedores();
+      this.cargarRemitos();
+    }
   }
 
   protected setDep(id: string): void {
@@ -260,6 +246,7 @@ export class InventarioPage {
   protected setTab(tab: TabStock): void {
     this.tab.set(tab);
     if (tab === 'recepcion') {
+      this.cargarMapProveedores();
       this.cargarRemitos();
     }
     if (tab === 'toma' && this.depActivo()) {
@@ -291,6 +278,22 @@ export class InventarioPage {
       error: () => {
         this.filas.set([]);
         this.cargando.set(false);
+      },
+    });
+  }
+
+  private cargarMapProveedores(): void {
+    if (Object.keys(this.nombresProv()).length > 0) {
+      return;
+    }
+    this.stockApi.mapProveedores().subscribe({
+      next: (m) => {
+        this.nombresProv.set(m);
+        this.proveedores.set(
+          Object.entries(m)
+            .map(([id, nombre]) => ({ id, nombre }))
+            .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
+        );
       },
     });
   }

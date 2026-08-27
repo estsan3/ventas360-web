@@ -36,9 +36,11 @@
     </div>
 
     <div class="lst__card">
-      @if (filasVista().length === 0) {
-        <div class="lst__empty">No hay clientes para mostrar</div>
-      } @else {
+      @if (busqueda().trim().length < minChars) {
+        <div class="lst__empty">
+          Escribí al menos {{ minChars }} caracteres para buscar clientes
+        </div>
+      } @else if (filasVista().length === 0) {
         <table class="lst__table">
           <thead>
             <tr>

@@ -47,6 +47,9 @@ a {
   padding: 28px;
   font-family: ty.$font-family-base;
   box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 
   &__header {
     display: flex;

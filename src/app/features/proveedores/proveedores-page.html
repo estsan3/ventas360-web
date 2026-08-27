@@ -18,44 +18,48 @@
     (busquedaChange)="busqueda.set($event)"
   />
 
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filas().length === 0"
-    emptyMessage="No hay proveedores. Creá el primero o ejecutá el seed."
-  >
-    <div class="tabla-scroll">
-      <app-table [columns]="columnas" [rows]="filas()" headerVariant="soft" [striped]="true">
-        <ng-template appTableCell="estado" let-row>
-          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
-            {{ $any(row)['estado'] }}
-          </app-badge>
-        </ng-template>
-        <ng-template appTableCell="acciones" let-row>
-          <div class="fila-acciones">
-            <button
-              type="button"
-              class="fila-acciones__btn"
-              title="Editar"
-              (click)="abrirEditar($any(row)['id'])"
-            >
-              <app-icon name="settings" />
-            </button>
-            @if ($any(row)['activo']) {
+  @if (busqueda().trim().length < minChars) {
+    <div class="lst__empty">Escribí al menos {{ minChars }} caracteres para buscar proveedores</div>
+  } @else {
+    <app-state-wrapper
+      [status]="estado().status"
+      [error]="estado().error ?? ''"
+      [empty]="filas().length === 0"
+      emptyMessage="Sin coincidencias"
+    >
+      <div class="tabla-scroll">
+        <app-table [columns]="columnas" [rows]="filas()" headerVariant="soft" [striped]="true">
+          <ng-template appTableCell="estado" let-row>
+            <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+              {{ $any(row)['estado'] }}
+            </app-badge>
+          </ng-template>
+          <ng-template appTableCell="acciones" let-row>
+            <div class="fila-acciones">
               <button
                 type="button"
                 class="fila-acciones__btn"
-                title="Desactivar"
-                (click)="desactivar($any(row)['id'])"
+                title="Editar"
+                (click)="abrirEditar($any(row)['id'])"
               >
-                <app-icon name="alert-circle" />
+                <app-icon name="settings" />
               </button>
-            }
-          </div>
-        </ng-template>
-      </app-table>
-    </div>
-  </app-state-wrapper>
+              @if ($any(row)['activo']) {
+                <button
+                  type="button"
+                  class="fila-acciones__btn"
+                  title="Desactivar"
+                  (click)="desactivar($any(row)['id'])"
+                >
+                  <app-icon name="alert-circle" />
+                </button>
+              }
+            </div>
+          </ng-template>
+        </app-table>
+      </div>
+    </app-state-wrapper>
+  }
 
   <app-side-drawer
     [abierto]="drawerAbierto()"

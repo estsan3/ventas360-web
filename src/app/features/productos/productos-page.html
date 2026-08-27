@@ -55,6 +55,8 @@
   <div class="lst__card">
     @if (estado().status === 'error') {
       <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
+    } @else if (busqueda().trim().length < minChars) {
+      <div class="lst__empty">Escribí al menos {{ minChars }} caracteres para buscar artículos</div>
     } @else if (filasVista().length === 0) {
       <div class="lst__empty">
         {{

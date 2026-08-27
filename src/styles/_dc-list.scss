@@ -30,6 +30,20 @@ $dc-seg-bg: #fff8f2;
   margin: 0 auto;
   font-family: ty.$font-family-base;
   color: $dc-text;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@mixin dc-list-body-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @mixin dc-list-header {
@@ -102,6 +116,7 @@ $dc-seg-bg: #fff8f2;
   border: 1px solid $dc-border;
   border-radius: 12px;
   overflow: hidden;
+  @include dc-list-body-scroll;
 }
 
 @mixin dc-list-table {

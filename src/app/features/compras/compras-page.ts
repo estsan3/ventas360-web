@@ -102,6 +102,7 @@ export class ComprasPage {
   protected readonly store = inject(ComprasStore);
 
   protected readonly tab = signal<TabCompras>('facturas');
+  protected readonly buscado = signal(false);
   protected readonly drawerAbierto = signal(false);
   protected readonly nuevoProveedorOpen = signal(false);
   protected readonly guardando = signal(false);
@@ -199,18 +200,18 @@ export class ComprasPage {
     if (tab === 'listas' || tab === 'proveedores' || tab === 'pedidos' || tab === 'facturas') {
       this.tab.set(tab);
     }
+  }
+
+  protected buscar(): void {
+    this.buscado.set(true);
     this.store.cargar();
-    this.recargarProveedores();
-    this.api.listarProductosRef().subscribe((items) => {
-      this.productosOpts.set(items.map((p) => ({ value: p.id, label: p.nombre })));
-    });
-    this.api.listarDepositosRef().subscribe((items) => {
-      this.depositosOpts.set(items.map((d) => ({ value: d.id, label: d.nombre })));
-    });
-    this.api.listarSaldosCxp().subscribe({
-      next: (s) => this.saldosCxp.set(s),
-      error: () => this.saldosCxp.set({}),
-    });
+    if (this.tab() === 'proveedores' || this.tab() === 'listas') {
+      this.recargarProveedores();
+    }
+  }
+
+  protected setTab(next: TabCompras): void {
+    this.tab.set(next);
   }
 
   protected recargarProveedores(): void {
@@ -321,6 +322,19 @@ export class ComprasPage {
 
   protected abrirAlta(): void {
     this.tab.set('facturas');
+    if (this.proveedoresOpts().length === 0) {
+      this.recargarProveedores();
+    }
+    if (this.productosOpts().length === 0) {
+      this.api.listarProductosRef().subscribe((items) => {
+        this.productosOpts.set(items.map((p) => ({ value: p.id, label: p.nombre })));
+      });
+    }
+    if (this.depositosOpts().length === 0) {
+      this.api.listarDepositosRef().subscribe((items) => {
+        this.depositosOpts.set(items.map((d) => ({ value: d.id, label: d.nombre })));
+      });
+    }
     const dep = this.depositosOpts()[0]?.value ?? '';
     const prov = this.proveedoresOpts()[0]?.value ?? '';
     const prod = this.productosOpts()[0]?.value ?? '';

@@ -96,7 +96,6 @@ export class ComerciosPage {
   });
 
   constructor() {
-    this.store.cargar();
     this.form.controls.nombre.valueChanges.subscribe((nombre) => {
       if (this.slugManual || this.panel() !== 'alta') {
         return;
@@ -108,6 +107,10 @@ export class ComerciosPage {
         this.slugManual = true;
       }
     });
+  }
+
+  protected buscar(): void {
+    this.store.cargar();
   }
 
   protected abrirAlta(): void {

@@ -4,6 +4,17 @@
     <button type="button" class="lst__cta" (click)="irNuevo()">+ Nuevo pedido</button>
   </header>
 
+  <div class="lst__toolbar">
+    <input
+      class="lst__search"
+      type="search"
+      placeholder="Buscar por número o cliente…"
+      [ngModel]="q()"
+      (ngModelChange)="q.set($event)"
+    />
+    <button type="button" class="lst__cta" (click)="buscar()">Buscar</button>
+  </div>
+
   <div class="lst__filters">
     <button
       type="button"
@@ -40,8 +51,10 @@
   </div>
 
   <div class="lst__card">
-    @if (filas().length === 0) {
-      <div class="lst__empty">No hay pedidos para mostrar</div>
+    @if (!buscado()) {
+      <div class="lst__empty">Aplicá un filtro o buscá para listar los pedidos</div>
+    } @else if (filas().length === 0) {
+      <div class="lst__empty">No hay pedidos con esos criterios</div>
     } @else {
       <table class="lst__table">
         <thead>

@@ -7,66 +7,73 @@
         después.
       </p>
     </div>
-    <app-button variant="primary" size="md" (clicked)="abrirAlta()">
-      <app-icon name="plus" />
-      Nuevo comercio
-    </app-button>
+    <div class="page__actions">
+      <app-button variant="outline" size="md" (clicked)="buscar()">Buscar</app-button>
+      <app-button variant="primary" size="md" (clicked)="abrirAlta()">
+        <app-icon name="plus" />
+        Nuevo comercio
+      </app-button>
+    </div>
   </header>
 
-  <app-state-wrapper
-    [status]="estado().status"
-    [error]="estado().error ?? ''"
-    [empty]="filas().length === 0"
-    emptyMessage="No hay comercios"
-  >
-    <div class="tabla-scroll">
-      <app-table
-        [columns]="columnas"
-        [rows]="filas()"
-        headerVariant="soft"
-        [striped]="true"
-        [compact]="true"
-      >
-        <ng-template appTableCell="admin" let-row>
-          @if ($any(row)['adminNombre'] || $any(row)['adminEmail']) {
-            <span>{{ $any(row)['adminNombre'] || '—' }}</span>
-          } @else {
-            <span class="comercios__vacio">Sin administrador</span>
-          }
-        </ng-template>
-        <ng-template appTableCell="adminEmail" let-row>
-          {{ $any(row)['adminEmail'] || '—' }}
-        </ng-template>
-        <ng-template appTableCell="adminDni" let-row>
-          {{ $any(row)['adminDni'] || '—' }}
-        </ng-template>
-        <ng-template appTableCell="estado" let-row>
-          <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
-            {{ $any(row)['estado'] }}
-          </app-badge>
-        </ng-template>
-        <ng-template appTableCell="acciones" let-row>
-          <div class="fila-acciones">
-            <button
-              type="button"
-              class="fila-acciones__btn"
-              (click)="abrirDetalle($any(row)['id'])"
-            >
-              Ver
-            </button>
-            <button
-              type="button"
-              class="fila-acciones__btn"
-              [title]="$any(row)['activo'] ? 'Desactivar' : 'Activar'"
-              (click)="toggleActivo($any(row)['id'])"
-            >
-              {{ $any(row)['activo'] ? 'Desactivar' : 'Activar' }}
-            </button>
-          </div>
-        </ng-template>
-      </app-table>
-    </div>
-  </app-state-wrapper>
+  @if (estado().status === 'idle') {
+    <div class="comercios__hint">Usá Buscar para listar los comercios</div>
+  } @else {
+    <app-state-wrapper
+      [status]="estado().status"
+      [error]="estado().error ?? ''"
+      [empty]="filas().length === 0"
+      emptyMessage="No hay comercios. Creá el primero."
+    >
+      <div class="tabla-scroll">
+        <app-table
+          [columns]="columnas"
+          [rows]="filas()"
+          headerVariant="soft"
+          [striped]="true"
+          [compact]="true"
+        >
+          <ng-template appTableCell="admin" let-row>
+            @if ($any(row)['adminNombre'] || $any(row)['adminEmail']) {
+              <span>{{ $any(row)['adminNombre'] || '—' }}</span>
+            } @else {
+              <span class="comercios__vacio">Sin administrador</span>
+            }
+          </ng-template>
+          <ng-template appTableCell="adminEmail" let-row>
+            {{ $any(row)['adminEmail'] || '—' }}
+          </ng-template>
+          <ng-template appTableCell="adminDni" let-row>
+            {{ $any(row)['adminDni'] || '—' }}
+          </ng-template>
+          <ng-template appTableCell="estado" let-row>
+            <app-badge [variant]="$any(row)['activo'] ? 'success' : 'neutral'">
+              {{ $any(row)['estado'] }}
+            </app-badge>
+          </ng-template>
+          <ng-template appTableCell="acciones" let-row>
+            <div class="fila-acciones">
+              <button
+                type="button"
+                class="fila-acciones__btn"
+                (click)="abrirDetalle($any(row)['id'])"
+              >
+                Ver
+              </button>
+              <button
+                type="button"
+                class="fila-acciones__btn"
+                [title]="$any(row)['activo'] ? 'Desactivar' : 'Activar'"
+                (click)="toggleActivo($any(row)['id'])"
+              >
+                {{ $any(row)['activo'] ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          </ng-template>
+        </app-table>
+      </div>
+    </app-state-wrapper>
+  }
 </section>
 
 <app-side-drawer

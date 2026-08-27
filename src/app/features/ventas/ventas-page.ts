@@ -108,6 +108,7 @@ function metaCliente(c: ClienteRef, zonaNombre?: string | null): string {
   templateUrl: './ventas-page.html',
   styleUrl: './ventas-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'page-scroll' },
 })
 export class VentasPage {
   private readonly route = inject(ActivatedRoute);
@@ -335,6 +336,12 @@ export class VentasPage {
   });
 
   constructor() {
+    const clienteId = this.route.snapshot.queryParamMap.get('clienteId');
+    if (clienteId) {
+      this.api.obtenerCliente(clienteId).subscribe({
+        next: (c) => this.elegirClienteRef(c),
+      });
+    }
     this.store.cargarReferencias();
     this.api
       .listarZonasRef()

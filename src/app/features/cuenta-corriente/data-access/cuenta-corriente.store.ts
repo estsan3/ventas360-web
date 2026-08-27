@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, of, tap } from 'rxjs';
+import { EMPTY, Observable, of, tap } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import {
   AsyncState,
@@ -11,6 +11,7 @@ import {
 import {
   ClienteRef,
   ComprobanteCxc,
+  CrearRecibo,
   EstadoCuenta,
   ListaPrecioRef,
   Recibo,
@@ -51,6 +52,9 @@ export class CuentaCorrienteStore {
   private readonly _listaPrecio = signal<ListaPrecioRef | null>(null);
   private readonly _preciosActuales = signal<Map<string, number>>(new Map());
   private readonly _preciosCargados = signal(false);
+  private readonly _seleccionado = signal<ClienteRef | null>(null);
+  private readonly _saldoSeleccionado = signal<SaldoCliente | null>(null);
+  private readonly _cartera = signal<AsyncState<ResultadoBusquedaCxc>>(asyncIdle());
   /** Cache de saldos del comercio (se pide una sola vez por sesión de CxC). */
   private saldosCache: SaldoCliente[] | null = null;
 
@@ -63,6 +67,9 @@ export class CuentaCorrienteStore {
   readonly facturas = this._facturas.asReadonly();
   readonly listaPrecio = this._listaPrecio.asReadonly();
   readonly preciosActuales = this._preciosActuales.asReadonly();
+  readonly seleccionado = this._seleccionado.asReadonly();
+  readonly saldoSeleccionado = this._saldoSeleccionado.asReadonly();
+  readonly cartera = this._cartera.asReadonly();
 
   /** Busca clientes por nombre/CUIT; une con saldos (cache tras 1er fetch). */
   buscarPorTexto(q: string): void {
@@ -127,20 +134,48 @@ export class CuentaCorrienteStore {
     this._busqueda.set(asyncIdle());
   }
 
-  /** Selección desde combobox: un cliente + su saldo (sin listado). */
+  /** Lista lateral 1a: clientes con movimiento en CxC. */
+  cargarCartera(): void {
+    this._cartera.set(asyncLoading());
+    this.api
+      .listarSaldos()
+      .pipe(
+        switchMap((saldos) => {
+          this.saldosCache = saldos;
+          const ids = new Set(saldos.map((s) => s.clienteId));
+          return this.api.listarClientesRef({ pageSize: 200 }).pipe(
+            map((clientes) => ({
+              clientes: clientes.filter((c) => ids.has(c.id)),
+              saldos,
+            })),
+          );
+        }),
+        catchError((error: Error) => {
+          this._cartera.set(asyncError(error.message));
+          return EMPTY;
+        }),
+      )
+      .subscribe({
+        next: (resultado) => this._cartera.set(asyncSuccess(resultado)),
+      });
+  }
+
+  /** Selección operativa: no pisa el listado de informes ni la cartera. */
   seleccionarCliente(cliente: ClienteRef): void {
-    this._clientesRef.set([cliente]);
-    this._busqueda.set(asyncIdle());
+    this._seleccionado.set(cliente);
     this.api.obtenerSaldo(cliente.id).subscribe({
-      next: (saldo) => this._saldos.set(asyncSuccess([saldo])),
-      error: () => this._saldos.set(asyncSuccess([{ ...emptySaldo(cliente.id) }])),
+      next: (saldo) => {
+        this._saldoSeleccionado.set(saldo);
+        this.mezclarSaldoCartera(saldo);
+      },
+      error: () => this._saldoSeleccionado.set({ ...emptySaldo(cliente.id) }),
     });
     this.cargarEstado(cliente.id);
   }
 
   limpiarSeleccion(): void {
-    this._clientesRef.set([]);
-    this._saldos.set(asyncIdle());
+    this._seleccionado.set(null);
+    this._saldoSeleccionado.set(null);
     this._estadoCuenta.set(null);
     this._remitos.set([]);
     this._facturas.set([]);
@@ -277,11 +312,29 @@ export class CuentaCorrienteStore {
   }
 
   registrarCobro(body: RegistrarCobro): Observable<Recibo> {
-    return this.api.registrarCobroACuenta(body).pipe(
-      tap(() => {
-        this.cargarSaldos();
-        this.cargarEstado(body.clienteId);
-      }),
-    );
+    return this.api
+      .registrarCobroACuenta(body)
+      .pipe(tap(() => this.refrescarTrasCobro(body.clienteId)));
+  }
+
+  crearRecibo(body: CrearRecibo): Observable<Recibo> {
+    return this.api.crearRecibo(body).pipe(tap(() => this.refrescarTrasCobro(body.clienteId)));
+  }
+
+  private refrescarTrasCobro(clienteId: string): void {
+    this.cargarEstado(clienteId);
+    this.api.obtenerSaldo(clienteId).subscribe({
+      next: (saldo) => this._saldoSeleccionado.set(saldo),
+    });
+  }
+
+  private mezclarSaldoCartera(saldo: SaldoCliente): void {
+    const actual = this._cartera().data;
+    if (!actual) {
+      return;
+    }
+    const saldos = actual.saldos.filter((s) => s.clienteId !== saldo.clienteId);
+    saldos.push(saldo);
+    this._cartera.set(asyncSuccess({ ...actual, saldos }));
   }
 }

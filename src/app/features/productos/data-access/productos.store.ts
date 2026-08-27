@@ -24,6 +24,12 @@ export class ProductosStore {
   readonly page = this._page.asReadonly();
   readonly pedidosProducto = this._pedidosProducto.asReadonly();
 
+  resetListado(): void {
+    this._productos.set(asyncIdle());
+    this._total.set(0);
+    this._page.set(1);
+  }
+
   cargar(opts: { q?: string; filtro?: FiltroActivo; page?: number } = {}): void {
     const actual = this._productos();
     if (actual.status === 'loading') {

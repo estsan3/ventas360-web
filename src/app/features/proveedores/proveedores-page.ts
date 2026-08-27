@@ -8,6 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MIN_CHARS_BUSQUEDA, textoBusquedaValido } from '../../core/utils/busqueda';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Badge } from '../../shared/ui/badge/badge';
@@ -70,6 +71,7 @@ export class ProveedoresPage {
   ];
 
   protected readonly estado = computed(() => this.store.proveedores());
+  protected readonly minChars = MIN_CHARS_BUSQUEDA;
   protected readonly filas = computed(() =>
     (this.estado().data ?? []).map((p) => ({
       id: p.id,
@@ -98,7 +100,13 @@ export class ProveedoresPage {
   constructor() {
     effect(() => {
       const q = this.busqueda();
-      untracked(() => this.store.cargar(q));
+      untracked(() => {
+        if (!textoBusquedaValido(q)) {
+          this.store.resetListado();
+          return;
+        }
+        this.store.cargar(q);
+      });
     });
   }
 

@@ -66,7 +66,7 @@
       type="button"
       class="caja__tab"
       [class.caja__tab--on]="vista() === 'movimientos'"
-      (click)="vista.set('movimientos')"
+      (click)="setVista('movimientos')"
     >
       Movimientos
     </button>
@@ -74,7 +74,7 @@
       type="button"
       class="caja__tab"
       [class.caja__tab--on]="vista() === 'cheques'"
-      (click)="vista.set('cheques')"
+      (click)="setVista('cheques')"
     >
       Cartera de cheques
     </button>

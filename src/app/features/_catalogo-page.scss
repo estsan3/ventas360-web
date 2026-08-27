@@ -26,6 +26,9 @@
 
 .tabla-scroll {
   overflow-x: auto;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
   border-radius: t.$radius-lg;
   border: 1px solid t.$color-border;
   background: t.$color-surface;

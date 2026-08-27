@@ -213,8 +213,9 @@
   }
 
   &__card--scroll {
-    overflow-x: auto;
+    overflow: auto;
     min-width: 0;
+    min-height: 0;
   }
 
   &__card-head {

@@ -308,7 +308,14 @@ export class CajaPage {
       }
     });
     this.cargar();
-    this.cargarBancos();
+    this.cargarCuentas();
+  }
+
+  protected setVista(next: VistaCaja): void {
+    this.vista.set(next);
+    if (next === 'cheques') {
+      this.cargarValores();
+    }
   }
 
   protected tituloDrawer(): string {
@@ -332,6 +339,7 @@ export class CajaPage {
       this.formAbrir.reset({ fondoInicial: String(previo) });
     }
     if (kind === 'egreso') {
+      this.cargarValores();
       this.formEgreso.reset({
         monto: '',
         concepto: '',
@@ -602,15 +610,23 @@ export class CajaPage {
     });
   }
 
-  private cargarBancos(): void {
+  private cargarCuentas(): void {
     this.bancos
       .cuentas()
       .pipe(catchError(() => of([])))
       .subscribe((items) => this.cuentas.set(items));
+  }
+
+  private cargarValores(): void {
     this.bancos
       .valores()
       .pipe(catchError(() => of([])))
       .subscribe((items) => this.valores.set(items));
+  }
+
+  private cargarBancos(): void {
+    this.cargarCuentas();
+    this.cargarValores();
   }
 
   protected formatearMoneda = formatearMoneda;

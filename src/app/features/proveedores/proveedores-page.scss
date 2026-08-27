@@ -7,6 +7,9 @@
   gap: t.$space-lg;
   padding: t.$space-lg;
   font-family: ty.$font-family-base;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 
   &__header {
     display: flex;
@@ -31,8 +34,20 @@
   }
 }
 
+.lst__empty {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 13.5px;
+  color: t.$color-text-muted;
+}
+
 .tabla-scroll {
-  overflow-x: auto;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  border-radius: t.$radius-lg;
+  border: 1px solid t.$color-border;
+  background: t.$color-surface;
 }
 
 .fila-acciones {

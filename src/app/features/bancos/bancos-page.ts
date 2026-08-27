@@ -112,17 +112,20 @@ export class BancosPage {
     destinatario: ['', [Validators.required, Validators.minLength(2)]],
   });
 
-  constructor() {
-    this.cargar();
-  }
+  protected readonly buscado = signal(false);
 
-  protected cargar(): void {
+  protected buscar(): void {
+    this.buscado.set(true);
     this.api.cuentas().subscribe((items) => this.cuentas.set(items));
     this.estadoValores.set(asyncLoading());
     this.api.valores().subscribe({
       next: (items) => this.estadoValores.set(asyncSuccess(items)),
       error: (e: Error) => this.estadoValores.set(asyncError(e.message)),
     });
+  }
+
+  protected cargar(): void {
+    this.buscar();
   }
 
   protected abrirValor(): void {

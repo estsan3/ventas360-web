@@ -20,9 +20,10 @@ import { Modal } from '../../shared/ui/modal/modal';
 import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { Table, TableColumn } from '../../shared/ui/table/table';
-import { ZonasStore } from '../zonas/data-access/zonas.store';
+import { MIN_CHARS_BUSQUEDA, textoBusquedaValido } from '../../core/utils/busqueda';
 import { Cliente, CondicionIva, FiltroActivo } from './data-access/cliente.model';
 import { ClientesStore } from './data-access/clientes.store';
+import { ZonasStore } from '../zonas/data-access/zonas.store';
 
 const ETIQUETAS_ESTADO: Record<string, string> = {
   borrador: 'Borrador',
@@ -94,6 +95,7 @@ export class ClientesPage {
   private readonly confirmDialog = inject(ConfirmDialogService);
 
   protected readonly pedidosColumns = PEDIDOS_COLUMNS;
+  protected readonly minChars = MIN_CHARS_BUSQUEDA;
   protected readonly estado = this.store.clientes;
   protected readonly busqueda = signal('');
   protected readonly filtro = signal<FiltroActivo>('todos');
@@ -254,7 +256,13 @@ export class ClientesPage {
     effect(() => {
       const q = this.busqueda();
       const filtro = this.filtro();
-      untracked(() => this.store.cargar({ q, filtro, page: 1 }));
+      untracked(() => {
+        if (!textoBusquedaValido(q)) {
+          this.store.resetListado();
+          return;
+        }
+        this.store.cargar({ q, filtro, page: 1 });
+      });
     });
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {

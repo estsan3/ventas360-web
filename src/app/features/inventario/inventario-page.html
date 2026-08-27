@@ -98,67 +98,73 @@
         </span>
       </div>
 
-      @if (!cargando() && filas().length === 0) {
+      @if (!depActivo()) {
+        <div class="inv__empty">Elegí un depósito para cargar el inventario</div>
+      } @else if (!cargando() && filas().length === 0) {
         <div class="inv__empty">
           No hay artículos en el catálogo. Importá una lista de proveedor o cargá productos en
           Artículos.
         </div>
       }
 
-      <table class="inv__table">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Artículo</th>
-            <th>Depósito</th>
-            <th class="inv__th-right">Sistema</th>
-            <th class="inv__th-right">Conteo</th>
-            <th class="inv__th-right">Diferencia</th>
-            <th class="inv__th-right">Valor dif.</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of filasVista(); track row.articuloId) {
-            @let dif = diferencia(row);
-            @let val = valorDif(row);
-            <tr [class.inv__row--alerta]="row.alerta || (tieneDif(row) && dif.tono === 'neg')">
-              <td class="inv__codigo">{{ row.codigo }}</td>
-              <td class="inv__articulo">{{ row.articulo }}</td>
-              <td>{{ row.ubicacion }}</td>
-              <td class="inv__td-right">{{ row.sistema }}</td>
-              <td class="inv__td-right">
-                <input
-                  class="inv__conteo"
-                  [class.inv__conteo--warn]="dif.tono === 'neg'"
-                  type="text"
-                  inputmode="numeric"
-                  [placeholder]="'—'"
-                  [ngModel]="row.conteo"
-                  (ngModelChange)="actualizarConteo(row.articuloId, $event)"
-                />
-              </td>
-              <td
-                class="inv__td-right"
-                [class.inv__ok]="dif.tono === 'ok'"
-                [class.inv__neg]="dif.tono === 'neg'"
-                [class.inv__pos]="dif.tono === 'pos'"
-                [class.inv__muted]="dif.tono === 'muted'"
-                [class.inv__strong]="dif.tono === 'neg' || dif.tono === 'ok' || dif.tono === 'pos'"
-              >
-                {{ dif.texto }}
-              </td>
-              <td
-                class="inv__td-right"
-                [class.inv__neg]="val.tono === 'neg'"
-                [class.inv__pos]="val.tono === 'pos'"
-                [class.inv__muted]="val.tono === 'muted'"
-              >
-                {{ val.texto }}
-              </td>
+      @if (depActivo() && filas().length > 0) {
+        <table class="inv__table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Artículo</th>
+              <th>Depósito</th>
+              <th class="inv__th-right">Sistema</th>
+              <th class="inv__th-right">Conteo</th>
+              <th class="inv__th-right">Diferencia</th>
+              <th class="inv__th-right">Valor dif.</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (row of filasVista(); track row.articuloId) {
+              @let dif = diferencia(row);
+              @let val = valorDif(row);
+              <tr [class.inv__row--alerta]="row.alerta || (tieneDif(row) && dif.tono === 'neg')">
+                <td class="inv__codigo">{{ row.codigo }}</td>
+                <td class="inv__articulo">{{ row.articulo }}</td>
+                <td>{{ row.ubicacion }}</td>
+                <td class="inv__td-right">{{ row.sistema }}</td>
+                <td class="inv__td-right">
+                  <input
+                    class="inv__conteo"
+                    [class.inv__conteo--warn]="dif.tono === 'neg'"
+                    type="text"
+                    inputmode="numeric"
+                    [placeholder]="'—'"
+                    [ngModel]="row.conteo"
+                    (ngModelChange)="actualizarConteo(row.articuloId, $event)"
+                  />
+                </td>
+                <td
+                  class="inv__td-right"
+                  [class.inv__ok]="dif.tono === 'ok'"
+                  [class.inv__neg]="dif.tono === 'neg'"
+                  [class.inv__pos]="dif.tono === 'pos'"
+                  [class.inv__muted]="dif.tono === 'muted'"
+                  [class.inv__strong]="
+                    dif.tono === 'neg' || dif.tono === 'ok' || dif.tono === 'pos'
+                  "
+                >
+                  {{ dif.texto }}
+                </td>
+                <td
+                  class="inv__td-right"
+                  [class.inv__neg]="val.tono === 'neg'"
+                  [class.inv__pos]="val.tono === 'pos'"
+                  [class.inv__muted]="val.tono === 'muted'"
+                >
+                  {{ val.texto }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
   }
 

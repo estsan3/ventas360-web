@@ -14,6 +14,7 @@
       @if (tab() !== 'listas') {
         <button type="button" class="lst__cta" (click)="abrirAlta()">+ Remito / factura</button>
       }
+      <button type="button" class="lst__btn lst__btn--ghost" (click)="buscar()">Buscar</button>
     </div>
   </header>
 
@@ -22,7 +23,7 @@
       type="button"
       class="lst__seg-btn"
       [class.lst__seg-btn--on]="tab() === 'facturas'"
-      (click)="tab.set('facturas')"
+      (click)="setTab('facturas')"
     >
       Remitos y facturas
     </button>
@@ -30,7 +31,7 @@
       type="button"
       class="lst__seg-btn"
       [class.lst__seg-btn--on]="tab() === 'pedidos'"
-      (click)="tab.set('pedidos')"
+      (click)="setTab('pedidos')"
     >
       Pedidos de compra
     </button>
@@ -38,7 +39,7 @@
       type="button"
       class="lst__seg-btn"
       [class.lst__seg-btn--on]="tab() === 'proveedores'"
-      (click)="tab.set('proveedores')"
+      (click)="setTab('proveedores')"
     >
       Proveedores
     </button>
@@ -46,7 +47,7 @@
       type="button"
       class="lst__seg-btn"
       [class.lst__seg-btn--on]="tab() === 'listas'"
-      (click)="tab.set('listas')"
+      (click)="setTab('listas')"
     >
       Listas de precios
     </button>
@@ -56,6 +57,8 @@
     <div class="lst__card">
       @if (estado().status === 'error') {
         <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
+      } @else if (!buscado()) {
+        <div class="lst__empty">Buscá para listar remitos y facturas de compra</div>
       } @else if (filasFacturas().length === 0) {
         <div class="lst__empty">
           {{
@@ -139,7 +142,9 @@
 
   @if (tab() === 'proveedores') {
     <div class="lst__card">
-      @if (filasProveedores().length === 0) {
+      @if (!buscado()) {
+        <div class="lst__empty">Buscá para listar proveedores</div>
+      } @else if (filasProveedores().length === 0) {
         <div class="lst__empty">No hay proveedores. Creá uno para importar su lista.</div>
       } @else {
         <table class="lst__table">
@@ -190,7 +195,13 @@
       </label>
     </div>
 
-    @if (!lp) {
+    @if (!buscado()) {
+      <div class="lst__card">
+        <div class="lst__empty">
+          Buscá para cargar el proveedor y actualizar su lista de precios
+        </div>
+      </div>
+    } @else if (!lp) {
       <div class="lst__card">
         <div class="lst__empty">Creá un proveedor para importar su lista de precios.</div>
       </div>

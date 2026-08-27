@@ -7,18 +7,29 @@
   gap: t.$space-lg;
   padding: t.$space-lg;
   font-family: ty.$font-family-base;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 
   &__header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: t.$space-md;
+    flex-shrink: 0;
 
     h1 {
       margin: 0;
       font-size: ty.$font-size-2xl;
       font-weight: ty.$font-weight-bold;
     }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: t.$space-sm;
+    flex-wrap: wrap;
   }
 
   &__subtitle {
@@ -54,7 +65,16 @@
 }
 
 .tabla-scroll {
-  overflow-x: auto;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.comercios__hint {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 13.5px;
+  color: t.$color-text-muted;
 }
 
 .fila-acciones {

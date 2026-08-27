@@ -4,6 +4,17 @@
     <button type="button" class="pre__cta" (click)="irNuevo()">+ Nuevo presupuesto</button>
   </header>
 
+  <div class="pre__toolbar">
+    <input
+      class="pre__search"
+      type="search"
+      placeholder="Buscar por número o cliente…"
+      [ngModel]="q()"
+      (ngModelChange)="q.set($event)"
+    />
+    <button type="button" class="pre__cta" (click)="buscar()">Buscar</button>
+  </div>
+
   <div class="pre__filters">
     <button
       type="button"
@@ -40,8 +51,10 @@
   </div>
 
   <div class="pre__card">
-    @if (filas().length === 0) {
-      <div class="pre__empty">No hay presupuestos para mostrar</div>
+    @if (!buscado()) {
+      <div class="pre__empty">Aplicá un filtro o buscá para listar los presupuestos</div>
+    } @else if (filas().length === 0) {
+      <div class="pre__empty">No hay presupuestos con esos criterios</div>
     } @else {
       <table class="pre__table">
         <thead>

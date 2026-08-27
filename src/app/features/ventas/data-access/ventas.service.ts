@@ -84,6 +84,10 @@ export class VentasService {
   }
 
   /** Búsqueda de clientes (nombre, email, teléfono, CUIT). */
+  obtenerCliente(id: string): Observable<ClienteRef> {
+    return this.http.get<ClienteRefDto>(`${this.api}/clientes/${id}`).pipe(map(clienteRefToModel));
+  }
+
   buscarClientes(
     q: string,
     opts: { activo?: boolean | null; pageSize?: number; page?: number } = {},

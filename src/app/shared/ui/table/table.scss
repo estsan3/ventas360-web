@@ -2,7 +2,8 @@
 @use 'typography' as ty;
 
 .table-wrap {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: 100%;
   border-radius: t.$radius-lg;
   border: 1px solid t.$color-border;
   background: t.$color-surface;

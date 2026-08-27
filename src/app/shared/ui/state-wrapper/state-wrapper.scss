@@ -1,6 +1,14 @@
 @use 'tokens' as t;
 @use 'typography' as ty;
 
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .state {
   font-family: ty.$font-family-base;
 

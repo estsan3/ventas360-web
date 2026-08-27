@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { EstadoPedido, Pedido } from '../ventas/data-access/pedido.model';
@@ -50,6 +51,7 @@ function etiquetaEstado(estado: EstadoPedido): string {
 
 @Component({
   selector: 'app-presupuestos-page',
+  imports: [FormsModule],
   templateUrl: './presupuestos-page.html',
   styleUrl: './presupuestos-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +61,8 @@ export class PresupuestosPage {
   private readonly store = inject(VentasStore);
   private readonly notifications = inject(NotificationStore);
 
+  protected readonly q = signal('');
+  protected readonly buscado = signal(false);
   protected readonly chip = signal<FiltroPresupuesto>('todos');
   protected readonly detalle = signal<Pedido | null>(null);
   protected readonly estado = this.store.pedidos;
@@ -79,6 +83,9 @@ export class PresupuestosPage {
   });
 
   protected readonly filas = computed(() => {
+    if (!this.buscado()) {
+      return [];
+    }
     const f = this.chip();
     const clientes = new Map(this.store.clientesRef().map((x) => [x.id, x.nombre]));
     return (this.estado().data ?? [])
@@ -129,9 +136,9 @@ export class PresupuestosPage {
     };
   });
 
-  constructor() {
+  protected buscar(): void {
+    this.buscado.set(true);
     this.store.cargar('presupuesto');
-    this.store.cargarReferencias();
   }
 
   protected setChip(v: FiltroPresupuesto): void {

@@ -4,20 +4,12 @@
       <h1 class="ctc__title">Cuenta corriente</h1>
       <p class="ctc__subtitle">
         @if (tab() === 'cuenta') {
-          Buscá un cliente y consultá su cuenta, movimientos y cobros
+          Cliente, cuenta y cobro en una misma vista
         } @else {
-          Informes de cuentas corrientes con filtros avanzados
+          Búsqueda de cartera por criterios, detalle en panel
         }
       </p>
     </div>
-    @if (tab() === 'cuenta' && clienteId()) {
-      <div class="ctc__actions">
-        <button type="button" class="ctc__btn ctc__btn--ghost">Imprimir resumen</button>
-        <button type="button" class="ctc__btn ctc__btn--primary" (click)="abrirCobro()">
-          + Registrar cobro
-        </button>
-      </div>
-    }
   </header>
 
   <div class="ctc__main-tabs">
@@ -40,266 +32,601 @@
   </div>
 
   @if (tab() === 'cuenta') {
-    <div class="ctc__toolbar card">
-      <div class="ctc__search-row">
-        <div class="ctc__combo">
-          <label class="ctc__search">
-            <span class="ctc__search-icon" aria-hidden="true"><app-icon name="search" /></span>
-            <input
-              class="ctc__search-input"
-              type="search"
-              role="combobox"
-              [attr.aria-expanded]="comboOpen()"
-              aria-autocomplete="list"
-              [ngModel]="qCliente()"
-              (ngModelChange)="onComboInput($event)"
-              (focus)="onComboFocus()"
-              (blur)="onComboBlur()"
-              placeholder="Buscar por nombre o CUIT…"
-              autocomplete="off"
-            />
-            @if (qCliente()) {
-              <button
-                type="button"
-                class="ctc__combo-clear"
-                title="Limpiar"
-                (mousedown)="limpiarCombo($event)"
-              >
-                ✕
-              </button>
-            }
-          </label>
-          @if (comboOpen()) {
-            <div class="ctc__dropdown" role="listbox">
-              <div class="ctc__dropdown-head">
-                @if (comboBuscando()) {
-                  Buscando…
-                } @else if (qCliente().trim().length < minChars) {
-                  Autocompletado · escribí al menos {{ minChars }} caracteres
-                } @else {
-                  Sugerencias
-                }
-              </div>
-              @for (c of sugerencias(); track c.id) {
+    <div class="ctc__workspace">
+      <aside class="ctc__col-cli">
+        <div class="ctc__col-cli-search">
+          <div class="ctc__combo">
+            <label class="ctc__search">
+              <span class="ctc__search-icon" aria-hidden="true"><app-icon name="search" /></span>
+              <input
+                #buscaInput
+                class="ctc__search-input"
+                type="search"
+                role="combobox"
+                [attr.aria-expanded]="comboOpen()"
+                aria-autocomplete="list"
+                [ngModel]="qCliente()"
+                (ngModelChange)="onComboInput($event)"
+                (focus)="onComboFocus()"
+                (blur)="onComboBlur()"
+                placeholder="Nombre, CUIT o código…"
+                autocomplete="off"
+              />
+              <span class="ctc__kbd">F3</span>
+              @if (qCliente()) {
                 <button
                   type="button"
-                  class="ctc__dropdown-item"
-                  role="option"
-                  (mousedown)="elegirSugerencia(c)"
+                  class="ctc__combo-clear"
+                  title="Limpiar"
+                  (mousedown)="limpiarCombo($event)"
                 >
-                  <div>
-                    <div class="ctc__dropdown-name">{{ c.nombre }}</div>
-                    <div class="ctc__dropdown-sub">{{ metaDeCliente(c) }}</div>
-                  </div>
-                  @if (c.bloqueado) {
-                    <span class="ctc__pill ctc__pill--debe">Bloqueado</span>
-                  }
+                  ✕
                 </button>
-              } @empty {
-                @if (!comboBuscando() && qCliente().trim().length >= minChars) {
-                  <div class="ctc__dropdown-empty">Sin coincidencias</div>
-                }
               }
+            </label>
+            @if (comboOpen()) {
+              <div class="ctc__dropdown" role="listbox">
+                <div class="ctc__dropdown-head">
+                  @if (comboBuscando()) {
+                    Buscando…
+                  } @else if (qCliente().trim().length < minChars) {
+                    Autocompletado · escribí al menos {{ minChars }} caracteres
+                  } @else {
+                    Sugerencias
+                  }
+                </div>
+                @for (c of sugerencias(); track c.id) {
+                  <button
+                    type="button"
+                    class="ctc__dropdown-item"
+                    role="option"
+                    (mousedown)="elegirSugerencia(c)"
+                  >
+                    <div>
+                      <div class="ctc__dropdown-name">{{ c.nombre }}</div>
+                      <div class="ctc__dropdown-sub">{{ metaDeCliente(c) }}</div>
+                    </div>
+                    @if (c.bloqueado) {
+                      <span class="ctc__pill ctc__pill--debe">Bloqueado</span>
+                    }
+                  </button>
+                } @empty {
+                  @if (!comboBuscando() && qCliente().trim().length >= minChars) {
+                    <div class="ctc__dropdown-empty">Sin coincidencias</div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="ctc__col-cli-meta">
+          <span>
+            @if (qCliente().trim().length < minChars) {
+              Buscá un cliente
+            } @else {
+              Resultados · {{ listaLateral().length }}
+            }
+          </span>
+          <button type="button" class="ctc__link-btn" (click)="ciclarOrden()">
+            {{ ordenLabel() }}
+          </button>
+        </div>
+
+        <div class="ctc__col-cli-list">
+          @if (qCliente().trim().length < minChars) {
+            <div class="ctc__empty ctc__empty--sm">
+              Escribí al menos {{ minChars }} caracteres para buscar clientes
             </div>
+          } @else if (carteraCargando() && listaLateral().length === 0) {
+            <div class="ctc__empty ctc__empty--sm">Buscando…</div>
+          } @else if (listaLateral().length === 0) {
+            <div class="ctc__empty ctc__empty--sm">Sin coincidencias</div>
+          } @else {
+            @for (fila of listaLateral(); track fila.cliente.id) {
+              <button
+                type="button"
+                class="ctc__cli-row"
+                [class.ctc__cli-row--on]="fila.cliente.id === clienteId()"
+                (click)="elegirDeLista(fila)"
+              >
+                <div class="ctc__cli-row-top">
+                  <span class="ctc__cli-row-name">{{ fila.cliente.nombre }}</span>
+                  <span
+                    class="ctc__cli-row-saldo"
+                    [class.ctc__cli-saldo--debe]="fila.situacion === 'debe'"
+                    [class.ctc__cli-saldo--favor]="fila.situacion === 'favor'"
+                  >
+                    {{ fila.saldoFmt }}
+                  </span>
+                </div>
+                <div class="ctc__cli-row-sub">
+                  <span
+                    class="ctc__pill"
+                    [class.ctc__pill--debe]="fila.situacion === 'debe'"
+                    [class.ctc__pill--favor]="fila.situacion === 'favor'"
+                    [class.ctc__pill--ok]="fila.situacion === 'al_dia'"
+                  >
+                    {{ fila.situacion === 'debe' ? fila.antiguedadLabel : fila.situacionLabel }}
+                  </span>
+                  <span>{{ fila.zonaNombre }}</span>
+                </div>
+              </button>
+            }
           }
         </div>
-      </div>
-    </div>
+      </aside>
 
-    @if (!clienteId()) {
-      <div class="ctc__empty ctc__empty--hero">
-        Escribí al menos {{ minChars }} caracteres y seleccioná un cliente para ver su cuenta
-        corriente, movimientos y registrar cobros.
-      </div>
-    } @else {
-      <div class="ctc__detalle ctc__detalle--full">
-        <div class="ctc__cliente">
-          <div class="ctc__cliente-izq">
-            <div class="ctc__avatar" aria-hidden="true">{{ inicialesCliente() }}</div>
-            <div>
-              <div class="ctc__cliente-nombre">
-                {{ clienteActual()?.nombre ?? 'Cliente' }}
+      <section class="ctc__col-cta">
+        @if (!clienteId()) {
+          <div class="ctc__empty ctc__empty--hero">
+            Buscá un cliente (F3, mín. {{ minChars }} caracteres) para ver la cuenta y registrar
+            cobros.
+          </div>
+        } @else {
+          <div class="ctc__cta-head">
+            <div class="ctc__cliente-izq">
+              <div class="ctc__avatar" aria-hidden="true">{{ inicialesCliente() }}</div>
+              <div>
+                <div class="ctc__cliente-nombre">
+                  {{ clienteActual()?.nombre ?? 'Cliente' }}
+                  <span
+                    class="ctc__pill"
+                    [class.ctc__pill--debe]="
+                      estadoClienteLabel() === 'Debe' || estadoClienteLabel() === 'Bloqueado'
+                    "
+                    [class.ctc__pill--favor]="estadoClienteLabel() === 'A favor'"
+                    [class.ctc__pill--ok]="estadoClienteLabel() === 'Al día'"
+                  >
+                    {{ estadoClienteLabel() }}
+                  </span>
+                </div>
+                <div class="ctc__cliente-meta">{{ metaCliente() }}</div>
               </div>
-              <div class="ctc__cliente-meta">{{ metaCliente() }}</div>
+            </div>
+            <div class="ctc__actions">
+              <button type="button" class="ctc__btn ctc__btn--ghost" (click)="imprimirResumen()">
+                Resumen
+              </button>
+              <button type="button" class="ctc__btn ctc__btn--ghost" (click)="enviarRecordatorio()">
+                Recordatorio
+              </button>
+              <button type="button" class="ctc__btn ctc__btn--ghost" (click)="nuevaVenta()">
+                Nueva venta
+              </button>
             </div>
           </div>
-          <div class="ctc__kpis">
+
+          <div class="ctc__kpis ctc__kpis--grid">
             <div>
               <div class="ctc__kpi-label">Saldo total</div>
               <div class="ctc__kpi-value">{{ kpiSaldo() }}</div>
             </div>
             <div>
-              <div class="ctc__kpi-label">Debe</div>
-              <div class="ctc__kpi-value">{{ kpiDebe() }}</div>
+              <div class="ctc__kpi-label">Vencido</div>
+              <div class="ctc__kpi-value">{{ kpiVencido() }}</div>
             </div>
             <div>
-              <div class="ctc__kpi-label">Haber</div>
-              <div class="ctc__kpi-value ctc__kpi-value--ok">{{ kpiHaber() }}</div>
+              <div class="ctc__kpi-label">Mora</div>
+              <div class="ctc__kpi-value">{{ kpiMora() }}</div>
+            </div>
+            <div>
+              <div class="ctc__kpi-label">Último pago</div>
+              <div class="ctc__kpi-value">{{ kpiUltimoPago() }}</div>
+            </div>
+            <div>
+              <div class="ctc__kpi-label">Disp. crédito</div>
+              <div class="ctc__kpi-value">{{ kpiDisponible() }}</div>
             </div>
           </div>
-        </div>
 
-        <div class="ctc__tabs">
-          <button
-            type="button"
-            class="ctc__tab"
-            [class.ctc__tab--on]="panel() === 'comprobantes'"
-            (click)="setPanel('comprobantes')"
-          >
-            Remitos y facturas
-          </button>
-          <button
-            type="button"
-            class="ctc__tab"
-            [class.ctc__tab--on]="panel() === 'movimientos'"
-            (click)="setPanel('movimientos')"
-          >
-            Movimientos cta. cte.
-          </button>
-        </div>
+          <div class="ctc__tabs">
+            <button
+              type="button"
+              class="ctc__tab"
+              [class.ctc__tab--on]="movVista() === 'todos'"
+              (click)="setMovVista('todos')"
+            >
+              Todos
+            </button>
+            <button
+              type="button"
+              class="ctc__tab"
+              [class.ctc__tab--on]="movVista() === 'deudas'"
+              (click)="setMovVista('deudas')"
+            >
+              Deudas
+            </button>
+            <button
+              type="button"
+              class="ctc__tab"
+              [class.ctc__tab--on]="movVista() === 'pagos'"
+              (click)="setMovVista('pagos')"
+            >
+              Pagos
+            </button>
+            <button
+              type="button"
+              class="ctc__tab"
+              [class.ctc__tab--on]="movVista() === 'comprobantes'"
+              (click)="setMovVista('comprobantes')"
+            >
+              Comprobantes
+            </button>
+          </div>
 
-        @if (panel() === 'comprobantes') {
-          <div class="ctc__card">
-            @if (listaPrecio(); as lista) {
-              <div class="ctc__lista-hint">
-                Precios recalculados con lista vigente:
-                <strong>{{ lista.nombre }}</strong>
-                ({{ lista.codigo }})
+          <div class="ctc__cta-body">
+            @if (movVista() === 'comprobantes') {
+              <div class="ctc__card">
+                @if (listaPrecio(); as lista) {
+                  <div class="ctc__lista-hint">
+                    Precios recalculados con lista vigente:
+                    <strong>{{ lista.nombre }}</strong>
+                    ({{ lista.codigo }})
+                  </div>
+                }
+                @if (comprobantesVista().length === 0) {
+                  <div class="ctc__empty">Este cliente no tiene remitos ni facturas</div>
+                } @else {
+                  <table class="ctc__table">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Comprobante</th>
+                        <th>Estado</th>
+                        <th class="ctc__th-right">Total</th>
+                        <th class="ctc__th-right">Deuda</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of comprobantesVista(); track row.comprobante.id) {
+                        <tr>
+                          <td>{{ row.fechaFmt }}</td>
+                          <td>
+                            <span
+                              class="ctc__badge"
+                              [class.ctc__badge--fac]="row.comprobante.tipo === 'factura'"
+                              [class.ctc__badge--rem]="row.comprobante.tipo === 'remito'"
+                            >
+                              {{ row.tipoLabel }}
+                            </span>
+                          </td>
+                          <td class="ctc__strong">{{ row.numero }}</td>
+                          <td class="ctc__ref">{{ row.estado }}</td>
+                          <td class="ctc__td-right ctc__saldo">{{ row.totalOriginalFmt }}</td>
+                          <td
+                            class="ctc__td-right"
+                            [class.ctc__cli-saldo--debe]="row.pendiente"
+                            [class.ctc__dash]="!row.pendiente"
+                          >
+                            {{ row.pendiente ? row.deudaFmt : row.deudaLabel }}
+                          </td>
+                          <td class="ctc__td-right">
+                            <button
+                              type="button"
+                              class="ctc__btn ctc__btn--sm"
+                              (click)="abrirDetalle(row.comprobante)"
+                            >
+                              Ver
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
               </div>
-            }
-            @if (comprobantesVista().length === 0) {
-              <div class="ctc__empty">Este cliente no tiene remitos ni facturas</div>
             } @else {
-              <table class="ctc__table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Tipo</th>
-                    <th>Comprobante</th>
-                    <th>Estado</th>
-                    <th class="ctc__th-right">Ítems</th>
-                    <th class="ctc__th-right">Neto</th>
-                    <th class="ctc__th-right">IVA</th>
-                    <th class="ctc__th-right">%</th>
-                    <th class="ctc__th-right">Total</th>
-                    <th class="ctc__th-right">Deuda</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of comprobantesVista(); track row.comprobante.id) {
-                    <tr>
-                      <td>{{ row.fechaFmt }}</td>
-                      <td>
-                        <span
-                          class="ctc__badge"
-                          [class.ctc__badge--fac]="row.comprobante.tipo === 'factura'"
-                          [class.ctc__badge--rem]="row.comprobante.tipo === 'remito'"
-                        >
-                          {{ row.tipoLabel }}
-                        </span>
-                      </td>
-                      <td class="ctc__strong">{{ row.numero }}</td>
-                      <td class="ctc__ref">{{ row.estado }}</td>
-                      <td class="ctc__td-right">{{ row.items }}</td>
-                      <td class="ctc__td-right">{{ row.netoOriginalFmt }}</td>
-                      <td class="ctc__td-right">{{ row.ivaOriginalFmt }}</td>
-                      <td class="ctc__td-right">{{ row.ivaPorcentajeFmt }}</td>
-                      <td class="ctc__td-right ctc__saldo">{{ row.totalOriginalFmt }}</td>
-                      <td
-                        class="ctc__td-right"
-                        [class.ctc__cli-saldo--debe]="row.pendiente"
-                        [class.ctc__dash]="!row.pendiente"
-                      >
-                        {{ row.pendiente ? row.deudaFmt : row.deudaLabel }}
-                      </td>
-                      <td class="ctc__td-right">
-                        <button
-                          type="button"
-                          class="ctc__btn ctc__btn--sm"
-                          (click)="abrirDetalle(row.comprobante)"
-                        >
-                          Ver detalle
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            }
-          </div>
-        } @else {
-          <div class="ctc__mov-toolbar">
-            <label class="ctc__field ctc__field--inline">
-              <span class="ctc__field-label">Tipo movimiento</span>
-              <select
-                class="ctc__select"
-                [ngModel]="tipoMov()"
-                (ngModelChange)="tipoMov.set($any($event))"
-              >
-                <option value="todos">Todos</option>
-                <option value="debe">Solo debe</option>
-                <option value="haber">Solo haber</option>
-                <option value="factura">Facturas</option>
-                <option value="recibo">Recibos</option>
-                <option value="ajuste">Ajustes</option>
-              </select>
-            </label>
-          </div>
-          <div class="ctc__card">
-            @if (filas().length === 0) {
-              <div class="ctc__empty">No hay movimientos con el filtro seleccionado</div>
-            } @else {
-              <table class="ctc__table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Tipo</th>
-                    <th>Comprobante</th>
-                    <th>Ref.</th>
-                    <th class="ctc__th-right">Debe</th>
-                    <th class="ctc__th-right">Haber</th>
-                    <th class="ctc__th-right">Saldo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of filas(); track row.id) {
-                    <tr>
-                      <td>{{ row.fecha }}</td>
-                      <td>
-                        <span
-                          class="ctc__badge"
-                          [class.ctc__badge--fac]="row.tipo === 'FAC'"
-                          [class.ctc__badge--rec]="row.tipo === 'REC'"
-                          [class.ctc__badge--nc]="row.tipo === 'NC'"
-                          [class.ctc__badge--aju]="row.tipo === 'AJU'"
-                        >
-                          {{ row.tipo }}
-                        </span>
-                      </td>
-                      <td class="ctc__strong">{{ row.comprobante }}</td>
-                      <td class="ctc__ref">{{ row.referenciaTipo }}</td>
-                      <td class="ctc__td-right" [class.ctc__dash]="row.debe === '—'">
-                        {{ row.debe }}
-                      </td>
-                      <td
-                        class="ctc__td-right"
-                        [class.ctc__dash]="row.haber === '—'"
-                        [class.ctc__haber]="row.haber !== '—'"
-                      >
-                        {{ row.haber }}
-                      </td>
-                      <td class="ctc__td-right ctc__saldo">{{ row.saldo }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+              <div class="ctc__card">
+                @if (filas().length === 0) {
+                  <div class="ctc__empty">No hay movimientos con el filtro seleccionado</div>
+                } @else {
+                  <table class="ctc__table ctc__table--mov">
+                    <colgroup>
+                      <col class="ctc__col-fecha" />
+                      <col />
+                      <col class="ctc__col-imp" />
+                      <col class="ctc__col-imp" />
+                      <col class="ctc__col-imp" />
+                      <col class="ctc__col-acc" />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Comprobante</th>
+                        <th class="ctc__th-right">Debe</th>
+                        <th class="ctc__th-right">Haber</th>
+                        <th class="ctc__th-right">Saldo</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of filas(); track row.id) {
+                        <tr>
+                          <td>{{ row.fecha }}</td>
+                          <td>
+                            <span
+                              class="ctc__badge"
+                              [class.ctc__badge--fac]="row.tipo === 'FAC'"
+                              [class.ctc__badge--rec]="row.tipo === 'REC'"
+                              [class.ctc__badge--nc]="row.tipo === 'NC'"
+                              [class.ctc__badge--aju]="row.tipo === 'AJU'"
+                            >
+                              {{ row.tipo }}
+                            </span>
+                            <span class="ctc__mov-det">{{ row.comprobante }}</span>
+                          </td>
+                          <td
+                            class="ctc__td-right ctc__td-imp"
+                            [class.ctc__dash]="row.debe === '—'"
+                          >
+                            {{ row.debe }}
+                          </td>
+                          <td
+                            class="ctc__td-right ctc__td-imp"
+                            [class.ctc__dash]="row.haber === '—'"
+                            [class.ctc__haber]="row.haber !== '—'"
+                          >
+                            {{ row.haber }}
+                          </td>
+                          <td class="ctc__td-right ctc__td-imp ctc__saldo">{{ row.saldo }}</td>
+                          <td class="ctc__td-right">
+                            <button
+                              type="button"
+                              class="ctc__btn ctc__btn--sm"
+                              (click)="abrirDetalleMov(row)"
+                            >
+                              ⋯
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
             }
           </div>
         }
-      </div>
-    }
+      </section>
+
+      <aside class="ctc__col-cobro ctc-cobro-panel">
+        <div class="ctc__cobro-head">
+          <div>
+            <div class="ctc__cobro-title">Registrar cobro</div>
+            <div class="ctc__cobro-sub">
+              @if (clienteActual(); as cli) {
+                {{ cli.nombre }}
+              } @else {
+                Seleccioná un cliente
+              }
+            </div>
+          </div>
+          <span class="ctc__kbd">F9</span>
+        </div>
+
+        @if (!clienteId()) {
+          <div class="ctc__empty">Elegí un cliente para registrar un cobro</div>
+        } @else if (!cobroHabilitado()) {
+          <div class="ctc__empty">
+            Este cliente no tiene saldo deudor. El panel queda disponible cuando haya deuda.
+          </div>
+        } @else {
+          <div class="ctc__cobro-body">
+            <div class="ctc__cobro-block">
+              <div class="ctc__cobro-block-head">
+                <span>Imputación</span>
+                <button type="button" class="ctc__link-btn" (click)="autoImputar()">
+                  Imputar automático
+                </button>
+              </div>
+              <div class="ctc__imput-list">
+                @if (pendientesCobro().length === 0) {
+                  <div class="ctc__empty">No hay deudas pendientes para imputar</div>
+                } @else {
+                  @for (p of pendientesCobro(); track p.id) {
+                    <div class="ctc__imput" [class.ctc__imput--on]="p.selected">
+                      <button type="button" class="ctc__check" (click)="toggleImput(p.id)">
+                        @if (p.selected) {
+                          ✓
+                        }
+                      </button>
+                      <div class="ctc__imput-info">
+                        <div class="ctc__imput-label">{{ p.label }}</div>
+                        <div class="ctc__imput-sub">{{ p.venceTxt }} · {{ p.deudaFmt }}</div>
+                      </div>
+                      @if (p.selected) {
+                        <input
+                          class="ctc__input ctc__input--mini"
+                          type="text"
+                          inputmode="decimal"
+                          [ngModel]="p.montoTxt"
+                          (ngModelChange)="setImputMonto(p.id, $event)"
+                          (click)="$event.stopPropagation()"
+                        />
+                      } @else {
+                        <span class="ctc__imput-monto">{{ p.deudaFmt }}</span>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <div class="ctc__cobro-block">
+              <div class="ctc__cobro-block-head">
+                <span>Medios de pago</span>
+                <button type="button" class="ctc__link-btn" (click)="agregarMedio()">
+                  + Agregar medio
+                </button>
+              </div>
+              @for (md of cobroMedios(); track md.key) {
+                <div class="ctc__medio">
+                  <div class="ctc__medio-row">
+                    <select
+                      class="ctc__select"
+                      [ngModel]="md.medio"
+                      (ngModelChange)="setMedioTipo(md.key, $any($event))"
+                    >
+                      <option value="efectivo">Efectivo</option>
+                      <option value="transferencia">Transferencia</option>
+                      <option value="tarjeta">Tarjeta</option>
+                      <option value="cheque">Cheque</option>
+                    </select>
+                    <input
+                      class="ctc__input ctc__input--monto"
+                      type="text"
+                      inputmode="decimal"
+                      [ngModel]="md.montoTxt"
+                      (ngModelChange)="setMedioMonto(md.key, $event)"
+                      placeholder="0,00"
+                    />
+                    <button
+                      type="button"
+                      class="ctc__medio-x"
+                      [disabled]="cobroMedios().length <= 1"
+                      (click)="quitarMedio(md.key)"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  @if (md.medio === 'cheque') {
+                    <div class="ctc__cheque-grid">
+                      <label class="ctc__field">
+                        <span class="ctc__field-label">N° cheque</span>
+                        <input
+                          class="ctc__input"
+                          [ngModel]="md.chequeNumero"
+                          (ngModelChange)="setChequeCampo(md.key, 'chequeNumero', $event)"
+                        />
+                      </label>
+                      <label class="ctc__field">
+                        <span class="ctc__field-label">Banco</span>
+                        <select
+                          class="ctc__select"
+                          [ngModel]="md.chequeBanco"
+                          (ngModelChange)="setChequeCampo(md.key, 'chequeBanco', $event)"
+                        >
+                          <option value="">Elegí el banco</option>
+                          @for (b of bancosEmisores; track b) {
+                            <option [value]="b">{{ b }}</option>
+                          }
+                        </select>
+                      </label>
+                      <label class="ctc__field">
+                        <span class="ctc__field-label">Fecha de pago</span>
+                        <input
+                          class="ctc__input"
+                          type="date"
+                          [ngModel]="md.chequeFecha"
+                          (ngModelChange)="setChequeCampo(md.key, 'chequeFecha', $event)"
+                        />
+                      </label>
+                      <label class="ctc__field">
+                        <span class="ctc__field-label">Vencimiento</span>
+                        <input
+                          class="ctc__input"
+                          type="date"
+                          [ngModel]="md.chequeVto"
+                          (ngModelChange)="setChequeCampo(md.key, 'chequeVto', $event)"
+                        />
+                      </label>
+                      <label class="ctc__field ctc__field--span">
+                        <span class="ctc__field-label">Librador</span>
+                        <input
+                          class="ctc__input"
+                          [ngModel]="md.chequeLibrador"
+                          (ngModelChange)="setChequeCampo(md.key, 'chequeLibrador', $event)"
+                        />
+                      </label>
+                    </div>
+                    <div class="ctc__cobro-hint">El cheque entra a la cartera (menú Cheques).</div>
+                  }
+                </div>
+              }
+              @if (cantCheques() >= maxCheques) {
+                <div class="ctc__cobro-hint">Máximo {{ maxCheques }} cheques por cobro</div>
+              }
+            </div>
+
+            <label class="ctc__field">
+              <span class="ctc__field-label">Observaciones</span>
+              <input
+                class="ctc__input"
+                type="text"
+                [ngModel]="cobroObs()"
+                (ngModelChange)="cobroObs.set($event)"
+                placeholder="Opcional"
+                maxlength="200"
+              />
+            </label>
+          </div>
+
+          <div class="ctc__cobro-foot">
+            <div class="ctc__cobro-line">
+              <span>Imputado</span>
+              <span>{{ imputadoFmt() }}</span>
+            </div>
+            <div class="ctc__cobro-line ctc__cobro-line--total">
+              <span>Total a cobrar</span>
+              <strong>{{ totalCobroFmt() }}</strong>
+            </div>
+            <div
+              class="ctc__cobro-diff"
+              [class.ctc__cobro-diff--ok]="cobroDiff().kind === 'ok'"
+              [class.ctc__cobro-diff--cuenta]="cobroDiff().kind === 'cuenta'"
+              [class.ctc__cobro-diff--faltan]="cobroDiff().kind === 'faltan'"
+            >
+              {{ cobroDiff().txt }}
+            </div>
+            <button
+              type="button"
+              class="ctc__btn ctc__btn--primary ctc__btn--block"
+              [disabled]="cobroGuardando() || cobroDiff().kind === 'faltan' || totalCobroNum() <= 0"
+              (click)="confirmarCobro()"
+            >
+              {{ cobroGuardando() ? 'Registrando…' : 'Confirmar cobro' }}
+            </button>
+          </div>
+        }
+      </aside>
+    </div>
   } @else {
+    <div class="ctc__inf-head">
+      <div>
+        <h2 class="ctc__inf-title">Cartera de cuentas corrientes</h2>
+        <p class="ctc__subtitle">
+          @if (informeEjecutado() && informeStatus() === 'success') {
+            {{ informesFiltrados().length }} cuenta(s) · deuda {{ informesKpis().deudaFmt }}
+          } @else {
+            Filtrá y buscá para listar la cartera
+          }
+        </p>
+      </div>
+      @if (informeEjecutado() && informeStatus() === 'success') {
+        <div class="ctc__kpis ctc__kpis--inf">
+          <div>
+            <div class="ctc__kpi-label">Cuentas</div>
+            <div class="ctc__kpi-value">{{ informesKpis().cuentas }}</div>
+          </div>
+          <div>
+            <div class="ctc__kpi-label">Deuda</div>
+            <div class="ctc__kpi-value">{{ informesKpis().deudaFmt }}</div>
+          </div>
+          <div>
+            <div class="ctc__kpi-label">A favor</div>
+            <div class="ctc__kpi-value">{{ informesKpis().favorN }}</div>
+          </div>
+          <div>
+            <div class="ctc__kpi-label">Mora +90</div>
+            <div class="ctc__kpi-value">{{ informesKpis().mora90 }}</div>
+          </div>
+        </div>
+      }
+    </div>
+
     <div class="ctc__toolbar card">
       <div class="ctc__inf-search-row">
         <label class="ctc__search ctc__search--inf">
@@ -309,10 +636,46 @@
             type="search"
             [ngModel]="infQ()"
             (ngModelChange)="infQ.set($event)"
-            placeholder="Filtrar por nombre o CUIT (opcional, mín. 3 caracteres)…"
+            placeholder="Filtrar por nombre o CUIT…"
             autocomplete="off"
           />
         </label>
+      </div>
+
+      <div class="ctc__presets">
+        <span class="ctc__field-label">Criterios</span>
+        <button
+          type="button"
+          class="ctc__preset"
+          [class.ctc__preset--on]="infPreset() === 'todos'"
+          (click)="aplicarPreset('todos')"
+        >
+          Todas
+        </button>
+        <button
+          type="button"
+          class="ctc__preset"
+          [class.ctc__preset--on]="infPreset() === 'debe'"
+          (click)="aplicarPreset('debe')"
+        >
+          Con deuda
+        </button>
+        <button
+          type="button"
+          class="ctc__preset"
+          [class.ctc__preset--on]="infPreset() === 'mora90'"
+          (click)="aplicarPreset('mora90')"
+        >
+          Mora +90
+        </button>
+        <button
+          type="button"
+          class="ctc__preset"
+          [class.ctc__preset--on]="infPreset() === 'al_dia'"
+          (click)="aplicarPreset('al_dia')"
+        >
+          Al día
+        </button>
       </div>
 
       <div class="ctc__filters-grid">
@@ -400,25 +763,11 @@
           <span class="ctc__inf-hint">{{ filtrosActivosCount() }} filtro(s) activo(s)</span>
         }
       </div>
-
-      <div class="ctc__filters-meta">
-        @if (!informeEjecutado()) {
-          Configurá los filtros y presioná Buscar para listar cuentas corrientes
-        } @else if (informeStatus() === 'loading') {
-          Buscando cuentas…
-        } @else if (informeStatus() === 'success') {
-          {{ informesFiltrados().length }} cuenta(s) encontradas
-        } @else if (informeError(); as err) {
-          No se pudo buscar: {{ err }}
-        }
-      </div>
     </div>
 
     <div class="ctc__listado-full">
       @if (!informeEjecutado()) {
-        <div class="ctc__empty">
-          Usá los filtros y el botón Buscar para generar el informe de cuentas corrientes.
-        </div>
+        <div class="ctc__empty">Usá los filtros y el botón Buscar para generar el informe.</div>
       } @else if (informeStatus() === 'loading') {
         <div class="ctc__empty">Cargando resultados…</div>
       } @else if (informesFiltrados().length === 0) {
@@ -431,18 +780,16 @@
                 <th>Cliente</th>
                 <th>CUIT</th>
                 <th>Situación</th>
-                <th>Antigüedad</th>
+                <th>Mora</th>
                 <th>Último mov.</th>
-                <th class="ctc__th-right">Debe</th>
-                <th class="ctc__th-right">Haber</th>
                 <th class="ctc__th-right">Saldo</th>
-                <th class="ctc__th-right">Disp. crédito</th>
+                <th class="ctc__th-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
               @for (fila of informesFiltrados(); track fila.cliente.id) {
-                <tr class="ctc__row-link" (click)="abrirClienteDesdeInforme(fila.cliente.id)">
-                  <td>
+                <tr>
+                  <td class="ctc__row-link" (click)="abrirDrawerInforme(fila.cliente.id)">
                     <div class="ctc__td-strong">{{ fila.cliente.nombre }}</div>
                     <div class="ctc__td-sub">
                       {{ fila.zonaNombre }}
@@ -464,8 +811,6 @@
                   </td>
                   <td>{{ fila.antiguedadLabel }}</td>
                   <td>{{ fila.ultimoMovFmt }}</td>
-                  <td class="ctc__td-right">{{ fila.debeFmt }}</td>
-                  <td class="ctc__td-right">{{ fila.haberFmt }}</td>
                   <td
                     class="ctc__td-right ctc__saldo"
                     [class.ctc__cli-saldo--debe]="fila.situacion === 'debe'"
@@ -473,7 +818,22 @@
                   >
                     {{ fila.saldoFmt }}
                   </td>
-                  <td class="ctc__td-right">{{ fila.disponibleFmt }}</td>
+                  <td class="ctc__td-right">
+                    <button
+                      type="button"
+                      class="ctc__btn ctc__btn--primary ctc__btn--sm"
+                      (click)="cobrarDesdeInforme(fila.cliente.id)"
+                    >
+                      Cobrar
+                    </button>
+                    <button
+                      type="button"
+                      class="ctc__btn ctc__btn--sm"
+                      (click)="abrirDrawerInforme(fila.cliente.id)"
+                    >
+                      Ver
+                    </button>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -483,6 +843,184 @@
     </div>
   }
 </section>
+
+@if (resumenOpen() && clienteActual(); as cli) {
+  <div class="ctc-modal ctc-print-root" (click)="cerrarResumen()">
+    <div class="ctc-modal__panel ctc-modal__panel--resumen" (click)="$event.stopPropagation()">
+      <div class="ctc-modal__head">
+        <div>
+          <h2 class="ctc-modal__title">Resumen de cuenta corriente</h2>
+          <p class="ctc-modal__sub">{{ cli.nombre }} · {{ metaCliente() }}</p>
+        </div>
+        <button type="button" class="ctc-modal__close ctc-print-hide" (click)="cerrarResumen()">
+          ✕
+        </button>
+      </div>
+      <div class="ctc-modal__kpis">
+        <div>
+          <div class="ctc__kpi-label">Saldo</div>
+          <div class="ctc__kpi-value">{{ kpiSaldo() }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">Debe</div>
+          <div class="ctc__kpi-value">{{ kpiDebe() }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">Haber</div>
+          <div class="ctc__kpi-value">{{ kpiHaber() }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">Mora</div>
+          <div class="ctc__kpi-value">{{ kpiMora() }}</div>
+        </div>
+      </div>
+      <div class="ctc-modal__table-wrap">
+        @if (filasResumen().length === 0) {
+          <div class="ctc__empty">Sin movimientos en la cuenta</div>
+        } @else {
+          <table class="ctc__table ctc__table--mov">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Comprobante</th>
+                <th class="ctc__th-right">Debe</th>
+                <th class="ctc__th-right">Haber</th>
+                <th class="ctc__th-right">Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of filasResumen(); track row.id) {
+                <tr>
+                  <td>{{ row.fecha }}</td>
+                  <td>{{ row.tipo }} {{ row.comprobante }}</td>
+                  <td class="ctc__td-right ctc__td-imp">{{ row.debe }}</td>
+                  <td class="ctc__td-right ctc__td-imp">{{ row.haber }}</td>
+                  <td class="ctc__td-right ctc__td-imp ctc__saldo">{{ row.saldo }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+      <div class="ctc-modal__foot ctc-modal__foot--actions ctc-print-hide">
+        <button type="button" class="ctc__btn ctc__btn--ghost" (click)="cerrarResumen()">
+          Cerrar
+        </button>
+        <button type="button" class="ctc__btn ctc__btn--primary" (click)="imprimirResumenAhora()">
+          Imprimir
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (recordatorioOpen() && clienteActual(); as cli) {
+  <div class="ctc-modal" (click)="cerrarRecordatorio()">
+    <div class="ctc-modal__panel ctc-modal__panel--cobro" (click)="$event.stopPropagation()">
+      <div class="ctc-modal__head">
+        <div>
+          <h2 class="ctc-modal__title">Recordatorio</h2>
+          <p class="ctc-modal__sub">{{ cli.nombre }}{{ cli.email ? ' · ' + cli.email : '' }}</p>
+        </div>
+        <button type="button" class="ctc-modal__close" (click)="cerrarRecordatorio()">✕</button>
+      </div>
+      <label class="ctc__field">
+        <span class="ctc__field-label">Mensaje</span>
+        <textarea
+          class="ctc__input ctc__textarea"
+          rows="5"
+          [ngModel]="recordatorioCuerpo()"
+          (ngModelChange)="recordatorioCuerpo.set($event)"
+        ></textarea>
+      </label>
+      <div class="ctc-modal__foot ctc-modal__foot--actions">
+        <button type="button" class="ctc__btn ctc__btn--ghost" (click)="copiarRecordatorio()">
+          Copiar texto
+        </button>
+        <button type="button" class="ctc__btn ctc__btn--primary" (click)="mailRecordatorio()">
+          {{ cli.email ? 'Enviar por mail' : 'Abrir correo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (infDrawerId() && infDrawerCliente(); as dCli) {
+  <div class="ctc-drawer" (click)="cerrarDrawerInforme()">
+    <div class="ctc-drawer__panel" (click)="$event.stopPropagation()">
+      <div class="ctc-drawer__head">
+        <div>
+          <h2 class="ctc-modal__title">{{ dCli.cliente.nombre }}</h2>
+          <p class="ctc-modal__sub">
+            {{ dCli.cliente.cuit || 'Sin CUIT' }} · {{ dCli.zonaNombre }} ·
+            {{ dCli.situacionLabel }}
+          </p>
+        </div>
+        <button type="button" class="ctc-modal__close" (click)="cerrarDrawerInforme()">✕</button>
+      </div>
+      <div class="ctc-modal__kpis">
+        <div>
+          <div class="ctc__kpi-label">Saldo</div>
+          <div class="ctc__kpi-value">{{ dCli.saldoFmt }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">Mora</div>
+          <div class="ctc__kpi-value">{{ dCli.antiguedadLabel }}</div>
+        </div>
+        <div>
+          <div class="ctc__kpi-label">Disp. crédito</div>
+          <div class="ctc__kpi-value">{{ dCli.disponibleFmt }}</div>
+        </div>
+      </div>
+      <div class="ctc-drawer__movs">
+        @if (!infDrawerEstado()) {
+          <div class="ctc__empty">Cargando movimientos…</div>
+        } @else if (infDrawerMovs().length === 0) {
+          <div class="ctc__empty">Sin movimientos</div>
+        } @else {
+          <table class="ctc__table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Comprobante</th>
+                <th class="ctc__th-right">Debe</th>
+                <th class="ctc__th-right">Haber</th>
+                <th class="ctc__th-right">Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of infDrawerMovs(); track m.id) {
+                <tr>
+                  <td>{{ m.fecha }}</td>
+                  <td>{{ m.tipo }} {{ m.comprobante }}</td>
+                  <td class="ctc__td-right">{{ m.debe }}</td>
+                  <td class="ctc__td-right">{{ m.haber }}</td>
+                  <td class="ctc__td-right">{{ m.saldo }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+      <div class="ctc-drawer__foot">
+        <div>
+          <div class="ctc__kpi-label">Saldo de la cuenta</div>
+          <div class="ctc__kpi-value">{{ dCli.saldoFmt }}</div>
+        </div>
+        <button type="button" class="ctc__btn ctc__btn--ghost" (click)="imprimirResumen()">
+          Imprimir resumen
+        </button>
+        <button
+          type="button"
+          class="ctc__btn ctc__btn--primary"
+          (click)="cobrarDesdeInforme(dCli.cliente.id)"
+        >
+          Registrar cobro
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 @if (detalleOpen() && detalleTotales(); as det) {
   <div class="ctc-modal" (click)="cerrarDetalle()">
@@ -565,131 +1103,6 @@
       <div class="ctc-modal__foot">
         <button type="button" class="ctc__btn ctc__btn--ghost" (click)="cerrarDetalle()">
           Cerrar
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-@if (cobroOpen()) {
-  <div class="ctc-modal" (click)="cerrarCobro()">
-    <div class="ctc-modal__panel ctc-modal__panel--cobro" (click)="$event.stopPropagation()">
-      <div class="ctc-modal__head">
-        <div>
-          <h2 class="ctc-modal__title">Registrar cobro</h2>
-          <p class="ctc-modal__sub">
-            Cliente: <strong>{{ clienteActual()?.nombre }}</strong>
-          </p>
-        </div>
-        <button type="button" class="ctc-modal__close" (click)="cerrarCobro()">✕</button>
-      </div>
-
-      <div class="ctc-cobro">
-        <div class="ctc-cobro__saldo">
-          Saldo deudor:
-          <strong>{{ cobroSaldoFmt() }}</strong>
-        </div>
-
-        <label class="ctc__field">
-          <span class="ctc__field-label">Monto a cobrar</span>
-          <input
-            class="ctc__input"
-            type="text"
-            inputmode="decimal"
-            [ngModel]="cobroMonto()"
-            (ngModelChange)="cobroMonto.set($event)"
-            placeholder="0,00"
-          />
-        </label>
-
-        <label class="ctc__field">
-          <span class="ctc__field-label">Medio</span>
-          <select
-            class="ctc__select"
-            [ngModel]="cobroMedio()"
-            (ngModelChange)="cobroMedio.set($any($event))"
-          >
-            <option value="efectivo">Efectivo</option>
-            <option value="transferencia">Transferencia</option>
-            <option value="tarjeta">Tarjeta</option>
-            <option value="cheque">Cheque</option>
-          </select>
-        </label>
-
-        @if (cobroMedio() === 'cheque') {
-          <label class="ctc__field">
-            <span class="ctc__field-label">Número</span>
-            <input
-              class="ctc__input"
-              [ngModel]="cobroChequeNumero()"
-              (ngModelChange)="cobroChequeNumero.set($event)"
-            />
-          </label>
-          <label class="ctc__field">
-            <span class="ctc__field-label">Banco</span>
-            <input
-              class="ctc__input"
-              [ngModel]="cobroChequeBanco()"
-              (ngModelChange)="cobroChequeBanco.set($event)"
-            />
-          </label>
-          <label class="ctc__field">
-            <span class="ctc__field-label">Librador</span>
-            <input
-              class="ctc__input"
-              [ngModel]="cobroChequeLibrador()"
-              (ngModelChange)="cobroChequeLibrador.set($event)"
-            />
-          </label>
-          <label class="ctc__field">
-            <span class="ctc__field-label">Fecha</span>
-            <input
-              class="ctc__input"
-              type="date"
-              [ngModel]="cobroChequeFecha()"
-              (ngModelChange)="cobroChequeFecha.set($event)"
-            />
-          </label>
-          <label class="ctc__field">
-            <span class="ctc__field-label">Vencimiento</span>
-            <input
-              class="ctc__input"
-              type="date"
-              [ngModel]="cobroChequeVto()"
-              (ngModelChange)="cobroChequeVto.set($event)"
-            />
-          </label>
-        }
-
-        <label class="ctc__field">
-          <span class="ctc__field-label">Observación (opcional)</span>
-          <input
-            class="ctc__input"
-            type="text"
-            [ngModel]="cobroObs()"
-            (ngModelChange)="cobroObs.set($event)"
-            placeholder="Ej. Transferencia banco Nación"
-            maxlength="200"
-          />
-        </label>
-      </div>
-
-      <div class="ctc-modal__foot ctc-modal__foot--actions">
-        <button
-          type="button"
-          class="ctc__btn ctc__btn--ghost"
-          [disabled]="cobroGuardando()"
-          (click)="cerrarCobro()"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="ctc__btn ctc__btn--primary"
-          [disabled]="cobroGuardando()"
-          (click)="confirmarCobro()"
-        >
-          {{ cobroGuardando() ? 'Registrando…' : 'Confirmar cobro' }}
         </button>
       </div>
     </div>

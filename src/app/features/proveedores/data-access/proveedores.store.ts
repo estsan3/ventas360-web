@@ -17,6 +17,10 @@ export class ProveedoresStore {
   private readonly _proveedores = signal<AsyncState<Proveedor[]>>(asyncIdle());
   readonly proveedores = this._proveedores.asReadonly();
 
+  resetListado(): void {
+    this._proveedores.set(asyncIdle());
+  }
+
   cargar(q = ''): void {
     const prev = this._proveedores().data;
     this._proveedores.set({ ...asyncLoading(), data: prev });

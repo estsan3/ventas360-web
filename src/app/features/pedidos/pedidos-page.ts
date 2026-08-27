@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MIN_CHARS_BUSQUEDA } from '../../core/utils/busqueda';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { EstadoPedido, Pedido } from '../ventas/data-access/pedido.model';
 import { VentasStore } from '../ventas/data-access/ventas.store';
@@ -66,6 +68,7 @@ function chipDeEstado(estado: EstadoPedido): Exclude<ChipPedido, 'todos'> | null
 
 @Component({
   selector: 'app-pedidos-page',
+  imports: [FormsModule],
   templateUrl: './pedidos-page.html',
   styleUrl: './pedidos-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,6 +78,9 @@ export class PedidosPage {
   private readonly store = inject(VentasStore);
   private readonly notifications = inject(NotificationStore);
 
+  protected readonly minChars = MIN_CHARS_BUSQUEDA;
+  protected readonly q = signal('');
+  protected readonly buscado = signal(false);
   protected readonly chip = signal<ChipPedido>('todos');
   protected readonly detalle = signal<Pedido | null>(null);
   protected readonly estado = this.store.pedidos;
@@ -92,14 +98,22 @@ export class PedidosPage {
   });
 
   protected readonly filas = computed(() => {
+    if (!this.buscado()) {
+      return [];
+    }
     const c = this.chip();
+    const term = this.q().trim().toLowerCase();
     const clientes = new Map(this.store.clientesRef().map((x) => [x.id, x.nombre]));
     return (this.estado().data ?? [])
       .filter((p) => {
-        if (c === 'todos') {
+        if (c !== 'todos' && chipDeEstado(p.estado) !== c) {
+          return false;
+        }
+        if (!term) {
           return true;
         }
-        return chipDeEstado(p.estado) === c;
+        const nombre = (clientes.get(p.clienteId) ?? '').toLowerCase();
+        return p.id.toLowerCase().includes(term) || nombre.includes(term);
       })
       .map((p): FilaPedido => {
         const puedeConfirmar = p.estado === 'borrador';
@@ -141,9 +155,9 @@ export class PedidosPage {
     };
   });
 
-  constructor() {
+  protected buscar(): void {
+    this.buscado.set(true);
     this.store.cargar('pedido');
-    this.store.cargarReferencias();
   }
 
   protected setChip(v: ChipPedido): void {

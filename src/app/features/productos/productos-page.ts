@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MIN_CHARS_BUSQUEDA, textoBusquedaValido } from '../../core/utils/busqueda';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { AuthStore } from '../../core/state/auth.store';
 import { NotificationStore } from '../../notifications/state/notification.store';
@@ -95,6 +96,7 @@ export class ProductosPage {
 
   protected readonly pedidosColumns = PEDIDOS_COLUMNS;
   protected readonly estado = this.store.productos;
+  protected readonly minChars = MIN_CHARS_BUSQUEDA;
   protected readonly total = this.store.total;
   protected readonly busqueda = signal('');
   protected readonly chip = signal<ChipFiltro>('todos');
@@ -181,7 +183,13 @@ export class ProductosPage {
     // re-disparen el effect (loop infinito de HTTP).
     effect(() => {
       const q = this.busqueda();
-      untracked(() => this.store.cargar({ q, filtro: 'activos', page: 1 }));
+      untracked(() => {
+        if (!textoBusquedaValido(q)) {
+          this.store.resetListado();
+          return;
+        }
+        this.store.cargar({ q, filtro: 'activos', page: 1 });
+      });
     });
     this.form.valueChanges.subscribe(() => {
       if (this.configModalAbierto()) {

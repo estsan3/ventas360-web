@@ -42,6 +42,7 @@ type TipoTalonario = Talonario['tipoComprobante'];
   templateUrl: './configuracion-page.html',
   styleUrl: './configuracion-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'page-scroll' },
 })
 export class ConfiguracionPage {
   private readonly router = inject(Router);

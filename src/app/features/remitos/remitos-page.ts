@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { EstadoPedido, Pedido } from '../ventas/data-access/pedido.model';
@@ -60,6 +61,7 @@ function chipDeEstado(estado: EstadoPedido): Exclude<ChipRemito, 'todos'> | null
 
 @Component({
   selector: 'app-remitos-page',
+  imports: [FormsModule],
   templateUrl: './remitos-page.html',
   styleUrl: './remitos-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -69,6 +71,8 @@ export class RemitosPage {
   private readonly store = inject(VentasStore);
   private readonly notifications = inject(NotificationStore);
 
+  protected readonly q = signal('');
+  protected readonly buscado = signal(false);
   protected readonly chip = signal<ChipRemito>('todos');
   protected readonly detalle = signal<Pedido | null>(null);
   protected readonly estado = this.store.pedidos;
@@ -86,6 +90,9 @@ export class RemitosPage {
   });
 
   protected readonly filas = computed(() => {
+    if (!this.buscado()) {
+      return [];
+    }
     const c = this.chip();
     const clientes = new Map(this.store.clientesRef().map((x) => [x.id, x.nombre]));
     const depositos = new Map(this.store.depositosRef().map((x) => [x.id, x.nombre]));
@@ -141,9 +148,9 @@ export class RemitosPage {
     };
   });
 
-  constructor() {
+  protected buscar(): void {
+    this.buscado.set(true);
     this.store.cargar('remito');
-    this.store.cargarReferencias();
   }
 
   protected setChip(v: ChipRemito): void {

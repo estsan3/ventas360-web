@@ -4,64 +4,71 @@
       <h1>Bancos</h1>
       <p class="page__subtitle">Cuentas bancarias y cartera de cheques (propios y de tercero)</p>
     </div>
-    <app-button variant="primary" size="md" (clicked)="abrirValor()">
-      <app-icon name="plus" />
-      Nuevo valor
-    </app-button>
+    <div class="page__actions">
+      <app-button variant="outline" size="md" (clicked)="buscar()">Buscar</app-button>
+      <app-button variant="primary" size="md" (clicked)="abrirValor()">
+        <app-icon name="plus" />
+        Nuevo valor
+      </app-button>
+    </div>
   </header>
 
-  <section class="panel">
-    <h3>Cuentas</h3>
-    <div class="tabla-scroll">
-      <app-table
-        [columns]="columnasCuentas"
-        [rows]="filasCuentas()"
-        headerVariant="soft"
-        [striped]="true"
-      >
-        <ng-template appTableCell="flags" let-row>
-          @if ($any(row)['default']) {
-            <app-badge variant="info">Default</app-badge>
-          }
-        </ng-template>
-      </app-table>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h3>Valores</h3>
-    <app-state-wrapper
-      [status]="estadoValores().status"
-      [error]="estadoValores().error ?? ''"
-      [empty]="filasValores().length === 0"
-      emptyMessage="No hay valores en cartera."
-    >
+  @if (!buscado()) {
+    <div class="bancos__hint">Usá Buscar para listar cuentas y valores en cartera</div>
+  } @else {
+    <section class="panel">
+      <h3>Cuentas</h3>
       <div class="tabla-scroll">
         <app-table
-          [columns]="columnasValores"
-          [rows]="filasValores()"
+          [columns]="columnasCuentas"
+          [rows]="filasCuentas()"
           headerVariant="soft"
           [striped]="true"
         >
-          <ng-template appTableCell="estado" let-row>
-            <app-badge [variant]="$any(row)['enCartera'] ? 'warning' : 'success'">
-              {{ $any(row)['estado'] }}
-            </app-badge>
-          </ng-template>
-          <ng-template appTableCell="acciones" let-row>
-            @if ($any(row)['enCartera']) {
-              <app-button variant="outline" size="sm" (clicked)="abrirEntregar($any(row)['id'])">
-                Entregar
-              </app-button>
-              <app-button variant="outline" size="sm" (clicked)="depositar($any(row)['id'])">
-                Depositar
-              </app-button>
+          <ng-template appTableCell="flags" let-row>
+            @if ($any(row)['default']) {
+              <app-badge variant="info">Default</app-badge>
             }
           </ng-template>
         </app-table>
       </div>
-    </app-state-wrapper>
-  </section>
+    </section>
+
+    <section class="panel panel--grow">
+      <h3>Valores</h3>
+      <app-state-wrapper
+        [status]="estadoValores().status"
+        [error]="estadoValores().error ?? ''"
+        [empty]="filasValores().length === 0"
+        emptyMessage="No hay valores en cartera."
+      >
+        <div class="tabla-scroll">
+          <app-table
+            [columns]="columnasValores"
+            [rows]="filasValores()"
+            headerVariant="soft"
+            [striped]="true"
+          >
+            <ng-template appTableCell="estado" let-row>
+              <app-badge [variant]="$any(row)['enCartera'] ? 'warning' : 'success'">
+                {{ $any(row)['estado'] }}
+              </app-badge>
+            </ng-template>
+            <ng-template appTableCell="acciones" let-row>
+              @if ($any(row)['enCartera']) {
+                <app-button variant="outline" size="sm" (clicked)="abrirEntregar($any(row)['id'])">
+                  Entregar
+                </app-button>
+                <app-button variant="outline" size="sm" (clicked)="depositar($any(row)['id'])">
+                  Depositar
+                </app-button>
+              }
+            </ng-template>
+          </app-table>
+        </div>
+      </app-state-wrapper>
+    </section>
+  }
 
   <app-side-drawer
     [abierto]="drawerAbierto()"

@@ -19,6 +19,25 @@
     @include dc.dc-list-filters;
   }
 
+  &__toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    flex: 1;
+    max-width: 380px;
+    padding: 10px 14px;
+    border: 1px solid dc.$dc-border;
+    border-radius: 9px;
+    font-size: 13.5px;
+    background: #fff;
+    color: dc.$dc-text;
+    font-family: inherit;
+  }
+
   &__chip {
     @include dc.dc-list-chip;
   }

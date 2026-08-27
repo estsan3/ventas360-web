@@ -25,6 +25,12 @@ export class ClientesStore {
   readonly page = this._page.asReadonly();
   readonly pedidosCliente = this._pedidosCliente.asReadonly();
 
+  resetListado(): void {
+    this._clientes.set(asyncIdle());
+    this._total.set(0);
+    this._page.set(1);
+  }
+
   cargar(opts: { q?: string; filtro?: FiltroActivo; page?: number } = {}): void {
     const actual = this._clientes();
     if (actual.status === 'loading') {

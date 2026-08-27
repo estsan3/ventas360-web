@@ -44,6 +44,7 @@ function formatearVencimiento(fecha: string | null, vencido: boolean): string {
   styleUrl: './dashboard-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Icon],
+  host: { class: 'page-scroll' },
 })
 export class DashboardPage {
   private readonly store = inject(DashboardStore);
