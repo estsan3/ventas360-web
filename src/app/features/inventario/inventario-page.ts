@@ -5,6 +5,8 @@ import { ConfirmDialogService } from '../../core/services/confirm-dialog.service
 import { AuthStore } from '../../core/state/auth.store';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { DepositoInventario, DepositosService } from './data-access/depositos.service';
+import { LineaRemitoParseada, ParsearRemitoResultado } from './data-access/remito-ia.model';
+import { RemitoIaService } from './data-access/remito-ia.service';
 import { InventarioItem, StockService } from './data-access/stock.service';
 
 export type TabStock = 'toma' | 'recepcion' | 'alertas';
@@ -29,6 +31,7 @@ interface RemitoVista {
   estado: string;
   estadoTone: 'warn' | 'ok' | 'info' | 'neutral';
   puedeConfirmar: boolean;
+  cargaIa: boolean;
 }
 
 interface AlertaStock {
@@ -130,6 +133,7 @@ function formatearValor(n: number): string {
 export class InventarioPage {
   private readonly depositosApi = inject(DepositosService);
   private readonly stockApi = inject(StockService);
+  private readonly remitoIa = inject(RemitoIaService);
   private readonly notifications = inject(NotificationStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -145,6 +149,13 @@ export class InventarioPage {
   protected readonly filas = signal<FilaConteo[]>([]);
   protected readonly remitos = signal<RemitoVista[]>([]);
   protected readonly nombresProv = signal<Record<string, string>>({});
+  protected readonly proveedores = signal<{ id: string; nombre: string }[]>([]);
+  protected readonly proveedorIa = signal('');
+  protected readonly parseando = signal(false);
+  protected readonly creandoRemito = signal(false);
+  protected readonly previewIa = signal<ParsearRemitoResultado | null>(null);
+  protected readonly lineasIa = signal<LineaRemitoParseada[]>([]);
+  protected readonly nombreArchivoIa = signal('');
 
   protected readonly filasVista = computed(() => {
     const q = this.busqueda().trim().toLowerCase();
@@ -189,6 +200,17 @@ export class InventarioPage {
     return this.depositos().find((d) => d.id === id)?.nombre ?? 'Depósito';
   });
 
+  protected readonly lineasIaMatcheadas = computed(
+    () => this.lineasIa().filter((l) => l.productoId).length,
+  );
+
+  protected readonly puedeCrearRemitoIa = computed(() => {
+    const prov = this.proveedorIa();
+    const dep = this.depActivo();
+    const lineas = this.lineasIa().filter((l) => l.productoId && l.cantidad > 0);
+    return Boolean(prov && dep && lineas.length > 0 && !this.creandoRemito());
+  });
+
   protected readonly contados = computed(
     () => this.filas().filter((f) => f.conteo.trim() !== '').length,
   );
@@ -203,7 +225,14 @@ export class InventarioPage {
       this.tab.set(tab);
     }
     this.stockApi.mapProveedores().subscribe({
-      next: (m) => this.nombresProv.set(m),
+      next: (m) => {
+        this.nombresProv.set(m);
+        this.proveedores.set(
+          Object.entries(m)
+            .map(([id, nombre]) => ({ id, nombre }))
+            .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
+        );
+      },
     });
     this.depositosApi.listar().subscribe({
       next: (items) => {
@@ -293,6 +322,7 @@ export class InventarioPage {
                       : r.estado,
               estadoTone: tone as RemitoVista['estadoTone'],
               puedeConfirmar: r.estado === 'borrador',
+              cargaIa: false,
             };
           }),
         );
@@ -444,6 +474,112 @@ export class InventarioPage {
         }
       },
     });
+  }
+
+  protected onArchivoRemito(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    input.value = '';
+    if (!archivo) {
+      return;
+    }
+    const proveedorId = this.proveedorIa();
+    const depositoId = this.depActivo();
+    if (!proveedorId) {
+      this.notifications.warning('Elegí proveedor', 'Seleccioná el proveedor del remito.');
+      return;
+    }
+    if (!depositoId) {
+      this.notifications.warning('Sin depósito', 'Elegí el depósito de recepción.');
+      return;
+    }
+    if (!archivo.type.startsWith('image/')) {
+      this.notifications.warning('Solo imágenes', 'Subí una foto JPG, PNG o WebP del remito.');
+      return;
+    }
+    if (archivo.size > 5 * 1024 * 1024) {
+      this.notifications.warning('Archivo grande', 'La imagen no puede superar 5 MB.');
+      return;
+    }
+
+    this.nombreArchivoIa.set(archivo.name);
+    this.parseando.set(true);
+    this.previewIa.set(null);
+    this.lineasIa.set([]);
+    this.remitoIa.parsearRemito(archivo, { proveedorId, depositoId }).subscribe({
+      next: (resultado) => {
+        this.parseando.set(false);
+        this.previewIa.set(resultado);
+        this.lineasIa.set(resultado.lineas.map((l) => ({ ...l })));
+        const modo =
+          resultado.modoParser === 'anthropic'
+            ? 'Claude Haiku'
+            : 'demo (configurá API key para IA real)';
+        this.notifications.success('Remito leído', `${resultado.lineas.length} líneas · ${modo}`);
+      },
+      error: () => {
+        this.parseando.set(false);
+      },
+    });
+  }
+
+  protected actualizarCantidadIa(index: number, valor: string): void {
+    const cantidad = Math.max(1, Math.trunc(Number(valor)) || 1);
+    this.lineasIa.update((rows) => rows.map((r, i) => (i === index ? { ...r, cantidad } : r)));
+  }
+
+  protected descartarPreviewIa(): void {
+    this.previewIa.set(null);
+    this.lineasIa.set([]);
+    this.nombreArchivoIa.set('');
+  }
+
+  protected async crearRemitoDesdeIa(): Promise<void> {
+    const proveedorId = this.proveedorIa();
+    const depositoId = this.depActivo();
+    const lineas = this.lineasIa().filter((l) => l.productoId && l.cantidad > 0);
+    if (!proveedorId || !depositoId || lineas.length === 0) {
+      return;
+    }
+    const sinMatch = this.lineasIa().length - lineas.length;
+    const ok = await this.confirm.abrir({
+      titulo: 'Crear remito borrador',
+      mensaje:
+        sinMatch > 0
+          ? `Se creará un remito con ${lineas.length} líneas. ${sinMatch} línea(s) sin artículo quedan fuera. Después podés confirmarlo para ingresar stock.`
+          : `Se creará un remito borrador con ${lineas.length} líneas. Confirmalo cuando revises las cantidades.`,
+      textoConfirmar: 'Crear remito',
+      textoCancelar: 'Seguir editando',
+    });
+    if (!ok) {
+      return;
+    }
+
+    this.creandoRemito.set(true);
+    this.remitoIa
+      .crearRemitoBorrador({
+        proveedorId,
+        depositoId,
+        lineas: lineas.map((l) => ({
+          productoId: l.productoId!,
+          cantidad: l.cantidad,
+          ...(l.precioUnitario != null ? { precioUnitario: l.precioUnitario } : {}),
+        })),
+      })
+      .subscribe({
+        next: () => {
+          this.creandoRemito.set(false);
+          this.descartarPreviewIa();
+          this.notifications.success(
+            'Remito creado',
+            'Revisá el borrador y confirmá para impactar stock.',
+          );
+          this.cargarRemitos();
+        },
+        error: () => {
+          this.creandoRemito.set(false);
+        },
+      });
   }
 
   protected irCompras(): void {
