@@ -9,14 +9,14 @@ Vale para **toda** grilla o pantalla de Ventas360 (PC, notebook, tablet).
 
 ## No precargar
 
-Al entrar a una pantalla **no** se piden listados de negocio (clientes, artículos, proveedores, pedidos, remitos, presupuestos, compras, cheques, stock, comercios, cartera CxC).
+Al entrar a una pantalla **no** se piden listados de negocio (clientes, artículos, proveedores, pedidos, remitos, presupuestos, compras, stock, comercios, cartera CxC).
 
 Los datos se traen **siempre filtrados**, después de una búsqueda o de un criterio explícito (Buscar, chip, depósito, fechas).
 
 - Texto: mínimo **3 caracteres** antes de pegarle a la API.
 - Empty state: «Escribí al menos 3 caracteres para buscar» (o «aplicá un filtro y Buscar»).
 - Catálogos chicos de UI (zonas, depósitos para un combo) sí pueden cargarse.
-- Excepciones: dashboard (agregados), configuración, estado operativo de caja del turno, mostrador (productos para cargar líneas; clientes van por autocomplete ≥3).
+- Excepciones: dashboard (agregados), configuración, estado operativo de caja del turno, mostrador (productos para cargar líneas; clientes van por autocomplete ≥3), **cartera de cheques** (KPIs, alertas y calendario necesitan el universo; la grilla se filtra en cliente).
 
 ```ts
 // ❌ BAD — constructor de un listado

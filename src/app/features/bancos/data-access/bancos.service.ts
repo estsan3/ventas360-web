@@ -62,10 +62,18 @@ export class BancosService {
     return this.http.get<MovimientoBancarioDto[]>(`${this.base}/movimientos`, { params });
   }
 
-  valores(estado?: string): Observable<ValorBancarioDto[]> {
+  valores(
+    opts: { estado?: string; tipo?: string; q?: string } = {},
+  ): Observable<ValorBancarioDto[]> {
     let params = new HttpParams();
-    if (estado) {
-      params = params.set('estado', estado);
+    if (opts.estado) {
+      params = params.set('estado', opts.estado);
+    }
+    if (opts.tipo) {
+      params = params.set('tipo', opts.tipo);
+    }
+    if (opts.q?.trim()) {
+      params = params.set('q', opts.q.trim());
     }
     return this.http.get<ValorBancarioDto[]>(`${this.base}/valores`, { params });
   }

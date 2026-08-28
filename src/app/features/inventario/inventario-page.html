@@ -1,494 +1,800 @@
-<section class="page inv">
-  <header class="inv__header">
+<section class="stk">
+  <header class="stk__header">
     <div>
-      <h1 class="inv__title">Stock</h1>
-      <p class="inv__subtitle-page">Toma de inventario, recepción y alertas</p>
+      <h1 class="stk__title">Stock</h1>
+      <p class="stk__sub">Artículos, recepción de remitos, toma de inventario y reglas de alerta</p>
+    </div>
+    <div class="stk__alert-wrap">
+      <button
+        type="button"
+        class="stk__alert-btn"
+        [attr.data-tono]="criticas() ? 'danger' : 'warn'"
+        (click)="panelAlertas.set(!panelAlertas())"
+      >
+        <span class="stk__dot"></span>
+        {{ totalAlertas() }} alertas · {{ criticas() }} críticas
+        <span class="stk__caret">▾</span>
+      </button>
+      @if (panelAlertas()) {
+        <div class="stk__alert-panel">
+          <div class="stk__alert-head">
+            <strong>Alertas de stock</strong>
+            <span>según reglas activas</span>
+            <button
+              type="button"
+              class="stk__link"
+              (click)="setTab('reglas'); panelAlertas.set(false)"
+            >
+              Configurar reglas
+            </button>
+          </div>
+          <div class="stk__alert-list">
+            @for (g of panelGrupos(); track g.id) {
+              <button type="button" class="stk__alert-row" (click)="verReglaEnArticulos(g.id)">
+                <span class="stk__dot" [attr.data-tono]="g.tono"></span>
+                <div>
+                  <div class="stk__alert-tit">{{ g.titulo }}</div>
+                  <div class="stk__alert-meta">{{ g.sub }}</div>
+                </div>
+                <strong [attr.data-tono]="g.tono">{{ g.n }}</strong>
+              </button>
+            } @empty {
+              <div class="stk__empty stk__empty--sm">
+                Ninguna regla activa está disparando en los artículos cargados.
+              </div>
+            }
+          </div>
+          <div class="stk__alert-foot">
+            <span>Se notifica por {{ canales().length }} canal(es)</span>
+            <button type="button" class="stk__link" (click)="irCompras()">
+              Orden de compra sugerida
+            </button>
+          </div>
+        </div>
+      }
     </div>
   </header>
 
-  <div class="inv__tabs">
-    <button
-      type="button"
-      class="inv__tab"
-      [class.inv__tab--on]="tab() === 'toma'"
-      (click)="setTab('toma')"
-    >
-      Toma de inventario
-    </button>
-    <button
-      type="button"
-      class="inv__tab"
-      [class.inv__tab--on]="tab() === 'recepcion'"
-      (click)="setTab('recepcion')"
-    >
-      Recepción de remitos
-    </button>
-    <button
-      type="button"
-      class="inv__tab"
-      [class.inv__tab--on]="tab() === 'alertas'"
-      (click)="setTab('alertas')"
-    >
-      Alertas de stock
-    </button>
+  <div class="stk__tabs-row">
+    <div class="stk__tabs">
+      <button
+        type="button"
+        class="stk__tab"
+        [class.stk__tab--on]="tab() === 'articulos'"
+        (click)="setTab('articulos')"
+      >
+        Artículos
+      </button>
+      <button
+        type="button"
+        class="stk__tab"
+        [class.stk__tab--on]="tab() === 'remitos'"
+        (click)="setTab('remitos')"
+      >
+        Recepción de remitos
+        @if (remPendientes() > 0) {
+          <span class="stk__badge">{{ remPendientes() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="stk__tab"
+        [class.stk__tab--on]="tab() === 'inventario'"
+        (click)="setTab('inventario')"
+      >
+        Toma de inventario
+        @if (pendientesToma() > 0) {
+          <span class="stk__badge">{{ pendientesToma() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="stk__tab"
+        [class.stk__tab--on]="tab() === 'reglas'"
+        (click)="setTab('reglas')"
+      >
+        Reglas de alerta
+      </button>
+    </div>
+    <div class="stk__ctx">{{ contextoTxt() }}</div>
   </div>
 
-  @if (tab() === 'toma') {
-    <div class="inv__toma-head">
-      <div class="inv__subtitle">Contá el stock físico y comparalo con el sistema</div>
-      <div class="inv__actions">
-        <button
-          type="button"
-          class="inv__btn inv__btn--ghost"
-          [disabled]="filas().length === 0"
-          (click)="exportarValorizado()"
-        >
-          Exportar valorizado
-        </button>
-        <button
-          type="button"
-          class="inv__btn inv__btn--dark"
-          [disabled]="cerrando() || contados() === 0"
-          (click)="cerrarToma()"
-        >
-          {{ cerrando() ? 'Ajustando…' : 'Cerrar toma y ajustar' }}
-        </button>
+  @if (tab() === 'articulos') {
+    <div class="stk__pane">
+      <div class="stk__kpis">
+        @for (k of kpisArt(); track k.id) {
+          <button
+            type="button"
+            class="stk__kpi"
+            [class.stk__kpi--on]="fEstado() === k.id"
+            (click)="fEstado.set(k.id)"
+          >
+            <div class="stk__kpi-lab">{{ k.label }}</div>
+            <div class="stk__kpi-val" [attr.data-tono]="k.tono">{{ k.value }}</div>
+            <div class="stk__kpi-hint">{{ k.hint }}</div>
+          </button>
+        }
       </div>
-    </div>
 
-    <div class="inv__deps">
-      @for (dep of depositos(); track dep.id) {
-        <button
-          type="button"
-          class="inv__dep"
-          [class.inv__dep--active]="depActivo() === dep.id"
-          (click)="setDep(dep.id)"
+      <div class="stk__filters">
+        <label class="stk__search">
+          <span>⌕</span>
+          <input
+            type="search"
+            placeholder="Código, descripción o EAN"
+            [ngModel]="queryArt()"
+            (ngModelChange)="queryArt.set($event)"
+            (keydown.enter)="onQueryEnter($event)"
+          />
+        </label>
+        <select
+          class="stk__select"
+          [ngModel]="depActivo()"
+          (ngModelChange)="setDepArticulos($event)"
         >
-          <div class="inv__dep-label">{{ dep.nombre }}</div>
-          <div class="inv__dep-val">{{ dep.codigo }}</div>
-          <div class="inv__dep-meta">
-            {{ depActivo() === dep.id ? filas().length + ' artículos' : 'Cambiar depósito' }}
-          </div>
-        </button>
-      } @empty {
-        <div class="inv__dep inv__dep--total">
-          <div class="inv__dep-label">Sin depósitos</div>
-          <div class="inv__dep-val">—</div>
-          <div class="inv__dep-meta">Creá depósitos en Configuración</div>
-        </div>
-      }
-    </div>
-
-    <div class="inv__card">
-      <div class="inv__toolbar">
-        <input
-          class="inv__search"
-          type="search"
-          placeholder="Escaneá o buscá el artículo a contar…"
-          [ngModel]="busqueda()"
-          (ngModelChange)="busqueda.set($event)"
-        />
-        <span class="inv__progress">
-          @if (cargando()) {
-            Cargando inventario…
-          } @else {
-            Contados {{ contados() }} de {{ filas().length }} ·
-            <b>{{ conDiferencia() }} con diferencia</b>
+          <option value="">Todos los depósitos</option>
+          @for (d of depositos(); track d.id) {
+            <option [value]="d.id">{{ d.nombre }}</option>
           }
-        </span>
+        </select>
+        <select class="stk__select" [ngModel]="fRubro()" (ngModelChange)="fRubro.set($event)">
+          <option value="">Todos los rubros</option>
+          @for (r of rubros(); track r) {
+            <option [value]="r">{{ r }}</option>
+          }
+        </select>
+        @for (e of chipsEstado; track e.id) {
+          <button
+            type="button"
+            class="stk__chip"
+            [class.stk__chip--on]="fEstado() === e.id"
+            (click)="fEstado.set(e.id)"
+          >
+            {{ e.label }}
+          </button>
+        }
+        <button type="button" class="stk__link" (click)="limpiarFiltros()">Limpiar</button>
       </div>
 
-      @if (!depActivo()) {
-        <div class="inv__empty">Elegí un depósito para cargar el inventario</div>
-      } @else if (!cargando() && filas().length === 0) {
-        <div class="inv__empty">
-          No hay artículos en el catálogo. Importá una lista de proveedor o cargá productos en
-          Artículos.
+      <div class="stk__card">
+        <div class="stk__thead stk__grid-art">
+          <div>Código</div>
+          <div>Artículo</div>
+          <div>Depósito</div>
+          <div class="stk__num">Stock</div>
+          <div class="stk__num">Mín.</div>
+          <div class="stk__num">Máx.</div>
+          <div class="stk__num">Costo unit.</div>
+          <div class="stk__num">Valorizado</div>
+          <div class="stk__num">Alertas</div>
         </div>
-      }
-
-      @if (depActivo() && filas().length > 0) {
-        <table class="inv__table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Artículo</th>
-              <th>Depósito</th>
-              <th class="inv__th-right">Sistema</th>
-              <th class="inv__th-right">Conteo</th>
-              <th class="inv__th-right">Diferencia</th>
-              <th class="inv__th-right">Valor dif.</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of filasVista(); track row.articuloId) {
-              @let dif = diferencia(row);
-              @let val = valorDif(row);
-              <tr [class.inv__row--alerta]="row.alerta || (tieneDif(row) && dif.tono === 'neg')">
-                <td class="inv__codigo">{{ row.codigo }}</td>
-                <td class="inv__articulo">{{ row.articulo }}</td>
-                <td>{{ row.ubicacion }}</td>
-                <td class="inv__td-right">{{ row.sistema }}</td>
-                <td class="inv__td-right">
-                  <input
-                    class="inv__conteo"
-                    [class.inv__conteo--warn]="dif.tono === 'neg'"
-                    type="text"
-                    inputmode="numeric"
-                    [placeholder]="'—'"
-                    [ngModel]="row.conteo"
-                    (ngModelChange)="actualizarConteo(row.articuloId, $event)"
-                  />
-                </td>
-                <td
-                  class="inv__td-right"
-                  [class.inv__ok]="dif.tono === 'ok'"
-                  [class.inv__neg]="dif.tono === 'neg'"
-                  [class.inv__pos]="dif.tono === 'pos'"
-                  [class.inv__muted]="dif.tono === 'muted'"
-                  [class.inv__strong]="
-                    dif.tono === 'neg' || dif.tono === 'ok' || dif.tono === 'pos'
-                  "
-                >
-                  {{ dif.texto }}
-                </td>
-                <td
-                  class="inv__td-right"
-                  [class.inv__neg]="val.tono === 'neg'"
-                  [class.inv__pos]="val.tono === 'pos'"
-                  [class.inv__muted]="val.tono === 'muted'"
-                >
-                  {{ val.texto }}
-                </td>
-              </tr>
+        <div class="stk__body">
+          @if (!buscadoArt() && !depActivo()) {
+            <div class="stk__empty">
+              Escribí al menos {{ minChars }} caracteres y Enter, o elegí un depósito
+            </div>
+          } @else if (cargandoArt()) {
+            <div class="stk__empty">Cargando inventario…</div>
+          } @else {
+            @for (r of articulosFiltrados(); track r.articuloId + r.depositoId) {
+              @let chips = chipsDe(r);
+              <div
+                class="stk__row stk__grid-art"
+                [class.stk__row--alert]="chips[0].tono === 'danger'"
+              >
+                <div class="stk__mono stk__muted">{{ r.codigo }}</div>
+                <div class="stk__clip">
+                  <div>{{ r.nombre }}</div>
+                  <div class="stk__meta">{{ r.sub }}</div>
+                </div>
+                <div class="stk__clip stk__muted">{{ r.deposito }}</div>
+                <div class="stk__num stk__strong" [attr.data-tono]="chips[0].tono">
+                  {{ r.stock }} u
+                </div>
+                <div class="stk__num stk__muted">{{ r.min }}</div>
+                <div class="stk__num stk__muted">{{ r.max }}</div>
+                <div class="stk__num">{{ money(r.costo) }}</div>
+                <div class="stk__num stk__strong">{{ money(r.costo * r.stock) }}</div>
+                <div class="stk__chips-end">
+                  @for (a of chips; track a.id) {
+                    <span class="stk__pill" [attr.data-tono]="a.tono">{{ a.label }}</span>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="stk__empty">
+                Ningún artículo con estos filtros. Probá quitar el depósito o el chip de alerta.
+              </div>
             }
-          </tbody>
-        </table>
-      }
+          }
+        </div>
+        <div class="stk__foot">
+          <span>{{ articulosFiltrados().length }} artículos</span>
+          <button type="button" class="stk__link" (click)="irCompras()">
+            Generar orden de compra sugerida
+          </button>
+          <button
+            type="button"
+            class="stk__link"
+            (click)="avisoNyI('La transferencia entre depósitos llega en el siguiente paso.')"
+          >
+            Transferir entre depósitos
+          </button>
+          <button type="button" class="stk__link" (click)="exportarArticulos()">Exportar</button>
+          <span class="stk__sp"></span>
+          <span>Valorizado filtrado</span>
+          <strong>{{ money(valorFiltrado()) }}</strong>
+        </div>
+      </div>
     </div>
   }
 
-  @if (tab() === 'recepcion') {
-    <div class="inv__recepcion">
-      <div class="inv__card inv__card--scroll">
-        <div class="inv__card-head">
-          <div class="inv__card-title">Remitos de proveedor recibidos</div>
-          <div class="inv__card-sub">Al confirmar, el stock se actualiza</div>
+  @if (tab() === 'remitos') {
+    <div class="stk__pane">
+      <div class="stk__filters">
+        <div class="stk__tabs stk__tabs--sm">
+          <button
+            type="button"
+            class="stk__tab"
+            [class.stk__tab--on]="remSub() === 'carga'"
+            (click)="remSub.set('carga')"
+          >
+            Cargar con IA
+          </button>
+          <button
+            type="button"
+            class="stk__tab"
+            [class.stk__tab--on]="remSub() === 'listado'"
+            (click)="remSub.set('listado')"
+          >
+            Recibidos ({{ remitos().length }})
+          </button>
         </div>
-        <table class="inv__table">
-          <thead>
-            <tr>
-              <th>Remito</th>
-              <th>Fecha</th>
-              <th>Proveedor</th>
-              <th class="inv__th-right">Renglones</th>
-              <th>Carga</th>
-              <th>Estado</th>
-              <th class="inv__th-right">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (r of remitos(); track r.id) {
-              <tr>
-                <td class="inv__strong">{{ r.remito }}</td>
-                <td>{{ r.fecha }}</td>
-                <td>{{ r.proveedor }}</td>
-                <td class="inv__td-right">{{ r.renglones }}</td>
-                <td>
-                  <span
-                    class="inv__pill"
-                    [class.inv__pill--ia]="r.cargaIa"
-                    [class.inv__pill--neutral]="!r.cargaIa"
-                  >
-                    {{ r.cargaIa ? 'Foto IA' : 'Manual' }}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    class="inv__pill"
-                    [class.inv__pill--warn]="r.estadoTone === 'warn'"
-                    [class.inv__pill--ok]="r.estadoTone === 'ok'"
-                  >
-                    {{ r.estado }}
-                  </span>
-                </td>
-                <td class="inv__td-right">
-                  @if (r.puedeConfirmar) {
-                    <button
-                      type="button"
-                      class="inv__accion inv__accion--primary"
-                      (click)="confirmarRemito(r.id)"
-                    >
-                      Confirmar → stock
-                    </button>
-                  } @else {
-                    <span class="inv__muted">—</span>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="7" class="inv__empty-cell">
-                  No hay remitos de compra. Crealos en Compras.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="inv__side-panels">
-        <div class="inv__ia-card">
-          <div class="inv__ia-icon">📷</div>
-          <div class="inv__ia-title">Cargar remito con IA</div>
-          <div class="inv__ia-text">
-            Sacá una foto del remito del proveedor. Claude Haiku lee las líneas y las cruza con tu
-            catálogo antes de impactar stock.
-          </div>
-
-          <label class="inv__field-label" for="inv-prov-ia">Proveedor</label>
+        <span class="stk__sp"></span>
+        @if (remSub() === 'listado') {
+          <button
+            type="button"
+            class="stk__chip"
+            [class.stk__chip--on]="remFiltro() === 'Todos'"
+            (click)="remFiltro.set('Todos')"
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            class="stk__chip"
+            [class.stk__chip--on]="remFiltro() === 'pend'"
+            (click)="remFiltro.set('pend')"
+          >
+            Por validar
+          </button>
+          <button
+            type="button"
+            class="stk__chip"
+            [class.stk__chip--on]="remFiltro() === 'ok'"
+            (click)="remFiltro.set('ok')"
+          >
+            Ingresados
+          </button>
+        } @else {
           <select
-            id="inv-prov-ia"
-            class="inv__select-full"
+            class="stk__select"
+            [ngModel]="depActivo()"
+            (ngModelChange)="depActivo.set($event)"
+          >
+            <option value="">Depósito de recepción…</option>
+            @for (d of depositos(); track d.id) {
+              <option [value]="d.id">{{ d.nombre }}</option>
+            }
+          </select>
+          <select
+            class="stk__select"
             [ngModel]="proveedorIa()"
             (ngModelChange)="proveedorIa.set($event)"
           >
-            <option value="">Elegir proveedor…</option>
+            <option value="">Proveedor…</option>
             @for (p of proveedores(); track p.id) {
               <option [value]="p.id">{{ p.nombre }}</option>
             }
           </select>
-
-          <div class="inv__ia-note">Depósito: {{ depositoActivoNombre() }}</div>
-
-          <label class="inv__upload-btn">
+          <label class="stk__btn stk__btn--ia">
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
               hidden
-              [disabled]="parseando() || !proveedorIa() || !depActivo()"
+              [disabled]="parseando()"
               (change)="onArchivoRemito($event)"
             />
-            {{ parseando() ? 'Leyendo remito…' : 'Subir foto del remito' }}
+            {{ parseando() ? 'Leyendo…' : 'Subir foto' }}
           </label>
+          <button
+            type="button"
+            class="stk__btn stk__btn--ia"
+            (click)="avisoNyI('Por ahora la lectura automática es por foto.')"
+          >
+            Subir PDF
+          </button>
+          <button type="button" class="stk__btn stk__btn--ghost" (click)="irCompras()">
+            Desde una compra
+          </button>
+        }
+      </div>
 
-          @if (nombreArchivoIa()) {
-            <div class="inv__ia-note">{{ nombreArchivoIa() }}</div>
-          }
-        </div>
-
-        @if (previewIa(); as preview) {
-          <div class="inv__card inv__card--pad inv__preview-ia">
-            <div class="inv__card-head inv__card-head--tight">
-              <div>
-                <div class="inv__card-title">Vista previa</div>
-                <div class="inv__card-sub">
-                  @if (preview.numeroRemito) {
-                    {{ preview.numeroRemito }}
-                  }
-                  @if (preview.fecha) {
-                    · {{ preview.fecha }}
-                  }
-                  · {{ lineasIaMatcheadas() }}/{{ lineasIa().length }} artículos
-                </div>
-              </div>
+      @if (remSub() === 'listado') {
+        <div class="stk__card">
+          <div class="stk__thead stk__grid-rem">
+            <div>Remito</div>
+            <div>Proveedor</div>
+            <div>Fecha</div>
+            <div class="stk__num">Líneas</div>
+            <div class="stk__num">Total</div>
+            <div class="stk__ctr">Estado</div>
+          </div>
+          <div class="stk__body">
+            @for (r of remitosFiltrados(); track r.id) {
               <button
                 type="button"
-                class="inv__accion inv__accion--muted"
-                (click)="descartarPreviewIa()"
+                class="stk__row stk__grid-rem stk__row--btn"
+                [class.stk__row--sel]="remSelId() === r.id"
+                (click)="abrirRemito(r.id)"
               >
-                Descartar
+                <div class="stk__mono stk__strong">{{ r.remito }}</div>
+                <div class="stk__clip">{{ r.proveedor }}</div>
+                <div class="stk__mono stk__muted">{{ r.fecha }}</div>
+                <div class="stk__num">{{ r.renglones }}</div>
+                <div class="stk__num stk__strong">{{ money(r.total) }}</div>
+                <div class="stk__ctr">
+                  <span class="stk__pill" [attr.data-tono]="r.estadoTone">{{ r.estado }}</span>
+                </div>
+              </button>
+            } @empty {
+              <div class="stk__empty">
+                No hay remitos de compra. Crealos en Compras o cargá uno con IA.
+              </div>
+            }
+          </div>
+          <div class="stk__foot">
+            <span>{{ remitosFiltrados().length }} remitos</span>
+            <span class="stk__sp"></span>
+            <span>Total recibido</span>
+            <strong>{{ money(remTotal()) }}</strong>
+          </div>
+        </div>
+      } @else {
+        @if (previewIa() || remitoActivo(); as det) {
+          <div class="stk__ia-head">
+            <span class="stk__ia-tag">IA</span>
+            <div>
+              <div class="stk__ia-title">
+                {{ previewIa()?.numeroRemito || remitoActivo()?.remito || 'Remito en proceso' }}
+                <span class="stk__pill" [attr.data-tono]="remitoActivo()?.estadoTone || 'warn'">
+                  {{ remitoActivo()?.estado || 'Pendiente de validar' }}
+                </span>
+              </div>
+              <div class="stk__meta">
+                {{ remitoActivo()?.proveedor || nombreArchivoIa() }}
+                @if (previewIa()?.confianzaExtraccion) {
+                  · confianza {{ previewIa()!.confianzaExtraccion }}
+                }
+              </div>
+            </div>
+            <span class="stk__sp"></span>
+            <div class="stk__ia-kpis">
+              <div>
+                <div class="stk__kpi-lab">Líneas</div>
+                <div class="stk__kpi-val">{{ lineasCarga().length }}</div>
+              </div>
+              <div>
+                <div class="stk__kpi-lab">Con diferencia</div>
+                <div class="stk__kpi-val" [attr.data-tono]="hayDifCarga() ? 'warn' : 'ok'">
+                  {{ difCountCarga() }}
+                </div>
+              </div>
+              <div>
+                <div class="stk__kpi-lab">Sin asociar</div>
+                <div class="stk__kpi-val" [attr.data-tono]="hayNuevosCarga() ? 'info' : 'ok'">
+                  {{ sinAsociarCarga() }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="stk__card">
+            <div class="stk__toolbar">
+              <span class="stk__thead-lab">Líneas leídas del remito</span>
+              <span class="stk__sp"></span>
+              <button type="button" class="stk__link" (click)="recibidoIgualPedido()">
+                Recibido = pedido
+              </button>
+              <button type="button" class="stk__link" (click)="recibidoEnCero()">
+                Poner todo en 0
               </button>
             </div>
-
-            @for (adv of preview.advertencias; track adv) {
-              <div class="inv__alert-ia">{{ adv }}</div>
-            }
-
-            <table class="inv__table inv__table--compact">
-              <thead>
-                <tr>
-                  <th>Detectado</th>
-                  <th>Artículo</th>
-                  <th class="inv__th-right">Cant.</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (l of lineasIa(); track $index) {
-                  <tr [class.inv__row--warn]="!l.productoId">
-                    <td>
-                      <div class="inv__articulo">{{ l.descripcionExtraida }}</div>
-                      @if (l.skuExtraido) {
-                        <div class="inv__codigo">SKU {{ l.skuExtraido }}</div>
-                      }
-                    </td>
-                    <td>
-                      @if (l.productoId) {
-                        <div class="inv__articulo">{{ l.productoNombre }}</div>
-                        <div class="inv__codigo">{{ l.matchTipo }} · {{ l.confianza }}</div>
-                      } @else {
-                        <span class="inv__pill inv__pill--warn">Sin match</span>
-                      }
-                    </td>
-                    <td class="inv__td-right">
-                      <input
-                        class="inv__conteo inv__conteo--sm"
-                        type="text"
-                        inputmode="numeric"
-                        [ngModel]="l.cantidad"
-                        (ngModelChange)="actualizarCantidadIa($index, $event)"
-                      />
-                    </td>
-                  </tr>
+            <div class="stk__thead stk__grid-lin">
+              <div>Descripción leída</div>
+              <div>Artículo</div>
+              <div class="stk__num">Pedido</div>
+              <div class="stk__num">Recibido</div>
+              <div class="stk__num">Diferencia</div>
+              <div class="stk__num">Costo unit.</div>
+              <div class="stk__num">Subtotal</div>
+              <div class="stk__num">Match</div>
+            </div>
+            <div class="stk__body">
+              @for (l of lineasCargaVista(); track $index) {
+                <div
+                  class="stk__row stk__grid-lin"
+                  [class.stk__row--alert]="l.dif !== 0 || !l.productoId"
+                >
+                  <div class="stk__clip">
+                    <div>{{ l.nombre }}</div>
+                    @if (l.aviso) {
+                      <div class="stk__meta" data-tono="info">{{ l.aviso }}</div>
+                    }
+                  </div>
+                  <div class="stk__mono stk__muted stk__clip">
+                    {{ l.codigoTxt || '— sin asociar —' }}
+                  </div>
+                  <div class="stk__num">{{ l.pedido }} u</div>
+                  <div class="stk__num">
+                    <input
+                      class="stk__input"
+                      [ngModel]="l.recibidoTxt"
+                      (ngModelChange)="setRecibido($index, $event)"
+                    />
+                  </div>
+                  <div
+                    class="stk__num stk__strong"
+                    [attr.data-tono]="l.dif === 0 ? 'muted' : l.dif < 0 ? 'danger' : 'warn'"
+                  >
+                    {{ l.dif === 0 ? '—' : (l.dif > 0 ? '+' : '') + l.dif + ' u' }}
+                  </div>
+                  <div class="stk__num">{{ money(l.costo) }}</div>
+                  <div class="stk__num stk__strong">{{ money(l.subtotal) }}</div>
+                  <div class="stk__chips-end">
+                    <span class="stk__pill" [attr.data-tono]="l.match.tono">{{
+                      l.match.chip
+                    }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="stk__foot stk__foot--cta">
+              <div
+                class="stk__banner"
+                [attr.data-tono]="hayNuevosCarga() ? 'info' : hayDifCarga() ? 'warn' : 'ok'"
+              >
+                @if (hayNuevosCarga()) {
+                  Hay líneas sin artículo asociado: no se incluyen al confirmar.
+                } @else if (hayDifCarga()) {
+                  Hay diferencias contra el pedido. Al confirmar ingresa lo recibido.
+                } @else {
+                  Todo coincide. Al confirmar impacta en stock.
                 }
-              </tbody>
-            </table>
-
-            <button
-              type="button"
-              class="inv__btn inv__btn--dark inv__btn--full inv__btn--spaced"
-              [disabled]="!puedeCrearRemitoIa()"
-              (click)="crearRemitoDesdeIa()"
-            >
-              {{ creandoRemito() ? 'Creando…' : 'Crear remito borrador' }}
-            </button>
+              </div>
+              <div class="stk__tot-block">
+                <div class="stk__meta">Total del remito {{ money(totalPedidoCarga()) }}</div>
+                <div>
+                  A ingresar
+                  <strong>{{ money(totalRecibidoCarga()) }}</strong>
+                </div>
+              </div>
+              @if (previewIa()) {
+                <button
+                  type="button"
+                  class="stk__btn stk__btn--ghost"
+                  [disabled]="creandoRemito()"
+                  (click)="crearRemitoDesdeIa(false)"
+                >
+                  Dejar pendiente
+                </button>
+                <button
+                  type="button"
+                  class="stk__btn stk__btn--cta"
+                  [disabled]="creandoRemito()"
+                  (click)="crearRemitoDesdeIa(true)"
+                >
+                  {{
+                    hayNuevosCarga() ? 'Confirmar líneas asociadas' : 'Confirmar e impactar stock'
+                  }}
+                </button>
+              } @else if (remitoActivo()?.puedeConfirmar) {
+                <button
+                  type="button"
+                  class="stk__btn stk__btn--cta"
+                  (click)="confirmarRemito(remitoActivo()!.id)"
+                >
+                  Confirmar e impactar stock
+                </button>
+              } @else {
+                <button type="button" class="stk__btn stk__btn--cta" disabled>
+                  Ya ingresado a stock
+                </button>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="stk__empty stk__empty--card">
+            Subí la foto del remito (proveedor y depósito arriba) o abrí uno desde Recibidos.
           </div>
         }
+      }
+    </div>
+  }
 
-        <div class="inv__card inv__card--pad">
-          <div class="inv__card-title">Carga manual</div>
-          <div class="inv__ia-text">
-            También podés cargar un remito en Compras e importar listas de precios del proveedor.
+  @if (tab() === 'inventario') {
+    <div class="stk__pane">
+      <div class="stk__toma-head">
+        <div>
+          <div class="stk__ia-title">
+            Toma de inventario
+            <span class="stk__pill" data-tono="warn">Abierta</span>
           </div>
-          <button type="button" class="inv__btn inv__btn--outline-full" (click)="irCompras()">
-            Ir a Compras
+          <div class="stk__meta">
+            @if (depositoActivoNombre()) {
+              Depósito {{ depositoActivoNombre() }} · los no contados no se ajustan
+            } @else {
+              Elegí un depósito para contar
+            }
+          </div>
+        </div>
+        <div class="stk__ia-kpis">
+          <div>
+            <div class="stk__kpi-lab">Artículos</div>
+            <div class="stk__kpi-val">{{ filas().length || '—' }}</div>
+          </div>
+          <div>
+            <div class="stk__kpi-lab">Contados</div>
+            <div class="stk__kpi-val" data-tono="info">{{ contados() }}/{{ filas().length }}</div>
+          </div>
+          <div>
+            <div class="stk__kpi-lab">Con diferencia</div>
+            <div class="stk__kpi-val" [attr.data-tono]="conDiferencia() ? 'warn' : 'ok'">
+              {{ conDiferencia() }}
+            </div>
+          </div>
+          <div>
+            <div class="stk__kpi-lab">Ajuste valorizado</div>
+            <div
+              class="stk__kpi-val"
+              [attr.data-tono]="ajusteVal() < 0 ? 'danger' : ajusteVal() > 0 ? 'warn' : 'ok'"
+            >
+              {{ money(ajusteVal()) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stk__filters">
+        <select class="stk__select" [ngModel]="depActivo()" (ngModelChange)="setDepToma($event)">
+          <option value="">Elegí depósito…</option>
+          @for (d of depositos(); track d.id) {
+            <option [value]="d.id">{{ d.nombre }}</option>
+          }
+        </select>
+        <label class="stk__search">
+          <span>⌕</span>
+          <input
+            type="search"
+            placeholder="Escaneá el artículo o buscá por código"
+            [ngModel]="busquedaToma()"
+            (ngModelChange)="busquedaToma.set($event)"
+          />
+        </label>
+        <button
+          type="button"
+          class="stk__chip"
+          [class.stk__chip--on]="tomaFiltro() === 'Todos'"
+          (click)="tomaFiltro.set('Todos')"
+        >
+          Todos
+        </button>
+        <button
+          type="button"
+          class="stk__chip"
+          [class.stk__chip--on]="tomaFiltro() === 'pend'"
+          (click)="tomaFiltro.set('pend')"
+        >
+          Sin contar ({{ pendientesToma() }})
+        </button>
+        <button
+          type="button"
+          class="stk__chip"
+          [class.stk__chip--on]="tomaFiltro() === 'dif'"
+          (click)="tomaFiltro.set('dif')"
+        >
+          Con diferencia ({{ conDiferencia() }})
+        </button>
+        <span class="stk__sp"></span>
+        <button type="button" class="stk__link" (click)="exportarValorizado()">Exportar</button>
+      </div>
+
+      <div class="stk__card">
+        <div class="stk__thead stk__grid-toma">
+          <div>Código</div>
+          <div>Artículo</div>
+          <div class="stk__num">Sistema</div>
+          <div class="stk__num">Contado</div>
+          <div class="stk__num">Diferencia</div>
+          <div class="stk__num">Costo</div>
+          <div class="stk__num">Impacto</div>
+          <div class="stk__ctr">Estado</div>
+        </div>
+        <div class="stk__body">
+          @if (!depActivo()) {
+            <div class="stk__empty">Elegí un depósito para cargar el inventario</div>
+          } @else if (cargando()) {
+            <div class="stk__empty">Cargando inventario…</div>
+          } @else {
+            @for (row of filasVista(); track row.articuloId) {
+              @let dif = diferencia(row);
+              @let imp = impacto(row);
+              @let est = estadoToma(row);
+              <div class="stk__row stk__grid-toma" [class.stk__row--alert]="tieneDif(row)">
+                <div class="stk__mono stk__muted">{{ row.codigo }}</div>
+                <div class="stk__clip">{{ row.articulo }}</div>
+                <div class="stk__num">{{ row.sistema }} u</div>
+                <div class="stk__num">
+                  <input
+                    class="stk__input"
+                    [class.stk__input--warn]="dif.tono === 'neg'"
+                    [ngModel]="row.conteo"
+                    (ngModelChange)="actualizarConteo(row.articuloId, $event)"
+                    placeholder="—"
+                  />
+                </div>
+                <div class="stk__num stk__strong" [attr.data-tono]="dif.tono">{{ dif.texto }}</div>
+                <div class="stk__num stk__muted">{{ money(row.costoUnit) }}</div>
+                <div class="stk__num" [attr.data-tono]="imp.tono">{{ imp.texto }}</div>
+                <div class="stk__ctr">
+                  <span class="stk__pill" [attr.data-tono]="est.tono">{{ est.label }}</span>
+                </div>
+              </div>
+            } @empty {
+              <div class="stk__empty">No hay artículos en este depósito.</div>
+            }
+          }
+        </div>
+        <div class="stk__foot stk__foot--cta">
+          <span
+            >{{ contados() }} contados · {{ pendientesToma() }} sin contar ·
+            {{ conDiferencia() }} con diferencia</span
+          >
+          <span class="stk__sp"></span>
+          <div class="stk__tot-block">
+            <div class="stk__meta">Ajuste valorizado</div>
+            <strong [attr.data-tono]="ajusteVal() < 0 ? 'danger' : 'ok'">{{
+              money(ajusteVal())
+            }}</strong>
+          </div>
+          <button
+            type="button"
+            class="stk__btn stk__btn--cta"
+            [disabled]="cerrando() || contados() === 0"
+            (click)="cerrarToma()"
+          >
+            {{
+              cerrando()
+                ? 'Ajustando…'
+                : pendientesToma() > 0
+                  ? 'Cerrar toma con ' + pendientesToma() + ' sin contar'
+                  : 'Cerrar toma y ajustar'
+            }}
           </button>
         </div>
       </div>
     </div>
   }
 
-  @if (tab() === 'alertas') {
-    <div class="inv__alertas">
-      <div class="inv__card inv__card--pad">
-        <div class="inv__card-title">Reglas de alerta</div>
-        <div class="inv__ia-text inv__ia-text--mb">
-          Se aplican a todo el catálogo; el mín/máx por artículo se define en su ficha
+  @if (tab() === 'reglas') {
+    <div class="stk__reglas">
+      <div class="stk__reglas-main">
+        <div class="stk__reglas-head">
+          <div>
+            <h2>Reglas de alerta</h2>
+            <p>
+              Cada regla evalúa el stock de los artículos cargados y alimenta el panel y el
+              mostrador.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="stk__btn stk__btn--cta"
+            (click)="avisoNyI('Editá umbrales en las reglas existentes.')"
+          >
+            + Nueva regla
+          </button>
         </div>
-        <div class="inv__reglas">
-          <div class="inv__regla">
-            <div>
-              <div class="inv__regla-name">Stock bajo mínimo</div>
-              <div class="inv__regla-sub">Aviso en Inicio y por email</div>
-            </div>
-            <div class="inv__toggle inv__toggle--on"><span></span></div>
-          </div>
-          <div class="inv__regla">
-            <div>
-              <div class="inv__regla-name">Stock sobre máximo</div>
-              <div class="inv__regla-sub">Capital inmovilizado</div>
-            </div>
-            <div class="inv__toggle inv__toggle--on"><span></span></div>
-          </div>
-          <div class="inv__regla">
-            <div>
-              <div class="inv__regla-name">Baja rotación</div>
-              <div class="inv__regla-sub">Sin ventas en los últimos</div>
-            </div>
-            <select class="inv__select-sm">
-              <option>90 días</option>
-              <option>60 días</option>
-              <option>180 días</option>
-            </select>
-          </div>
-          <div class="inv__regla">
-            <div>
-              <div class="inv__regla-name">Alta rotación</div>
-              <div class="inv__regla-sub">Se vende más rápido de lo que repone</div>
-            </div>
-            <div class="inv__toggle inv__toggle--on"><span></span></div>
-          </div>
-        </div>
-        <button type="button" class="inv__btn inv__btn--dark inv__btn--full">Guardar reglas</button>
-      </div>
-
-      <div class="inv__alertas-main">
-        <div class="inv__alertas-kpis">
-          <div class="inv__kpi">
-            <div class="inv__kpi-label inv__kpi-label--danger">Sin stock</div>
-            <div class="inv__kpi-val">{{ kpisAlertas().sinStock }}</div>
-          </div>
-          <div class="inv__kpi">
-            <div class="inv__kpi-label inv__kpi-label--warn">Bajo mínimo (≤{{ 5 }})</div>
-            <div class="inv__kpi-val">{{ kpisAlertas().bajoMinimo }}</div>
-          </div>
-          <div class="inv__kpi">
-            <div class="inv__kpi-label">Alertas activas</div>
-            <div class="inv__kpi-val">{{ kpisAlertas().total }}</div>
-          </div>
-        </div>
-
-        <div class="inv__card inv__card--scroll">
-          <div class="inv__card-head">
-            <div class="inv__card-title">Alertas activas · {{ depositoActivoNombre() }}</div>
-          </div>
-          <table class="inv__table">
-            <thead>
-              <tr>
-                <th>Artículo</th>
-                <th>Alerta</th>
-                <th class="inv__th-right">Stock</th>
-                <th class="inv__th-right">Mín / Máx</th>
-                <th class="inv__th-right">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (a of alertas(); track a.codigo) {
-                <tr>
-                  <td>
-                    <div class="inv__articulo">{{ a.articulo }}</div>
-                    <div class="inv__codigo">{{ a.codigo }}</div>
-                  </td>
-                  <td>
+        <div class="stk__reglas-list">
+          @for (g of reglasVista(); track g.id) {
+            <article class="stk__regla" [class.stk__regla--off]="!g.on">
+              <div class="stk__regla-top">
+                <button
+                  type="button"
+                  class="stk__sw"
+                  [class.stk__sw--on]="g.on"
+                  (click)="toggleRegla(g.id)"
+                ></button>
+                <div>
+                  <div class="stk__regla-name">
+                    {{ g.nombre }}
                     <span
-                      class="inv__pill"
-                      [class.inv__pill--danger]="a.alertaTone === 'danger'"
-                      [class.inv__pill--ok]="a.alertaTone === 'ok'"
-                      [class.inv__pill--warn]="a.alertaTone === 'warn'"
-                      [class.inv__pill--neutral]="a.alertaTone === 'neutral'"
+                      class="stk__pill"
+                      [attr.data-tono]="
+                        g.sev === 'Crítica' ? 'danger' : g.sev === 'Media' ? 'warn' : 'info'
+                      "
                     >
-                      {{ a.alerta }}
+                      {{ g.sev }}
                     </span>
-                  </td>
-                  <td class="inv__td-right inv__strong" [class.inv__neg]="a.stock === 0">
-                    {{ a.stock }}
-                  </td>
-                  <td class="inv__td-right inv__muted">{{ a.minMax }}</td>
-                  <td class="inv__td-right">
-                    <button
-                      type="button"
-                      class="inv__accion inv__accion--primary"
-                      (click)="irCompras()"
-                    >
-                      {{ a.accion }}
-                    </button>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="5" class="inv__empty-cell">
-                    {{
-                      filas().length === 0
-                        ? 'No hay artículos en este depósito.'
-                        : 'Sin alertas: el stock está por encima del mínimo.'
-                    }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                  </div>
+                  <p>{{ g.desc }}</p>
+                </div>
+                <div class="stk__regla-count">
+                  <strong>{{ g.on ? g.count : '—' }}</strong>
+                  <button type="button" class="stk__link" (click)="verReglaEnArticulos(g.id)">
+                    {{ !g.on ? 'desactivada' : g.count === 0 ? 'sin casos' : 'artículos' }}
+                  </button>
+                </div>
+              </div>
+              <div class="stk__regla-foot">
+                <span class="stk__thead-lab">Avisar cuando</span>
+                @for (p of g.params; track p.k) {
+                  <label class="stk__param">
+                    {{ p.label }}
+                    <input
+                      [ngModel]="p.v"
+                      (ngModelChange)="setParamRegla(g.id, p.k, $event)"
+                      [style.width]="p.w"
+                    />
+                    {{ p.u }}
+                  </label>
+                }
+                <span class="stk__sp"></span>
+                <span class="stk__alcance">Alcance {{ g.alcance }}</span>
+              </div>
+            </article>
+          }
         </div>
       </div>
+      <aside class="stk__reglas-side">
+        <div class="stk__thead-lab">Cómo se notifica</div>
+        <div class="stk__canales">
+          @for (c of canalesVista(); track c.id) {
+            <button
+              type="button"
+              class="stk__canal"
+              [class.stk__canal--on]="c.on"
+              (click)="toggleCanal(c.id)"
+            >
+              <span class="stk__check">{{ c.on ? '✓' : '' }}</span>
+              <div>
+                <div>{{ c.label }}</div>
+                <div class="stk__meta">{{ c.sub }}</div>
+              </div>
+            </button>
+          }
+        </div>
+        <div class="stk__thead-lab">Última evaluación</div>
+        <div class="stk__eval">
+          <div>
+            <span>Artículos evaluados</span><strong>{{ articulos().length || '—' }}</strong>
+          </div>
+          <div>
+            <span>Alertas generadas</span><strong>{{ totalAlertas() }}</strong>
+          </div>
+          <div>
+            <span>Críticas</span
+            ><strong [attr.data-tono]="criticas() ? 'danger' : 'ok'">{{ criticas() }}</strong>
+          </div>
+        </div>
+        <p class="stk__hint">
+          Los umbrales por artículo (mínimo {{ 5 }} u) se usan hasta que la ficha tenga mínimo y
+          máximo propios. La rotación espera historial de ventas.
+        </p>
+        <span class="stk__sp-col"></span>
+        <button type="button" class="stk__btn stk__btn--ghost" (click)="evaluarAhora()">
+          Evaluar ahora
+        </button>
+      </aside>
     </div>
   }
 </section>

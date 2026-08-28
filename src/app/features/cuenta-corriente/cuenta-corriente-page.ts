@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   EMPTY,
   Subject,
@@ -313,6 +313,7 @@ export class CuentaCorrientePage {
   private readonly notifications = inject(NotificationStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly comboAutocomplete$ = new Subject<string>();
   private medioSeq = 0;
 
@@ -733,6 +734,13 @@ export class CuentaCorrientePage {
 
   constructor() {
     this.store.cargarZonasSiHaceFalta();
+    const clienteQuery = this.route.snapshot.queryParamMap.get('clienteId');
+    if (clienteQuery) {
+      this.api.obtenerCliente(clienteQuery).subscribe({
+        next: (c) => this.activarCliente(c),
+        error: () => undefined,
+      });
+    }
     this.comboAutocomplete$
       .pipe(
         debounceTime(280),

@@ -1,0 +1,1704 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <meta name="design_doc_mode" content="canvas" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: oklch(0.955 0.008 80);
+            font-family: 'Instrument Sans', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+          }
+          a {
+            color: oklch(0.52 0.15 255);
+            text-decoration: none;
+          }
+          a:hover {
+            color: oklch(0.42 0.15 255);
+            text-decoration: underline;
+          }
+          input,
+          select,
+          button {
+            font-family: inherit;
+          }
+          input:focus,
+          select:focus {
+            outline: 2px solid oklch(0.52 0.15 255);
+            outline-offset: -1px;
+          }
+          ::placeholder {
+            color: oklch(0.65 0.01 60);
+          }
+        </style>
+      </helmet>
+
+      <section style="display: flex; flex-direction: column; gap: 28px; padding: 56px 56px 90px">
+        <div style="display: flex; flex-direction: column; gap: 6px; max-width: 780px">
+          <div
+            style="
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              color: oklch(0.55 0.01 60);
+            "
+          >
+            Turno 2 · módulo nuevo
+          </div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 30px;
+              font-weight: 600;
+              letter-spacing: -0.02em;
+              color: oklch(0.25 0.01 60);
+            "
+          >
+            Cartera de cheques
+          </h1>
+          <p
+            style="
+              margin: 4px 0 0;
+              font-size: 15px;
+              line-height: 1.55;
+              color: oklch(0.48 0.01 60);
+              text-wrap: pretty;
+            "
+          >
+            Mismo lenguaje visual que cuentas corrientes. Terceros y propios en pestañas, cadena de
+            custodia completa por cheque (quién me lo dio, contra qué venta, a quién se lo endosé),
+            alertas por vencimiento y un calendario de 14 días con lo que entra y lo que sale.
+          </p>
+        </div>
+
+        <div id="2a" style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <span
+              style="
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                font-weight: 600;
+                color: oklch(0.99 0 0);
+                background: oklch(0.3 0.01 60);
+                padding: 4px 9px;
+                border-radius: 5px;
+              "
+              >2a</span
+            >
+            <span style="font-size: 15px; font-weight: 600; color: oklch(0.3 0.01 60)"
+              >Cartera — listado, trazabilidad y alertas en una vista</span
+            >
+          </div>
+
+          <div
+            style="
+              width: 1600px;
+              height: 980px;
+              background: oklch(0.985 0.006 80);
+              border: 1px solid oklch(0.885 0.01 80);
+              border-radius: 12px;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              position: relative;
+              box-shadow:
+                0 1px 2px oklch(0.3 0.02 60 / 0.05),
+                0 12px 32px oklch(0.3 0.02 60 / 0.07);
+            "
+          >
+            <!-- topbar -->
+            <div
+              style="
+                height: 54px;
+                flex: none;
+                background: oklch(0.995 0.004 80);
+                border-bottom: 1px solid oklch(0.9 0.01 80);
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                padding: 0 18px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 9px">
+                <div
+                  style="
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 6px;
+                    background: oklch(0.52 0.15 255);
+                  "
+                ></div>
+                <span style="font-size: 14px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                  >Ventas</span
+                >
+              </div>
+              <div style="display: flex; gap: 2px">
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Comprobantes</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Cuentas corrientes</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    color: oklch(0.36 0.13 255);
+                    background: oklch(0.955 0.028 255);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Cheques</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Caja y bancos</span
+                >
+              </div>
+              <div style="flex: 1"></div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  border: 1px solid oklch(0.86 0.01 80);
+                  background: oklch(1 0 0);
+                  border-radius: 9px;
+                  padding: 0 10px;
+                  height: 34px;
+                  width: 330px;
+                  position: relative;
+                "
+              >
+                <span style="font-size: 14px; color: oklch(0.6 0.01 60)">⌕</span>
+                <input
+                  value="{{ query }}"
+                  onChange="{{ onQuery }}"
+                  onFocus="{{ openSug }}"
+                  placeholder="N° de cheque, librador, cliente o proveedor…"
+                  style="
+                    border: none;
+                    outline: none;
+                    flex: 1;
+                    font-size: 13.5px;
+                    color: oklch(0.25 0.01 60);
+                    background: transparent;
+                  "
+                />
+                <span
+                  style="
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 10.5px;
+                    color: oklch(0.62 0.01 60);
+                    border: 1px solid oklch(0.88 0.01 80);
+                    border-radius: 4px;
+                    padding: 2px 5px;
+                  "
+                  >F3</span
+                >
+                <sc-if value="{{ sugOpen }}" hint-placeholder-val="{{ false }}">
+                  <div
+                    style="
+                      position: absolute;
+                      left: 0;
+                      right: 0;
+                      top: 40px;
+                      z-index: 30;
+                      background: oklch(1 0 0);
+                      border: 1px solid oklch(0.87 0.01 80);
+                      border-radius: 10px;
+                      box-shadow: 0 10px 26px oklch(0.3 0.02 60 / 0.14);
+                      overflow: hidden;
+                    "
+                  >
+                    <sc-for list="{{ sugerencias }}" as="s" hint-placeholder-count="4">
+                      <div
+                        onClick="{{ s.pick }}"
+                        style="
+                          padding: 9px 12px;
+                          display: flex;
+                          align-items: center;
+                          gap: 10px;
+                          cursor: pointer;
+                          border-bottom: 1px solid oklch(0.955 0.006 80);
+                        "
+                        style-hover="background: oklch(0.965 0.02 255);"
+                      >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            font-weight: 600;
+                            color: oklch(0.28 0.01 60);
+                          "
+                          >{{ s.numero }}</span
+                        >
+                        <span
+                          style="
+                            flex: 1;
+                            min-width: 0;
+                            font-size: 12.5px;
+                            color: oklch(0.5 0.01 60);
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                          "
+                          >{{ s.sub }}</span
+                        >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            font-weight: 600;
+                            color: oklch(0.28 0.01 60);
+                          "
+                          >{{ s.importe }}</span
+                        >
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <div
+                style="
+                  width: 28px;
+                  height: 28px;
+                  border-radius: 50%;
+                  background: oklch(0.88 0.03 255);
+                  color: oklch(0.36 0.13 255);
+                  font-size: 11.5px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                EA
+              </div>
+            </div>
+
+            <div style="flex: 1; display: flex; min-height: 0">
+              <!-- main -->
+              <div
+                style="
+                  flex: 1;
+                  min-width: 0;
+                  display: flex;
+                  flex-direction: column;
+                  min-height: 0;
+                  padding: 18px 22px 0;
+                "
+              >
+                <!-- head + kpis -->
+                <div
+                  style="
+                    flex: none;
+                    display: flex;
+                    align-items: flex-end;
+                    justify-content: space-between;
+                    gap: 20px;
+                  "
+                >
+                  <div>
+                    <h2
+                      style="
+                        margin: 0;
+                        font-size: 22px;
+                        font-weight: 600;
+                        letter-spacing: -0.015em;
+                        color: oklch(0.22 0.01 60);
+                      "
+                    >
+                      Cartera de cheques
+                    </h2>
+                    <div style="margin-top: 4px; font-size: 13px; color: oklch(0.52 0.01 60)">
+                      {{ resumenTxt }}
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      gap: 1px;
+                      background: oklch(0.9 0.01 80);
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 10px;
+                      overflow: hidden;
+                    "
+                  >
+                    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+                      <div style="background: oklch(1 0 0); padding: 9px 15px; min-width: 138px">
+                        <div
+                          style="
+                            font-size: 10.5px;
+                            letter-spacing: 0.04em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                          "
+                        >
+                          {{ k.label }}
+                        </div>
+                        <div
+                          style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; color: {{
+                            k.color
+                          }};"
+                        >
+                          {{ k.value }}
+                        </div>
+                        <div style="margin-top: 1px; font-size: 11px; color: oklch(0.6 0.01 60)">
+                          {{ k.hint }}
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <!-- alertas -->
+                <div style="flex: none; margin-top: 14px; display: flex; gap: 10px">
+                  <sc-for list="{{ alertas }}" as="a" hint-placeholder-count="4">
+                    <div
+                      onClick="{{ a.pick }}"
+                      style="flex: 1; cursor: pointer; border: 1px solid {{
+                        a.border
+                      }}; background: {{
+                        a.bg
+                      }}; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 11px;"
+                      style-hover="filter: brightness(0.985);"
+                    >
+                      <div
+                        style="width: 8px; height: 8px; border-radius: 50%; flex: none; background: {{
+                          a.dot
+                        }};"
+                      ></div>
+                      <div style="flex: 1; min-width: 0">
+                        <div
+                          style="font-size: 13px; font-weight: 600; color: {{
+                            a.color
+                          }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                        >
+                          {{ a.titulo }}
+                        </div>
+                        <div
+                          style="
+                            font-size: 11.5px;
+                            color: oklch(0.5 0.01 60);
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                          "
+                        >
+                          {{ a.sub }}
+                        </div>
+                      </div>
+                      <div
+                        style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: {{
+                          a.color
+                        }};"
+                      >
+                        {{ a.n }}
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <!-- calendario 14 dias -->
+                <div
+                  style="
+                    flex: none;
+                    margin-top: 12px;
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 11px;
+                    background: oklch(1 0 0);
+                    padding: 11px 14px 12px;
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 9px">
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.06em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                      "
+                      >{{ calTitulo }}</span
+                    >
+                    <div style="display: flex; align-items: center; gap: 6px">
+                      <div
+                        style="
+                          width: 9px;
+                          height: 9px;
+                          border-radius: 2px;
+                          background: oklch(0.55 0.11 155);
+                        "
+                      ></div>
+                      <span style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                        >Ingresan (terceros)</span
+                      >
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px">
+                      <div
+                        style="
+                          width: 9px;
+                          height: 9px;
+                          border-radius: 2px;
+                          background: oklch(0.62 0.13 25);
+                        "
+                      ></div>
+                      <span style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                        >Se debitan (propios)</span
+                      >
+                    </div>
+                    <div style="flex: 1"></div>
+                    <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Ver flujo completo</span
+                    >
+                  </div>
+                  <div style="display: flex; gap: 5px; align-items: flex-end; height: 82px">
+                    <sc-for list="{{ dias }}" as="d" hint-placeholder-count="14">
+                      <div
+                        onClick="{{ d.pick }}"
+                        style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; border-radius: 7px; padding: 3px 2px; background: {{
+                          d.bg
+                        }};"
+                        style-hover="background: oklch(0.965 0.008 80);"
+                      >
+                        <div
+                          style="
+                            height: 44px;
+                            width: 100%;
+                            display: flex;
+                            align-items: flex-end;
+                            justify-content: center;
+                            gap: 3px;
+                          "
+                        >
+                          <div
+                            style="width: 9px; border-radius: 2px 2px 0 0; background: oklch(0.55 0.11 155); height: {{
+                              d.inH
+                            }};"
+                          ></div>
+                          <div
+                            style="width: 9px; border-radius: 2px 2px 0 0; background: oklch(0.62 0.13 25); height: {{
+                              d.outH
+                            }};"
+                          ></div>
+                        </div>
+                        <div
+                          style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: {{
+                            d.labelColor
+                          }};"
+                        >
+                          {{ d.dia }}
+                        </div>
+                        <div
+                          style="
+                            font-size: 9.5px;
+                            letter-spacing: 0.02em;
+                            text-transform: uppercase;
+                            color: oklch(0.62 0.01 60);
+                          "
+                        >
+                          {{ d.dow }}
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <!-- tabs + filtros -->
+                <div
+                  style="
+                    flex: none;
+                    margin-top: 14px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                  "
+                >
+                  <div
+                    style="
+                      display: flex;
+                      gap: 2px;
+                      background: oklch(0.94 0.008 80);
+                      padding: 3px;
+                      border-radius: 9px;
+                    "
+                  >
+                    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+                      <div
+                        onClick="{{ t.pick }}"
+                        style="font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 7px; cursor: pointer; color: {{
+                          t.color
+                        }}; background: {{ t.bg }}; box-shadow: {{ t.shadow }};"
+                      >
+                        {{ t.label }}
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-for list="{{ estadoChips }}" as="e" hint-placeholder-count="5">
+                    <div
+                      onClick="{{ e.pick }}"
+                      style="font-size: 12.5px; font-weight: 500; padding: 5px 11px; border-radius: 20px; cursor: pointer; color: {{
+                        e.color
+                      }}; background: {{ e.bg }}; border: 1px solid {{ e.border }};"
+                    >
+                      {{ e.label }}
+                    </div>
+                  </sc-for>
+                  <div style="flex: 1"></div>
+                  <select
+                    value="{{ fBanco }}"
+                    onChange="{{ setBanco }}"
+                    style="
+                      height: 32px;
+                      border-radius: 8px;
+                      border: 1px solid oklch(0.88 0.01 80);
+                      font-size: 12.5px;
+                      padding: 0 7px;
+                      color: oklch(0.3 0.01 60);
+                      background: oklch(1 0 0);
+                    "
+                  >
+                    <sc-for list="{{ bancos }}" as="b" hint-placeholder-count="4"
+                      ><option value="{{ b }}">{{ b }}</option></sc-for
+                    >
+                  </select>
+                  <select
+                    value="{{ fPlazo }}"
+                    onChange="{{ setPlazo }}"
+                    style="
+                      height: 32px;
+                      border-radius: 8px;
+                      border: 1px solid oklch(0.88 0.01 80);
+                      font-size: 12.5px;
+                      padding: 0 7px;
+                      color: oklch(0.3 0.01 60);
+                      background: oklch(1 0 0);
+                    "
+                  >
+                    <sc-for list="{{ plazos }}" as="p" hint-placeholder-count="4"
+                      ><option value="{{ p }}">{{ p }}</option></sc-for
+                    >
+                  </select>
+                  <button
+                    onClick="{{ nuevo }}"
+                    style="
+                      height: 32px;
+                      padding: 0 13px;
+                      border-radius: 8px;
+                      border: none;
+                      background: oklch(0.52 0.15 255);
+                      color: oklch(1 0 0);
+                      font-size: 13px;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    style-hover="background: oklch(0.46 0.15 255);"
+                  >
+                    {{ nuevoLabel }}
+                  </button>
+                </div>
+
+                <!-- tabla -->
+                <div
+                  style="
+                    flex: 1;
+                    min-height: 0;
+                    margin-top: 12px;
+                    margin-bottom: 18px;
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 11px;
+                    background: oklch(1 0 0);
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                  "
+                >
+                  <div
+                    style="
+                      flex: none;
+                      display: grid;
+                      grid-template-columns: 34px 118px 1fr 150px 96px 132px 118px 120px;
+                      padding: 10px 14px;
+                      background: oklch(0.972 0.005 80);
+                      border-bottom: 1px solid oklch(0.91 0.01 80);
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 10.5px;
+                      letter-spacing: 0.05em;
+                      text-transform: uppercase;
+                      color: oklch(0.5 0.01 60);
+                    "
+                  >
+                    <div></div>
+                    <div>N° / banco</div>
+                    <div>{{ colOrigen }}</div>
+                    <div>{{ colDestino }}</div>
+                    <div>Vence</div>
+                    <div style="text-align: right">Importe</div>
+                    <div style="text-align: center">Estado</div>
+                    <div style="text-align: right">Acciones</div>
+                  </div>
+                  <div style="flex: 1; overflow: auto">
+                    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="9">
+                      <div
+                        onClick="{{ r.open }}"
+                        style="display: grid; grid-template-columns: 34px 118px 1fr 150px 96px 132px 118px 120px; align-items: center; padding: 10px 14px; border-bottom: 1px solid oklch(0.955 0.006 80); cursor: pointer; background: {{
+                          r.bg
+                        }}; box-shadow: {{ r.ring }};"
+                        style-hover="background: oklch(0.968 0.008 80);"
+                      >
+                        <div onClick="{{ r.toggle }}">
+                          <div
+                            style="width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid {{
+                              r.boxBorder
+                            }}; background: {{
+                              r.boxBg
+                            }}; color: oklch(1 0 0); font-size: 11px; display: flex; align-items: center; justify-content: center;"
+                          >
+                            {{ r.check }}
+                          </div>
+                        </div>
+                        <div style="min-width: 0">
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 13px;
+                              font-weight: 600;
+                              color: oklch(0.24 0.01 60);
+                            "
+                          >
+                            {{ r.numero }}
+                          </div>
+                          <div
+                            style="
+                              font-size: 11px;
+                              color: oklch(0.58 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.banco }}
+                          </div>
+                        </div>
+                        <div style="min-width: 0; padding-right: 10px">
+                          <div
+                            style="
+                              font-size: 13px;
+                              color: oklch(0.26 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.origen }}
+                          </div>
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 11px;
+                              color: oklch(0.55 0.15 255);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.origenRef }}
+                          </div>
+                        </div>
+                        <div style="min-width: 0; padding-right: 8px">
+                          <div
+                            style="font-size: 12.5px; color: {{
+                              r.destinoColor
+                            }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                          >
+                            {{ r.destino }}
+                          </div>
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 11px;
+                              color: oklch(0.6 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.destinoRef }}
+                          </div>
+                        </div>
+                        <div style="min-width: 0">
+                          <div
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: {{
+                              r.venceColor
+                            }};"
+                          >
+                            {{ r.vence }}
+                          </div>
+                          <div
+                            style="font-size: 10.5px; font-weight: 600; color: {{
+                              r.venceColor
+                            }}; white-space: nowrap;"
+                          >
+                            {{ r.venceSub }}
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: oklch(0.23 0.01 60);
+                          "
+                        >
+                          {{ r.importe }}
+                        </div>
+                        <div style="text-align: center">
+                          <span
+                            style="font-size: 11px; font-weight: 600; color: {{
+                              r.estColor
+                            }}; background: {{ r.estBg }}; padding: 3px 8px; border-radius: 5px;"
+                            >{{ r.estado }}</span
+                          >
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 6px">
+                          <button
+                            onClick="{{ r.accion }}"
+                            style="height: 29px; padding: 0 10px; border-radius: 7px; border: none; background: {{
+                              r.accionBg
+                            }}; color: oklch(1 0 0); font-size: 12.5px; font-weight: 600; cursor: pointer;"
+                            style-hover="filter: brightness(0.92);"
+                          >
+                            {{ r.accionLabel }}
+                          </button>
+                          <button
+                            style="
+                              height: 29px;
+                              width: 29px;
+                              border-radius: 7px;
+                              border: 1px solid oklch(0.87 0.01 80);
+                              background: oklch(1 0 0);
+                              font-size: 13px;
+                              color: oklch(0.5 0.01 60);
+                              cursor: pointer;
+                            "
+                            style-hover="background: oklch(0.97 0.006 80);"
+                          >
+                            ⋯
+                          </button>
+                        </div>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ vacio }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding: 56px 20px; text-align: center">
+                        <div
+                          style="font-size: 14.5px; font-weight: 500; color: oklch(0.35 0.01 60)"
+                        >
+                          Ningún cheque con estos filtros
+                        </div>
+                        <div style="margin-top: 5px; font-size: 13px; color: oklch(0.55 0.01 60)">
+                          Quitá el filtro de estado o de banco para ver toda la cartera.
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.93 0.01 80);
+                      background: oklch(0.978 0.005 80);
+                      padding: 10px 14px;
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                    "
+                  >
+                    <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">{{ countTxt }}</span>
+                    <sc-if value="{{ haySel }}" hint-placeholder-val="{{ false }}">
+                      <div
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 8px;
+                          padding: 4px 6px 4px 11px;
+                          border-radius: 20px;
+                          background: oklch(0.955 0.028 255);
+                          border: 1px solid oklch(0.87 0.05 255);
+                        "
+                      >
+                        <span
+                          style="font-size: 12px; font-weight: 600; color: oklch(0.36 0.13 255)"
+                          >{{ selTxt }}</span
+                        >
+                        <sc-for list="{{ bulk }}" as="b" hint-placeholder-count="4">
+                          <div
+                            style="
+                              font-size: 12px;
+                              color: oklch(0.32 0.01 60);
+                              background: oklch(1 0 0);
+                              border: 1px solid oklch(0.88 0.02 255);
+                              padding: 3px 9px;
+                              border-radius: 15px;
+                              cursor: pointer;
+                            "
+                            style-hover="border-color: oklch(0.6 0.12 255); color: oklch(0.36 0.13 255);"
+                          >
+                            {{ b }}
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <div style="flex: 1"></div>
+                    <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Exportar</span
+                    >
+                    <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">Total filtrado</span>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: oklch(0.23 0.01 60);
+                      "
+                      >{{ totalFmt }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- detalle -->
+              <div
+                style="
+                  width: 400px;
+                  flex: none;
+                  border-left: 1px solid oklch(0.9 0.01 80);
+                  background: oklch(0.995 0.004 80);
+                  display: flex;
+                  flex-direction: column;
+                  min-height: 0;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    padding: 15px 18px 14px;
+                    border-bottom: 1px solid oklch(0.925 0.01 80);
+                  "
+                >
+                  <div style="display: flex; align-items: flex-start; gap: 10px">
+                    <div style="flex: 1; min-width: 0">
+                      <div
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 18px;
+                          font-weight: 600;
+                          color: oklch(0.22 0.01 60);
+                        "
+                      >
+                        {{ det.numero }}
+                      </div>
+                      <div style="margin-top: 3px; font-size: 12.5px; color: oklch(0.52 0.01 60)">
+                        {{ det.banco }} · {{ det.tipoTxt }}
+                      </div>
+                    </div>
+                    <span
+                      style="font-size: 11px; font-weight: 600; color: {{
+                        det.estColor
+                      }}; background: {{ det.estBg }}; padding: 4px 9px; border-radius: 5px;"
+                      >{{ det.estado }}</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      margin-top: 12px;
+                      display: flex;
+                      align-items: flex-end;
+                      justify-content: space-between;
+                    "
+                  >
+                    <div>
+                      <div
+                        style="
+                          font-size: 11px;
+                          letter-spacing: 0.04em;
+                          text-transform: uppercase;
+                          color: oklch(0.58 0.01 60);
+                        "
+                      >
+                        Importe
+                      </div>
+                      <div
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 26px;
+                          font-weight: 600;
+                          letter-spacing: -0.02em;
+                          color: oklch(0.22 0.01 60);
+                        "
+                      >
+                        {{ det.importe }}
+                      </div>
+                    </div>
+                    <div style="text-align: right">
+                      <div
+                        style="
+                          font-size: 11px;
+                          letter-spacing: 0.04em;
+                          text-transform: uppercase;
+                          color: oklch(0.58 0.01 60);
+                        "
+                      >
+                        Fecha de pago
+                      </div>
+                      <div
+                        style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; color: {{
+                          det.venceColor
+                        }};"
+                      >
+                        {{ det.vence }}
+                      </div>
+                      <div
+                        style="font-size: 11.5px; font-weight: 600; color: {{ det.venceColor }};"
+                      >
+                        {{ det.venceSub }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    overflow: auto;
+                    padding: 15px 18px 18px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                  "
+                >
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 1px;
+                      background: oklch(0.9 0.01 80);
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 10px;
+                      overflow: hidden;
+                    "
+                  >
+                    <sc-for list="{{ det.campos }}" as="c" hint-placeholder-count="6">
+                      <div style="background: oklch(1 0 0); padding: 9px 11px">
+                        <div
+                          style="
+                            font-size: 10.5px;
+                            letter-spacing: 0.03em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                          "
+                        >
+                          {{ c.label }}
+                        </div>
+                        <div style="margin-top: 3px; font-size: 13px; color: oklch(0.26 0.01 60)">
+                          {{ c.value }}
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div>
+                    <div
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.06em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                        margin-bottom: 9px;
+                      "
+                    >
+                      Cadena de custodia
+                    </div>
+                    <div style="display: flex; flex-direction: column">
+                      <sc-for list="{{ det.timeline }}" as="t" hint-placeholder-count="4">
+                        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 10px">
+                          <div style="display: flex; flex-direction: column; align-items: center">
+                            <div
+                              style="width: 11px; height: 11px; border-radius: 50%; margin-top: 4px; background: {{
+                                t.dot
+                              }}; box-shadow: 0 0 0 3px {{ t.halo }};"
+                            ></div>
+                            <div
+                              style="flex: 1; width: 2px; background: oklch(0.91 0.01 80); min-height: {{
+                                t.lineH
+                              }};"
+                            ></div>
+                          </div>
+                          <div style="padding-bottom: 14px">
+                            <div style="display: flex; align-items: baseline; gap: 8px">
+                              <span
+                                style="
+                                  font-size: 13px;
+                                  font-weight: 600;
+                                  color: oklch(0.24 0.01 60);
+                                "
+                                >{{ t.titulo }}</span
+                              >
+                              <span
+                                style="
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 11.5px;
+                                  color: oklch(0.58 0.01 60);
+                                "
+                                >{{ t.fecha }}</span
+                              >
+                            </div>
+                            <div
+                              style="
+                                margin-top: 2px;
+                                font-size: 12.5px;
+                                color: oklch(0.45 0.01 60);
+                                line-height: 1.4;
+                              "
+                            >
+                              {{ t.detalle }}
+                            </div>
+                            <sc-if value="{{ t.ref }}" hint-placeholder-val="{{ false }}">
+                              <div
+                                style="
+                                  margin-top: 3px;
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 11.5px;
+                                  color: oklch(0.52 0.15 255);
+                                  cursor: pointer;
+                                "
+                              >
+                                {{ t.refTxt }}
+                              </div>
+                            </sc-if>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div
+                    style="border: 1px solid {{ det.avisoBorder }}; background: {{
+                      det.avisoBg
+                    }}; border-radius: 10px; padding: 10px 12px; display: flex; gap: 9px; align-items: flex-start;"
+                  >
+                    <div
+                      style="width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex: none; background: {{
+                        det.avisoColor
+                      }};"
+                    ></div>
+                    <div>
+                      <div
+                        style="font-size: 12.5px; font-weight: 600; color: {{ det.avisoColor }};"
+                      >
+                        {{ det.avisoTitulo }}
+                      </div>
+                      <div
+                        style="
+                          margin-top: 2px;
+                          font-size: 12px;
+                          color: oklch(0.45 0.01 60);
+                          line-height: 1.45;
+                        "
+                      >
+                        {{ det.avisoTxt }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: none;
+                    border-top: 1px solid oklch(0.91 0.01 80);
+                    background: oklch(1 0 0);
+                    padding: 13px 18px 15px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                  "
+                >
+                  <div style="display: flex; gap: 8px">
+                    <sc-for list="{{ det.acciones }}" as="a" hint-placeholder-count="3">
+                      <button
+                        onClick="{{ a.run }}"
+                        style="flex: 1; height: 38px; border-radius: 9px; border: {{
+                          a.border
+                        }}; background: {{ a.bg }}; color: {{
+                          a.color
+                        }}; font-size: 13.5px; font-weight: 600; cursor: pointer;"
+                        style-hover="filter: brightness(0.95);"
+                      >
+                        {{ a.label }}
+                      </button>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between">
+                    <span style="font-size: 12px; color: oklch(0.55 0.01 60)"
+                      >Historial completo e imagen del cheque</span
+                    >
+                    <span style="font-size: 12px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Abrir ficha</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- modal entregar -->
+            <sc-if value="{{ modal }}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  position: absolute;
+                  inset: 0;
+                  background: oklch(0.25 0.02 60 / 0.32);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <div
+                  style="
+                    width: 560px;
+                    background: oklch(1 0 0);
+                    border-radius: 14px;
+                    box-shadow: 0 24px 60px oklch(0.25 0.02 60 / 0.28);
+                    overflow: hidden;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 17px 20px 15px;
+                      border-bottom: 1px solid oklch(0.92 0.01 80);
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 12px;
+                    "
+                  >
+                    <div style="flex: 1">
+                      <div style="font-size: 17px; font-weight: 600; color: oklch(0.22 0.01 60)">
+                        {{ modalTitulo }}
+                      </div>
+                      <div style="margin-top: 3px; font-size: 12.5px; color: oklch(0.52 0.01 60)">
+                        {{ modalSub }}
+                      </div>
+                    </div>
+                    <div
+                      onClick="{{ closeModal }}"
+                      style="
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 15px;
+                        color: oklch(0.45 0.01 60);
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.96 0.006 80);"
+                    >
+                      ×
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      padding: 17px 20px 18px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 14px;
+                    "
+                  >
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)">{{
+                          modalDestLabel
+                        }}</label>
+                        <select
+                          style="
+                            height: 36px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            font-size: 13px;
+                            padding: 0 8px;
+                            color: oklch(0.26 0.01 60);
+                            background: oklch(1 0 0);
+                          "
+                        >
+                          <sc-for list="{{ destinos }}" as="d" hint-placeholder-count="4"
+                            ><option>{{ d }}</option></sc-for
+                          >
+                        </select>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                          >Fecha del movimiento</label
+                        >
+                        <input
+                          value="27/08/2026"
+                          style="
+                            height: 36px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13px;
+                            padding: 0 9px;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        />
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                          >Aplicar a</label
+                        >
+                        <select
+                          style="
+                            height: 36px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            font-size: 13px;
+                            padding: 0 8px;
+                            color: oklch(0.26 0.01 60);
+                            background: oklch(1 0 0);
+                          "
+                        >
+                          <option>Orden de pago OP-0001-00002214</option>
+                          <option>Factura de compra A 0004-00019822</option>
+                          <option>Dejar sin aplicar</option>
+                        </select>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                          >Comprobante de entrega</label
+                        >
+                        <input
+                          value="Remito de valores 0001-00000917"
+                          style="
+                            height: 36px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            font-size: 13px;
+                            padding: 0 9px;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        />
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        border: 1px solid oklch(0.9 0.01 80);
+                        border-radius: 10px;
+                        background: oklch(0.978 0.005 80);
+                        padding: 11px 13px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                      "
+                    >
+                      <div style="flex: 1">
+                        <div style="font-size: 12.5px; color: oklch(0.5 0.01 60)">Cheque</div>
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13.5px;
+                            font-weight: 600;
+                            color: oklch(0.24 0.01 60);
+                          "
+                        >
+                          {{ det.numero }} · {{ det.banco }}
+                        </div>
+                      </div>
+                      <div style="text-align: right">
+                        <div style="font-size: 12.5px; color: oklch(0.5 0.01 60)">
+                          Vence {{ det.vence }}
+                        </div>
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 16px;
+                            font-weight: 600;
+                            color: oklch(0.23 0.01 60);
+                          "
+                        >
+                          {{ det.importe }}
+                        </div>
+                      </div>
+                    </div>
+                    <div style="font-size: 12px; color: oklch(0.48 0.01 60); line-height: 1.45">
+                      {{ modalNota }}
+                    </div>
+                    <div style="display: flex; gap: 9px; justify-content: flex-end">
+                      <button
+                        onClick="{{ closeModal }}"
+                        style="
+                          height: 40px;
+                          padding: 0 16px;
+                          border-radius: 9px;
+                          border: 1px solid oklch(0.87 0.01 80);
+                          background: oklch(1 0 0);
+                          font-size: 13.5px;
+                          font-weight: 500;
+                          color: oklch(0.33 0.01 60);
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.97 0.006 80);"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick="{{ confirmModal }}"
+                        style="
+                          height: 40px;
+                          padding: 0 20px;
+                          border-radius: 9px;
+                          border: none;
+                          background: oklch(0.52 0.15 255);
+                          color: oklch(1 0 0);
+                          font-size: 14px;
+                          font-weight: 600;
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.46 0.15 255);"
+                      >
+                        {{ modalCta }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"diasCalendario":{"editor":"enum","options":["14","21"],"default":"14","tsType":"string","section":"Comportamiento"},"alertaDiasDeposito":{"editor":"int","default":3,"min":1,"max":10,"unit":"d","tsType":"number","section":"Alertas"}}'
+    >
+      const HOY = new Date(2026, 7, 27);
+      const ACCENT = "oklch(0.52 0.15 255)";
+      const RED = "oklch(0.5 0.17 25)";
+      const RED_BG = "oklch(0.955 0.03 25)";
+      const AMBER = "oklch(0.52 0.12 70)";
+      const AMBER_BG = "oklch(0.96 0.035 80)";
+      const GREEN = "oklch(0.44 0.11 155)";
+      const GREEN_BG = "oklch(0.955 0.03 155)";
+      const PURPLE = "oklch(0.45 0.14 300)";
+      const PURPLE_BG = "oklch(0.96 0.03 300)";
+      const GREY = "oklch(0.48 0.01 60)";
+      const GREY_BG = "oklch(0.955 0.006 80)";
+
+      const EST = {
+        "En cartera": [ ACCENT, "oklch(0.955 0.028 255)" ],
+        "Endosado": [ PURPLE, PURPLE_BG ],
+        "Depositado": [ AMBER, AMBER_BG ],
+        "Acreditado": [ GREEN, GREEN_BG ],
+        "Rechazado": [ RED, RED_BG ],
+        "Emitido": [ ACCENT, "oklch(0.955 0.028 255)" ],
+        "Debitado": [ GREEN, GREEN_BG ],
+        "Anulado": [ GREY, GREY_BG ]
+      };
+
+      // d = días desde hoy hasta la fecha de pago
+      const TERCEROS = [
+        { id: "t1", numero: "00471299", banco: "Banco Nación", librador: "Distribuidora San Martín SRL", cuit: "30-71234567-9", recibidoDe: "Distribuidora San Martín SRL", venta: "Recibo X-0001-00004266", fechaRecibo: "25/08/26", d: 24, importe: 180000, estado: "En cartera", destino: "", destinoRef: "" },
+        { id: "t2", numero: "00983114", banco: "Banco Galicia", librador: "Supermercado Norte SRL", cuit: "30-70998877-4", recibidoDe: "Supermercado Norte SRL", venta: "Recibo X-0001-00004255", fechaRecibo: "18/08/26", d: 0, importe: 640000, estado: "En cartera", destino: "", destinoRef: "" },
+        { id: "t3", numero: "01120544", banco: "Credicoop", librador: "Agropecuaria El Trébol SA", cuit: "30-70223344-1", recibidoDe: "Ferretería El Torno SA", venta: "Recibo X-0001-00004201", fechaRecibo: "05/08/26", d: 2, importe: 415000, estado: "Endosado", destino: "Insumos del Sur SRL", destinoRef: "OP-0001-00002198" },
+        { id: "t4", numero: "00762018", banco: "Banco Provincia", librador: "Hotel Plaza Alvear SRL", cuit: "30-71001199-0", recibidoDe: "Hotel Plaza Alvear SRL", venta: "Recibo X-0001-00004188", fechaRecibo: "30/07/26", d: -3, importe: 268400, estado: "Depositado", destino: "Cta. cte. Nación 4412-9", destinoRef: "Depósito 24/08" },
+        { id: "t5", numero: "00554907", banco: "Banco Macro", librador: "Corralón Los Álamos", cuit: "20-24112233-1", recibidoDe: "Corralón Los Álamos", venta: "Recibo X-0001-00004102", fechaRecibo: "12/07/26", d: -9, importe: 322500, estado: "Rechazado", destino: "Sin fondos suficientes", destinoRef: "Aviso 18/08" },
+        { id: "t6", numero: "00318877", banco: "Banco Nación", librador: "Almacén Doña Rosa", cuit: "27-18994455-6", recibidoDe: "Almacén Doña Rosa", venta: "Recibo X-0001-00004270", fechaRecibo: "26/08/26", d: 6, importe: 96800, estado: "En cartera", destino: "", destinoRef: "" },
+        { id: "t7", numero: "00845102", banco: "Banco Galicia", librador: "Transporte Bermúdez SRL", cuit: "30-71778899-5", recibidoDe: "Supermercado Norte SRL", venta: "Recibo X-0001-00004240", fechaRecibo: "14/08/26", d: 11, importe: 754000, estado: "En cartera", destino: "", destinoRef: "" },
+        { id: "t8", numero: "00229461", banco: "Credicoop", librador: "Kiosco 24hs Central", cuit: "20-35667788-3", recibidoDe: "Kiosco 24hs Central", venta: "Recibo X-0001-00004259", fechaRecibo: "21/08/26", d: 3, importe: 58700, estado: "En cartera", destino: "", destinoRef: "" },
+        { id: "t9", numero: "00667320", banco: "Banco Provincia", librador: "Rotisería Mediterránea", cuit: "20-31445566-8", recibidoDe: "Rotisería Mediterránea", venta: "Recibo X-0001-00004244", fechaRecibo: "16/08/26", d: -6, importe: 143900, estado: "Acreditado", destino: "Cta. cte. Provincia 8830-1", destinoRef: "Acred. 21/08" },
+        { id: "t10", numero: "00990183", banco: "Banco Macro", librador: "Panadería La Espiga", cuit: "27-27889900-2", recibidoDe: "Panadería La Espiga", venta: "Recibo X-0001-00004268", fechaRecibo: "26/08/26", d: 13, importe: 212300, estado: "En cartera", destino: "", destinoRef: "" }
+      ];
+
+      const PROPIOS = [
+        { id: "p1", numero: "00012044", banco: "Cta. cte. Nación 4412-9", librador: "Propio", recibidoDe: "", venta: "", fechaRecibo: "12/08/26", d: 1, importe: 480000, estado: "Emitido", destino: "Insumos del Sur SRL", destinoRef: "OP-0001-00002214" },
+        { id: "p2", numero: "00012045", banco: "Cta. cte. Nación 4412-9", librador: "Propio", fechaRecibo: "14/08/26", d: 8, importe: 315000, estado: "Emitido", destino: "Transporte Bermúdez SRL", destinoRef: "OP-0001-00002219" },
+        { id: "p3", numero: "00012046", banco: "Cta. cte. Provincia 8830-1", librador: "Propio", fechaRecibo: "20/08/26", d: 4, importe: 862000, estado: "Emitido", destino: "Frigorífico Oeste SA", destinoRef: "OP-0001-00002226" },
+        { id: "p4", numero: "00012041", banco: "Cta. cte. Nación 4412-9", librador: "Propio", fechaRecibo: "28/07/26", d: -5, importe: 240000, estado: "Debitado", destino: "Papelera Central SRL", destinoRef: "OP-0001-00002177" },
+        { id: "p5", numero: "00012042", banco: "Cta. cte. Provincia 8830-1", librador: "Propio", fechaRecibo: "02/08/26", d: 19, importe: 528000, estado: "Emitido", destino: "Insumos del Sur SRL", destinoRef: "OP-0001-00002185" },
+        { id: "p6", numero: "00012039", banco: "Cta. cte. Nación 4412-9", librador: "Propio", fechaRecibo: "22/07/26", d: -14, importe: 96000, estado: "Anulado", destino: "Anulado por error de importe", destinoRef: "" }
+      ];
+
+      const DOW = [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá" ];
+
+      function money(n) { return "$ " + Math.round(Math.abs(n)).toLocaleString("es-AR"); }
+      function fecha(d) {
+        const dt = new Date(HOY.getTime() + d * 86400000);
+        const p = n => String(n).padStart(2, "0");
+        return p(dt.getDate()) + "/" + p(dt.getMonth() + 1) + "/" + String(dt.getFullYear()).slice(2);
+      }
+      function venceTono(d, estado) {
+        if (estado === "Rechazado") return [ RED, "Rechazado" ];
+        if (estado === "Acreditado" || estado === "Debitado") return [ GREY, "Cerrado" ];
+        if (d < 0) return [ RED, Math.abs(d) + " d vencido" ];
+        if (d === 0) return [ RED, "Hoy" ];
+        if (d <= 3) return [ AMBER, "en " + d + " d" ];
+        return [ "oklch(0.5 0.01 60)", "en " + d + " d" ];
+      }
+
+      class Component extends DCLogic {
+        state = {
+          tab: "terceros", estado: "Todos", fBanco: "Todos los bancos", fPlazo: "Cualquier plazo",
+          query: "", sugOpen: false, sel: [], detId: "t2", modal: null
+        };
+        set(k, v) { this.setState({ [k]: v }); }
+
+        data() { return this.state.tab === "terceros" ? TERCEROS : PROPIOS; }
+        find(id) { return TERCEROS.concat(PROPIOS).find(c => c.id === id) || TERCEROS[0]; }
+
+        timeline(c) {
+          const t = [];
+          if (c.librador === "Propio") {
+            t.push({ titulo: "Emitido", fecha: c.fechaRecibo, detalle: c.banco + " · cheque propio", refTxt: "" });
+            t.push({ titulo: "Entregado a " + c.destino, fecha: c.fechaRecibo, detalle: "Contra orden de pago", refTxt: c.destinoRef });
+            if (c.estado === "Debitado") t.push({ titulo: "Debitado de la cuenta", fecha: fecha(c.d), detalle: "Conciliado con extracto bancario", refTxt: "" });
+            else if (c.estado === "Anulado") t.push({ titulo: "Anulado", fecha: fecha(c.d), detalle: c.destino, refTxt: "" });
+            else t.push({ titulo: "Se debita el " + fecha(c.d), fecha: "pendiente", detalle: "Asegurar fondos en " + c.banco, refTxt: "" });
+          } else {
+            t.push({ titulo: "Recibido de " + c.recibidoDe, fecha: c.fechaRecibo, detalle: "Librador: " + c.librador + " · " + c.cuit, refTxt: c.venta });
+            if (c.estado === "Endosado") t.push({ titulo: "Endosado a " + c.destino, fecha: "12/08/26", detalle: "Remito de valores 0001-00000902", refTxt: c.destinoRef });
+            if (c.estado === "Depositado") t.push({ titulo: "Depositado", fecha: "24/08/26", detalle: c.destino, refTxt: c.destinoRef });
+            if (c.estado === "Acreditado") { t.push({ titulo: "Depositado", fecha: "19/08/26", detalle: c.destino, refTxt: "" }); t.push({ titulo: "Acreditado", fecha: "21/08/26", detalle: "Conciliado con extracto", refTxt: "" }); }
+            if (c.estado === "Rechazado") t.push({ titulo: "Rechazado por el banco", fecha: "18/08/26", detalle: c.destino + " · se reimputó a la cuenta corriente del cliente", refTxt: "Débito ND 0001-00000421" });
+            if (c.estado === "En cartera") t.push({ titulo: "En cartera", fecha: "hoy", detalle: "Disponible para depositar o endosar", refTxt: "" });
+          }
+          return t;
+        }
+
+        renderVals() {
+          const st = this.state;
+          const NDIAS = Number(this.props.diasCalendario) || 14;
+          const DDEP = this.props.alertaDiasDeposito ?? 3;
+          const terceros = st.tab === "terceros";
+          const base = this.data();
+
+          const q = st.query.trim().toLowerCase();
+          const matchQ = c => !q || c.numero.includes(q) || (c.librador || "").toLowerCase().includes(q) || (c.recibidoDe || "").toLowerCase().includes(q) || (c.destino || "").toLowerCase().includes(q);
+          const plazoMax = { "Cualquier plazo": 999, "Vencen en 7 días": 7, "Vencen en 15 días": 15, "Vencen en 30 días": 30, "Vencidos": 0 }[st.fPlazo];
+
+          const filtradas = base.filter(c =>
+            matchQ(c) &&
+            (st.estado === "Todos" || c.estado === st.estado) &&
+            (st.fBanco === "Todos los bancos" || c.banco === st.fBanco) &&
+            (st.fPlazo === "Cualquier plazo" || (st.fPlazo === "Vencidos" ? c.d < 0 : c.d >= 0 && c.d <= plazoMax))
+          ).sort((a, b) => a.d - b.d);
+
+          const rows = filtradas.map(c => {
+            const [ ec, eb ] = EST[c.estado] || [ GREY, GREY_BG ];
+            const [ vc, vs ] = venceTono(c.d, c.estado);
+            const on = st.sel.includes(c.id);
+            const sel = st.detId === c.id;
+            const cerrado = [ "Acreditado", "Debitado", "Anulado" ].includes(c.estado);
+            const accion = c.estado === "Rechazado" ? "Gestionar" : c.librador === "Propio" ? (cerrado ? "Ver" : "Conciliar") : cerrado ? "Ver" : c.estado === "Endosado" ? "Seguir" : "Depositar";
+            return {
+              numero: c.numero, banco: c.banco,
+              origen: terceros ? c.recibidoDe : c.banco,
+              origenRef: terceros ? c.venta : "Cheque propio",
+              destino: c.destino || "— sin destino —",
+              destinoRef: c.destinoRef || (terceros ? "En cartera" : ""),
+              destinoColor: c.destino ? (c.estado === "Rechazado" ? RED : "oklch(0.26 0.01 60)") : "oklch(0.62 0.01 60)",
+              vence: fecha(c.d), venceSub: vs, venceColor: vc,
+              importe: money(c.importe), estado: c.estado, estColor: ec, estBg: eb,
+              check: on ? "✓" : "", boxBorder: on ? ACCENT : "oklch(0.8 0.01 80)", boxBg: on ? ACCENT : "oklch(1 0 0)",
+              bg: sel ? "oklch(0.972 0.02 255)" : on ? "oklch(0.982 0.012 255)" : "oklch(1 0 0)",
+              ring: sel ? "inset 2px 0 0 " + ACCENT : "none",
+              accionLabel: accion, accionBg: accion === "Gestionar" ? RED : ACCENT,
+              accion: e => { e.stopPropagation(); this.setState({ detId: c.id, modal: accion === "Depositar" ? "depositar" : accion === "Gestionar" ? "gestionar" : "ver" }); },
+              toggle: e => { e.stopPropagation(); this.setState(s => ({ sel: s.sel.includes(c.id) ? s.sel.filter(x => x !== c.id) : s.sel.concat(c.id) })); },
+              open: () => this.set("detId", c.id)
+            };
+          });
+
+          const enCartera = TERCEROS.filter(c => c.estado === "En cartera");
+          const aCobrar7 = TERCEROS.filter(c => c.estado === "En cartera" && c.d >= 0 && c.d <= 7);
+          const propiosPend = PROPIOS.filter(c => c.estado === "Emitido");
+          const propios7 = propiosPend.filter(c => c.d >= 0 && c.d <= 7);
+          const rechazados = TERCEROS.filter(c => c.estado === "Rechazado");
+          const endosados = TERCEROS.filter(c => c.estado === "Endosado");
+          const sum = arr => arr.reduce((a, c) => a + c.importe, 0);
+
+          const kpis = [
+            { label: "En cartera", value: money(sum(enCartera)), hint: enCartera.length + " cheques de terceros", color: "oklch(0.24 0.01 60)" },
+            { label: "A cobrar 7 días", value: money(sum(aCobrar7)), hint: aCobrar7.length + " a depositar", color: GREEN },
+            { label: "Propios a debitar", value: money(sum(propiosPend)), hint: propios7.length + " en 7 días", color: RED },
+            { label: "Endosados", value: money(sum(endosados)), hint: "en poder de terceros", color: PURPLE }
+          ];
+
+          const alertaDefs = [
+            { titulo: "Vencen hoy", sub: "Depositar antes del cierre", n: TERCEROS.filter(c => c.estado === "En cartera" && c.d === 0).length, color: RED, bg: RED_BG, border: "oklch(0.88 0.05 25)", dot: RED, patch: { tab: "terceros", estado: "En cartera", fPlazo: "Vencen en 7 días" } },
+            { titulo: "A depositar en " + DDEP + " días", sub: money(sum(TERCEROS.filter(c => c.estado === "En cartera" && c.d > 0 && c.d <= DDEP))), n: TERCEROS.filter(c => c.estado === "En cartera" && c.d > 0 && c.d <= DDEP).length, color: AMBER, bg: AMBER_BG, border: "oklch(0.88 0.05 80)", dot: AMBER, patch: { tab: "terceros", estado: "En cartera", fPlazo: "Vencen en 7 días" } },
+            { titulo: "Fondos para propios", sub: money(sum(propios7)) + " se debitan esta semana", n: propios7.length, color: ACCENT, bg: "oklch(0.965 0.024 255)", border: "oklch(0.87 0.05 255)", dot: ACCENT, patch: { tab: "propios", estado: "Emitido", fPlazo: "Vencen en 7 días" } },
+            { titulo: "Rechazados sin gestionar", sub: money(sum(rechazados)) + " reimputados al cliente", n: rechazados.length, color: RED, bg: RED_BG, border: "oklch(0.88 0.05 25)", dot: RED, patch: { tab: "terceros", estado: "Rechazado", fPlazo: "Cualquier plazo" } }
+          ];
+          const alertas = alertaDefs.map(a => Object.assign({}, a, { pick: () => this.setState(Object.assign({ sel: [] }, a.patch)) }));
+
+          // calendario 14 días
+          const maxDia = Math.max.apply(null, [ 1 ].concat(Array.from({ length: NDIAS }, (_, i) => {
+            const ins = TERCEROS.filter(c => c.d === i && c.estado === "En cartera").reduce((a, c) => a + c.importe, 0);
+            const outs = PROPIOS.filter(c => c.d === i && c.estado === "Emitido").reduce((a, c) => a + c.importe, 0);
+            return Math.max(ins, outs);
+          })));
+          const dias = Array.from({ length: NDIAS }, (_, i) => {
+            const dt = new Date(HOY.getTime() + i * 86400000);
+            const ins = TERCEROS.filter(c => c.d === i && c.estado === "En cartera").reduce((a, c) => a + c.importe, 0);
+            const outs = PROPIOS.filter(c => c.d === i && c.estado === "Emitido").reduce((a, c) => a + c.importe, 0);
+            const hay = ins > 0 || outs > 0;
+            return {
+              dia: String(dt.getDate()).padStart(2, "0"), dow: DOW[dt.getDay()],
+              inH: Math.max(ins > 0 ? 5 : 0, Math.round((ins / maxDia) * 44)) + "px",
+              outH: Math.max(outs > 0 ? 5 : 0, Math.round((outs / maxDia) * 44)) + "px",
+              bg: i === 0 ? "oklch(0.955 0.028 255)" : "transparent",
+              labelColor: i === 0 ? "oklch(0.36 0.13 255)" : hay ? "oklch(0.3 0.01 60)" : "oklch(0.68 0.01 60)",
+              pick: () => this.setState({ fPlazo: i <= 7 ? "Vencen en 7 días" : "Vencen en 15 días", estado: "Todos" })
+            };
+          });
+
+          const estadosDisp = terceros
+            ? [ "Todos", "En cartera", "Endosado", "Depositado", "Acreditado", "Rechazado" ]
+            : [ "Todos", "Emitido", "Debitado", "Anulado" ];
+          const estadoChips = estadosDisp.map(label => {
+            const active = st.estado === label;
+            return { label, pick: () => this.set("estado", label),
+              color: active ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: active ? "oklch(0.955 0.028 255)" : "oklch(1 0 0)",
+              border: active ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          const tabs = [ [ "terceros", "De terceros" ], [ "propios", "Propios" ] ].map(([ k, label ]) => ({
+            label, pick: () => this.setState({ tab: k, estado: "Todos", sel: [], detId: k === "terceros" ? "t2" : "p1" }),
+            color: st.tab === k ? "oklch(0.24 0.01 60)" : "oklch(0.5 0.01 60)",
+            bg: st.tab === k ? "oklch(1 0 0)" : "transparent",
+            shadow: st.tab === k ? "0 1px 2px oklch(0.3 0.02 60 / 0.12)" : "none"
+          }));
+
+          const c = this.find(st.detId);
+          const [ dec, deb ] = EST[c.estado] || [ GREY, GREY_BG ];
+          const [ dvc, dvs ] = venceTono(c.d, c.estado);
+          const esPropio = c.librador === "Propio";
+          const tl = this.timeline(c);
+          const dotFor = i => i === tl.length - 1 ? [ dec, deb ] : [ "oklch(0.72 0.01 80)", "oklch(0.94 0.008 80)" ];
+
+          let avisoTitulo, avisoTxt, avisoColor, avisoBg, avisoBorder;
+          if (c.estado === "Rechazado") { avisoTitulo = "Rechazado — acción pendiente"; avisoTxt = "El importe volvió a la cuenta corriente de " + c.recibidoDe + " con nota de débito. Definí si se reclama, se refinancia o se bloquean las ventas a cuenta."; avisoColor = RED; avisoBg = RED_BG; avisoBorder = "oklch(0.88 0.05 25)"; }
+          else if (esPropio && c.estado === "Emitido") { avisoTitulo = "Requiere fondos"; avisoTxt = "Se debita el " + fecha(c.d) + " de " + c.banco + ". Saldo proyectado de esa cuenta ese día: $ 1.140.300."; avisoColor = ACCENT; avisoBg = "oklch(0.965 0.024 255)"; avisoBorder = "oklch(0.87 0.05 255)"; }
+          else if (c.d >= 0 && c.d <= 3 && c.estado === "En cartera") { avisoTitulo = "Depositar pronto"; avisoTxt = "Fecha de pago " + fecha(c.d) + ". Si se endosa, tiene que salir hoy para que el proveedor llegue a presentarlo."; avisoColor = AMBER; avisoBg = AMBER_BG; avisoBorder = "oklch(0.88 0.05 80)"; }
+          else { avisoTitulo = "Sin alertas"; avisoTxt = "El cheque está dentro de plazo y con su cadena de custodia completa."; avisoColor = GREEN; avisoBg = GREEN_BG; avisoBorder = "oklch(0.86 0.05 155)"; }
+
+          const acciones = esPropio
+            ? [ { label: "Conciliar", key: "ver" }, { label: "Anular", key: "gestionar" }, { label: "Reimprimir", key: "ver" } ]
+            : c.estado === "Rechazado"
+              ? [ { label: "Reclamar", key: "gestionar" }, { label: "Canjear", key: "entregar" }, { label: "Reimputar", key: "ver" } ]
+              : [ { label: "Depositar", key: "depositar" }, { label: "Endosar", key: "entregar" }, { label: "Ver venta", key: "ver" } ];
+
+          const det = {
+            numero: c.numero, banco: c.banco, tipoTxt: esPropio ? "Cheque propio" : "Cheque de tercero",
+            estado: c.estado, estColor: dec, estBg: deb,
+            importe: money(c.importe), vence: fecha(c.d), venceSub: dvs, venceColor: dvc,
+            campos: esPropio
+              ? [ { label: "Cuenta", value: c.banco }, { label: "Emitido", value: c.fechaRecibo },
+                  { label: "Entregado a", value: c.destino }, { label: "Orden de pago", value: c.destinoRef || "—" },
+                  { label: "Tipo", value: "Diferido" }, { label: "Firmante", value: "E. Alvear" } ]
+              : [ { label: "Librador", value: c.librador }, { label: "CUIT librador", value: c.cuit },
+                  { label: "Recibido de", value: c.recibidoDe }, { label: "Recibido el", value: c.fechaRecibo },
+                  { label: "Origen", value: c.venta }, { label: "Tenedor actual", value: c.destino || "Nosotros" } ],
+            timeline: tl.map((t, i) => {
+              const [ dot, halo ] = dotFor(i);
+              return { titulo: t.titulo, fecha: t.fecha, detalle: t.detalle, ref: !!t.refTxt, refTxt: t.refTxt,
+                dot, halo, lineH: i === tl.length - 1 ? "0px" : "18px" };
+            }),
+            avisoTitulo, avisoTxt, avisoColor, avisoBg, avisoBorder,
+            acciones: acciones.map((a, i) => ({
+              label: a.label,
+              bg: i === 0 ? ACCENT : "oklch(1 0 0)",
+              color: i === 0 ? "oklch(1 0 0)" : "oklch(0.33 0.01 60)",
+              border: i === 0 ? "none" : "1px solid oklch(0.87 0.01 80)",
+              run: () => this.set("modal", a.key)
+            }))
+          };
+
+          const modalCfg = {
+            depositar: { titulo: "Depositar cheque", sub: "Se registra el depósito y queda pendiente de acreditación.", destLabel: "Cuenta bancaria", cta: "Registrar depósito", nota: "Al acreditarse, el movimiento se concilia contra el extracto y el cheque pasa a estado Acreditado.", destinos: [ "Cta. cte. Nación 4412-9", "Cta. cte. Provincia 8830-1", "Caja de ahorro Galicia 1120-3" ] },
+            entregar: { titulo: "Endosar / entregar cheque", sub: "Queda registrado a quién se lo entregaste y contra qué comprobante.", destLabel: "Entregar a", cta: "Registrar entrega", nota: "El cheque sale de la cartera disponible pero sigue trazado: si lo rechazan, vuelve con su historia completa.", destinos: [ "Insumos del Sur SRL", "Transporte Bermúdez SRL", "Frigorífico Oeste SA", "Papelera Central SRL" ] },
+            gestionar: { titulo: "Gestionar rechazo", sub: "Definí el curso de acción y dejá constancia en la cuenta del cliente.", destLabel: "Acción", cta: "Guardar gestión", nota: "El importe ya volvió a la cuenta corriente del cliente con nota de débito.", destinos: [ "Reclamar al cliente", "Acordar plan de pago", "Canjear por otro valor", "Enviar a estudio jurídico" ] },
+            ver: { titulo: "Movimiento del cheque", sub: "Registrá el movimiento y actualizá la cadena de custodia.", destLabel: "Destino", cta: "Guardar", nota: "Todo movimiento queda con usuario, fecha y comprobante asociado.", destinos: [ "Cta. cte. Nación 4412-9", "Insumos del Sur SRL", "Devolver al cliente" ] }
+          };
+          const mc = modalCfg[st.modal] || modalCfg.ver;
+
+          const totalFiltrado = filtradas.reduce((a, x) => a + x.importe, 0);
+          const sug = base.filter(matchQ).slice(0, 5).map(x => ({
+            numero: x.numero, sub: (x.recibidoDe || x.destino) + " · " + x.banco, importe: money(x.importe),
+            pick: () => this.setState({ detId: x.id, query: "", sugOpen: false })
+          }));
+
+          return {
+            query: st.query, sugOpen: st.sugOpen && q.length > 0 && sug.length > 0, sugerencias: sug,
+            onQuery: e => this.setState({ query: e.target.value, sugOpen: true }),
+            openSug: () => this.set("sugOpen", true),
+            resumenTxt: TERCEROS.length + " cheques de terceros · " + PROPIOS.length + " propios · valores al 27/08/26",
+            kpis, alertas, dias, tabs, estadoChips, calTitulo: "Próximos " + NDIAS + " días",
+            colOrigen: terceros ? "Recibido de / origen" : "Cuenta emisora",
+            colDestino: terceros ? "Destino actual" : "Entregado a",
+            bancos: terceros ? [ "Todos los bancos", "Banco Nación", "Banco Galicia", "Credicoop", "Banco Provincia", "Banco Macro" ] : [ "Todos los bancos", "Cta. cte. Nación 4412-9", "Cta. cte. Provincia 8830-1" ],
+            fBanco: st.fBanco, setBanco: e => this.set("fBanco", e.target.value),
+            plazos: [ "Cualquier plazo", "Vencen en 7 días", "Vencen en 15 días", "Vencidos" ],
+            fPlazo: st.fPlazo, setPlazo: e => this.set("fPlazo", e.target.value),
+            nuevoLabel: terceros ? "+ Ingresar cheque" : "+ Emitir cheque",
+            nuevo: () => this.set("modal", terceros ? "entregar" : "ver"),
+            rows, vacio: rows.length === 0,
+            countTxt: rows.length + " cheques",
+            haySel: st.sel.length > 0, selTxt: st.sel.length + " seleccionados",
+            bulk: terceros ? [ "Depositar en lote", "Endosar a proveedor", "Imprimir planilla", "Exportar" ] : [ "Conciliar", "Imprimir planilla", "Exportar" ],
+            totalFmt: money(totalFiltrado),
+            det,
+            modal: !!st.modal, modalTitulo: mc.titulo, modalSub: mc.sub, modalDestLabel: mc.destLabel,
+            modalCta: mc.cta, modalNota: mc.nota, destinos: mc.destinos,
+            closeModal: () => this.set("modal", null),
+            confirmModal: () => this.set("modal", null)
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

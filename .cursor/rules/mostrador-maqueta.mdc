@@ -1,0 +1,31 @@
+---
+description: Mostrador (punto de venta) se implementa desde la maqueta DC, igual que CxC y Cheques.
+globs: "**/ventas/**,**/maquetas/**Mostrador*"
+alwaysApply: false
+---
+
+# Mostrador — maqueta DC
+
+Fuente: `maquetas/Mostrador.dc.html`. Código: `src/app/features/ventas/` (ruta `/ventas`, menú Mostrador).
+
+Hacer **el mismo trabajo que CxC / Cheques**: llevar la maqueta a producto (layout, ficha, cobro mixto, atajos), no un listado mínimo ni un ticket a media pantalla.
+
+## Qué tiene la maqueta (no recortar)
+
+- Una sola pantalla viewport (sin topbar duplicada: el shell ya tiene menú)
+- Barra **IA** (`F4`) con dropdown de cliente / ítems / producto ambiguo
+- Cliente (`F2`) autocomplete ≥3 + checkbox Consumidor Final + ficha (saldo, límite, disponible)
+- Producto (`F3`) código/desc/EAN; “Código no encontrado” si es numérico largo sin match
+- Detalle: Código, Descripción, IVA, Precio, Cant ±, Bonif %, Subtotal, vaciar / cancelar Esc
+- Cobro mixto: Efectivo (recibí/vuelto/billetes), Tarjeta, Transferencia, Cheque, Cuenta corriente
+- Comprobante: Factura A / B / Remito / Ticket
+- Overlay de ticket + Nueva venta · F12
+- Tokens **naranja** Ventas360, no azul/violeta de la maqueta
+
+## Cómo
+
+- UI en español; commits en inglés
+- Excepción de listados: productos sí se cargan; clientes por autocomplete ≥3
+- Transferencia Mercado Pago: acreditaciones **demo/simuladas** para asociar a la venta (chip coincide, pendiente, se consumen al emitir). No hay webhook real de MP.
+- Verificar en el browser el flujo completo
+- No tocar agro360 salvo pedido explícito

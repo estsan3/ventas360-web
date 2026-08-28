@@ -1,0 +1,33 @@
+---
+description: Pendiente — implementar Cartera de Cheques desde la maqueta DC, igual que CxC.
+globs: "**/bancos/**,**/caja/**,**/maquetas/**Cartera*"
+alwaysApply: false
+---
+
+# Pendiente: Cartera de cheques (maqueta DC)
+
+Cuando el usuario pida esta pantalla, hacer **el mismo trabajo que Cuenta corriente**: llevar la maqueta a producto (layout, KPIs, tabs, filtros, detalle, acciones), no un listado mínimo.
+
+## Fuente
+
+- Maqueta: `maquetas/Cartera de Cheques.dc.html` (referencia de CxC: `maquetas/Cuentas Corrientes.dc.html`)
+- Código actual: `src/app/features/bancos/` (y pestaña cheques en caja)
+- API: `ventas360-api` módulo bancos / valores
+
+## Qué tiene la maqueta (no recortar)
+
+- Tabs **De terceros** / **Propios**
+- KPIs (en cartera, a cobrar, fondos para propios, rechazados)
+- Alertas (vencen hoy, a depositar, fondos de la semana, rechazados sin gestionar)
+- Calendario de próximos días
+- Filtros por estado, banco y plazo (en cliente). **Excepción:** al entrar se carga toda la cartera para armar KPIs, alertas y calendario.
+- Tabla + panel de detalle + acciones (depositar, endosar/entregar, etc.)
+- Empty state de filtros
+
+## Cómo (mismo criterio que CxC)
+
+- UI en español; commits en inglés
+- Tokens / kit Ventas360, no inventar componentes
+- Scroll interno si supera el viewport (tablet, notebook, monitor)
+- Verificar en el browser el flujo completo, no solo un screenshot
+- No tocar agro360 salvo pedido explícito

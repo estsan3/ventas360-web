@@ -1,262 +1,893 @@
-<section class="page fact">
-  <header class="fact__header">
-    <div class="fact__title-row">
-      <h1 class="fact__title">{{ titulo() }}</h1>
-      <span class="fact__meta">{{ metaComprobante() }}</span>
-    </div>
-    <div class="fact__actions">
-      @if (esFactura()) {
-        <button
-          type="button"
-          class="fact__btn fact__btn--outline"
-          [disabled]="guardando()"
-          (click)="guardarPresupuesto()"
-        >
-          Guardar presupuesto
-        </button>
-        <button
-          type="button"
-          class="fact__btn fact__btn--dark"
-          [disabled]="guardando()"
-          (click)="guardarPrincipal()"
-        >
-          {{ ctaPrincipal() }}
-        </button>
-      } @else {
-        <button
-          type="button"
-          class="fact__btn fact__btn--outline"
-          [routerLink]="listadoTrasGuardar()"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="fact__btn fact__btn--dark"
-          [disabled]="guardando()"
-          (click)="guardarPrincipal()"
-        >
-          {{ ctaPrincipal() }}
-        </button>
-      }
-    </div>
-  </header>
-
-  @if (esFactura()) {
-    <div class="fact__search-card fact__ia-card">
-      <div class="fact__f2">IA</div>
-      <div class="fact__search-wrap">
-        <input
-          class="fact__search"
-          type="text"
-          placeholder="Pedí en lenguaje natural… Ej: 2 mouse inalámbrico para Distribuidora Norte"
-          [value]="textoIa()"
-          (input)="textoIa.set($any($event.target).value)"
-          (keydown.enter)="interpretarIa()"
-          autocomplete="off"
-        />
-      </div>
-      <div class="fact__search-actions">
-        <button
-          type="button"
-          class="fact__btn fact__btn--dark fact__btn--sm"
-          [disabled]="interpretandoIa()"
-          (click)="interpretarIa()"
-        >
-          {{ interpretandoIa() ? 'Interpretando…' : 'Interpretar' }}
-        </button>
-      </div>
-    </div>
-    @if (previewIa(); as preview) {
-      <div class="fact__search-card fact__ia-preview">
-        <div class="fact__ia-preview-body">
-          <div class="fact__ia-preview-head">
-            <strong>Vista previa</strong>
-            @if (preview.clienteNombre) {
-              <span> · {{ preview.clienteNombre }}</span>
-            }
-            <span class="fact__ia-conf"> {{ preview.confianza * 100 | number: '1.0-0' }}%</span>
+@if (esFactura()) {
+  <section class="mos">
+    <div class="mos__split">
+      <div class="mos__main">
+        <div class="mos__ia">
+          <div class="mos__ia-bar">
+            <span class="mos__kbd mos__kbd--ia">IA</span>
+            <input
+              #inputIa
+              class="mos__ia-input"
+              type="text"
+              placeholder="Pedí en tus palabras: 2 cajas de tornillos y 1 mouse inalámbrico para gonzalez"
+              [value]="textoIa()"
+              (input)="textoIa.set($any($event.target).value)"
+              (keydown.enter)="interpretarIa()"
+              autocomplete="off"
+            />
+            <span class="mos__kbd">F4</span>
           </div>
-          @for (adv of preview.advertencias; track adv) {
-            <div class="fact__ia-warn">{{ adv }}</div>
+          @if (iaVista(); as ia) {
+            <div class="mos__drop mos__drop--ia">
+              <div class="mos__drop-head mos__drop-head--ia">
+                <strong>{{ ia.titulo }}</strong>
+                @if (ia.sub) {
+                  <span>{{ ia.sub }}</span>
+                }
+              </div>
+              @if (ia.clienteNombre) {
+                <div class="mos__drop-row">
+                  <span class="mos__drop-rol">Cliente</span>
+                  <div class="mos__drop-body">
+                    <div class="mos__drop-name">{{ ia.clienteNombre }}</div>
+                  </div>
+                </div>
+              }
+              @for (it of ia.items; track it.nombre) {
+                <div class="mos__drop-row">
+                  <span class="mos__drop-rol">{{ it.rol }}</span>
+                  <div class="mos__drop-body">
+                    <div class="mos__drop-name">{{ it.nombre }}</div>
+                    <div class="mos__drop-meta">{{ it.meta }}</div>
+                  </div>
+                  <div class="mos__drop-imp">{{ it.importe }}</div>
+                </div>
+              }
+              @if (ia.prodOpciones.length > 0) {
+                <div class="mos__drop-amb">
+                  <div class="mos__drop-amb-h">
+                    <span class="mos__drop-rol">Producto</span>
+                    <span class="mos__chip mos__chip--ia">Varias coincidencias</span>
+                  </div>
+                  @for (o of ia.prodOpciones; track o.id) {
+                    <button
+                      type="button"
+                      class="mos__opt"
+                      [class.mos__opt--on]="aiProdSel() === o.id"
+                      (click)="aiProdSel.set(o.id)"
+                    >
+                      <span class="mos__radio" [class.mos__radio--on]="aiProdSel() === o.id"></span>
+                      <span class="mos__opt-sku">{{ o.codigo }}</span>
+                      <div class="mos__drop-body">
+                        <div class="mos__drop-name">{{ o.nombre }}</div>
+                        <div class="mos__drop-meta" [attr.data-tono]="o.stockTono">
+                          {{ o.stockTxt }}
+                        </div>
+                      </div>
+                      <div class="mos__opt-pre">
+                        <div class="mos__drop-imp">{{ o.importe }}</div>
+                        <div class="mos__drop-meta">{{ o.unitario }}</div>
+                      </div>
+                    </button>
+                  }
+                </div>
+              }
+              <div class="mos__drop-foot">
+                <span class="mos__drop-nota">{{ ia.nota }}</span>
+                <button
+                  type="button"
+                  class="mos__btn mos__btn--ghost"
+                  (click)="descartarPreviewIa()"
+                >
+                  Descartar
+                </button>
+                <button
+                  type="button"
+                  class="mos__btn mos__btn--primary"
+                  [disabled]="!ia.puedeAceptar"
+                  (click)="aplicarPreviewIaMos()"
+                >
+                  Aceptar
+                </button>
+              </div>
+            </div>
           }
-          <ul class="fact__ia-lines">
-            @for (l of preview.lineas; track l.descripcion) {
-              <li [class.fact__ia-line--miss]="!l.productoId">
-                {{ l.cantidad }} × {{ l.productoNombre || l.descripcion }}
-              </li>
+        </div>
+
+        <div class="mos__busca">
+          <div class="mos__busca-col">
+            <div class="mos__busca-lab">
+              <label>Cliente</label>
+              <button type="button" class="mos__cf" (click)="toggleCF()">
+                <span class="mos__check" [class.mos__check--on]="cfMode()">{{
+                  cfMode() ? '✓' : ''
+                }}</span>
+                Consumidor Final
+              </button>
+              <span class="mos__kbd">F2</span>
+            </div>
+            <div class="mos__field">
+              <span class="mos__lupa">⌕</span>
+              <input
+                #inputCli
+                class="mos__input"
+                [value]="clienteInput()"
+                (input)="onClienteInput($any($event.target).value)"
+                (focus)="onClienteFocus()"
+                (blur)="cerrarClienteQuick()"
+                placeholder="Nombre o CUIT (3 caracteres mínimo)"
+                autocomplete="off"
+              />
+              <button
+                type="button"
+                class="mos__icon"
+                title="Búsqueda avanzada"
+                (click)="abrirBuscarCliente()"
+              >
+                ⌕+
+              </button>
+            </div>
+            @if (clienteQuickOpen()) {
+              <div class="mos__drop">
+                @if (cliCorto()) {
+                  <div class="mos__drop-empty">{{ cliCorto() }}</div>
+                }
+                @for (c of clientesAutocomplete(); track c.id) {
+                  <button type="button" class="mos__sug" (mousedown)="elegirClienteRef(c)">
+                    <div class="mos__drop-body">
+                      <div class="mos__drop-name">{{ c.nombre }}</div>
+                      <div class="mos__drop-meta">{{ metaDeCliente(c) }}</div>
+                    </div>
+                    <span class="mos__chip" [attr.data-tono]="chipCcCliente(c).tono">{{
+                      chipCcCliente(c).txt
+                    }}</span>
+                  </button>
+                }
+              </div>
             }
-          </ul>
-          <div class="fact__ia-preview-actions">
+          </div>
+          <div class="mos__busca-col">
+            <div class="mos__busca-lab">
+              <label>Producto</label>
+              <span class="mos__kbd">F3</span>
+            </div>
+            <div class="mos__field">
+              <span class="mos__lupa">⌕</span>
+              <input
+                #inputProd
+                class="mos__input"
+                [value]="busqueda()"
+                (input)="onProdInput($any($event.target).value)"
+                (focus)="abrirBusqueda()"
+                (blur)="cerrarBusqueda()"
+                (keydown.enter)="onProdEnter()"
+                placeholder="Código, descripción o escaneá el código de barras"
+                autocomplete="off"
+              />
+              <button
+                type="button"
+                class="mos__icon"
+                title="Búsqueda avanzada"
+                (click)="abrirBuscarArticulo()"
+              >
+                ⌕+
+              </button>
+            </div>
+            @if (buscando()) {
+              <div class="mos__drop">
+                @if (eanDesconocido()) {
+                  <div class="mos__ean">
+                    <div>
+                      <div class="mos__ean-t">Código no encontrado</div>
+                      <div class="mos__drop-meta">{{ busqueda() }}</div>
+                    </div>
+                    <button
+                      type="button"
+                      class="mos__btn mos__btn--ghost mos__btn--sm"
+                      (click)="asociarCodigo()"
+                    >
+                      Asociar a un producto
+                    </button>
+                  </div>
+                }
+                @for (r of resultadosMos(); track r.producto.id) {
+                  <button
+                    type="button"
+                    class="mos__sug"
+                    (mousedown)="elegirProductoMos(r.producto)"
+                  >
+                    <span class="mos__opt-sku">{{ r.detalle }}</span>
+                    <div class="mos__drop-body">
+                      <div class="mos__drop-name">{{ r.nombre }}</div>
+                      <div class="mos__drop-meta" [attr.data-tono]="r.stockTono">
+                        {{ r.stockLabel }}
+                      </div>
+                    </div>
+                    <span class="mos__drop-imp">{{ r.precio }}</span>
+                  </button>
+                } @empty {
+                  @if (!eanDesconocido() && busqueda().trim().length >= 2) {
+                    <div class="mos__drop-empty">No hay productos que coincidan</div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="mos__ficha" [attr.data-tono]="fichaMos().tono">
+          <div class="mos__ficha-id">
+            <div class="mos__ficha-nom">
+              <span>{{ fichaMos().nombre }}</span>
+              <span class="mos__chip" [attr.data-tono]="fichaMos().tono">{{
+                fichaMos().estado
+              }}</span>
+            </div>
+            <div class="mos__ficha-meta">{{ fichaMos().meta }}</div>
+          </div>
+          @for (d of fichaMos().datos; track d.label) {
+            <div class="mos__kpi">
+              <div class="mos__kpi-lab">{{ d.label }}</div>
+              <div class="mos__kpi-val" [attr.data-tono]="d.tono">{{ d.value }}</div>
+            </div>
+          }
+          @if (fichaMos().verCuenta) {
+            <button type="button" class="mos__link" (click)="verCuenta()">Ver cuenta</button>
+          }
+        </div>
+
+        <div class="mos__tabla">
+          <div class="mos__thead">
+            <div>Código</div>
+            <div>Descripción</div>
+            <div class="mos__c">IVA</div>
+            <div class="mos__r">Precio</div>
+            <div class="mos__c">Cant.</div>
+            <div class="mos__r">Bonif.</div>
+            <div class="mos__r">Subtotal</div>
+            <div></div>
+          </div>
+          <div class="mos__tbody">
+            @for (linea of lineas(); track linea.productoId) {
+              <div class="mos__tr">
+                <div class="mos__sku">{{ linea.codigo }}</div>
+                <div class="mos__desc">{{ linea.descripcion }}</div>
+                <div class="mos__c mos__muted">{{ linea.ivaPct }} %</div>
+                <div class="mos__r">{{ money(linea.precioUnitario) }}</div>
+                <div class="mos__cant">
+                  <button
+                    type="button"
+                    class="mos__step"
+                    (click)="cambiarCant(linea.productoId, -1)"
+                  >
+                    −
+                  </button>
+                  <span>{{ linea.cantidad }}</span>
+                  <button
+                    type="button"
+                    class="mos__step"
+                    (click)="cambiarCant(linea.productoId, 1)"
+                  >
+                    +
+                  </button>
+                </div>
+                <div class="mos__r">
+                  <input
+                    class="mos__bonif"
+                    [class.mos__bonif--on]="linea.dto"
+                    [value]="linea.dto"
+                    (change)="setBonif(linea.productoId, $any($event.target).value)"
+                    placeholder="0 %"
+                  />
+                </div>
+                <div class="mos__r mos__imp">$ {{ importeLinea(linea) }}</div>
+                <button type="button" class="mos__x" (click)="eliminarLinea(linea.productoId)">
+                  ×
+                </button>
+              </div>
+            } @empty {
+              <div class="mos__empty">
+                <div>Todavía no cargaste productos</div>
+                <p>
+                  Buscá por código en F3, escaneá el código de barras, o pedilo en la barra de IA.
+                </p>
+              </div>
+            }
+          </div>
+          <div class="mos__tfoot">
+            <span>{{ lineas().length }} ítem{{ lineas().length === 1 ? '' : 's' }}</span>
+            <button type="button" class="mos__link" (click)="vaciarDetalle()">
+              Vaciar detalle
+            </button>
+            <button type="button" class="mos__link mos__link--danger" (click)="cancelarVenta()">
+              Cancelar venta · Esc
+            </button>
+            <span class="mos__tfoot-sp"></span>
+            <span>Lista de precios: Mostrador</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="mos__pay">
+        <div class="mos__tot">
+          <div class="mos__tot-row">
+            <span>Subtotal</span><span>{{ money(subtotal()) }}</span>
+          </div>
+          <div class="mos__desc" [class.mos__desc--on]="descPct() > 0">
+            <span>Descuento</span>
+            <div class="mos__desc-chips">
+              @for (p of [0, 5, 10]; track p) {
+                <button
+                  type="button"
+                  class="mos__mini"
+                  [class.mos__mini--on]="descPct() === p"
+                  (click)="pickDescRapido(p)"
+                >
+                  {{ p }}%
+                </button>
+              }
+            </div>
+            <div class="mos__desc-in">
+              <input
+                [value]="descGlobalTxt()"
+                (input)="setDescGlobal($any($event.target).value)"
+                placeholder="0"
+              />
+              <span>%</span>
+            </div>
+            <span class="mos__desc-m" [class.mos__desc-m--on]="descPct() > 0">{{
+              descMontoFmt()
+            }}</span>
+          </div>
+          <div class="mos__tot-row">
+            <span>Neto gravado</span><span>{{ netoMosFmt() }}</span>
+          </div>
+          @for (v of ivasMos(); track v.label) {
+            <div class="mos__tot-row">
+              <span>{{ v.label }}</span
+              ><span>{{ v.value }}</span>
+            </div>
+          }
+          <div class="mos__tot-final">
+            <span>Total</span>
+            <strong>{{ money(total()) }}</strong>
+          </div>
+        </div>
+
+        <div class="mos__pay-body">
+          <div class="mos__block">
+            <div class="mos__block-h">
+              <span>Forma de pago</span>
+              <button type="button" class="mos__link" (click)="agregarMedio()">
+                + Agregar medio
+              </button>
+            </div>
+            <div class="mos__medios">
+              @for (m of mediosMos; track m.tipo) {
+                <button
+                  type="button"
+                  class="mos__medio"
+                  [class.mos__medio--on]="medioOn(m.tipo)"
+                  [class.mos__medio--off]="m.tipo === 'ctacte' && !permiteCuenta()"
+                  (click)="toggleMedio(m.tipo)"
+                >
+                  {{ m.label }}
+                </button>
+              }
+            </div>
+
+            @for (p of pagosVista().activos; track p.id) {
+              <div class="mos__pago">
+                <div class="mos__pago-h">
+                  <strong>{{ etiquetaMedio(p.tipo) }}</strong>
+                  @if (restoLabel()) {
+                    <button
+                      type="button"
+                      class="mos__link"
+                      [disabled]="!hayLineas()"
+                      (click)="usarResto(p.id)"
+                    >
+                      {{ restoLabel() }}
+                    </button>
+                  }
+                  <label class="mos__pago-imp">
+                    Importe con este medio
+                    <input
+                      [value]="montoPagoTxt(p.id)"
+                      [disabled]="!hayLineas()"
+                      (input)="setPagoCampo(p.id, 'montoTxt', $any($event.target).value)"
+                      placeholder="0,00"
+                    />
+                  </label>
+                  <button type="button" class="mos__x" (click)="quitarPago(p.id)">×</button>
+                </div>
+
+                @if (p.tipo === 'efectivo') {
+                  <div class="mos__ef">
+                    <label>
+                      Recibí
+                      <input
+                        [value]="p.recibidoTxt"
+                        [disabled]="!hayLineas()"
+                        (input)="setPagoCampo(p.id, 'recibidoTxt', $any($event.target).value)"
+                        placeholder="0,00"
+                      />
+                    </label>
+                    <div class="mos__vuelto" [attr.data-tono]="vueltoPago(p.id).tono">
+                      <div>Vuelto</div>
+                      <strong>{{ vueltoPago(p.id).fmt }}</strong>
+                    </div>
+                  </div>
+                  <div class="mos__bills">
+                    @for (b of billetesMos; track b) {
+                      <button
+                        type="button"
+                        [disabled]="!hayLineas()"
+                        (click)="pickBillete(p.id, b)"
+                      >
+                        {{ money(b).replace('$ ', '') }}
+                      </button>
+                    }
+                  </div>
+                }
+
+                @if (p.tipo === 'cheque') {
+                  <div class="mos__grid2">
+                    <label>
+                      N° de cheque
+                      <input
+                        [value]="p.chequeNumero"
+                        (input)="setPagoCampo(p.id, 'chequeNumero', $any($event.target).value)"
+                        placeholder="00483921"
+                      />
+                    </label>
+                    <label>
+                      Banco
+                      <select
+                        [value]="p.chequeBanco"
+                        (change)="setPagoCampo(p.id, 'chequeBanco', $any($event.target).value)"
+                      >
+                        <option value="">Elegí banco</option>
+                        @for (b of bancosEmisores; track b) {
+                          <option [value]="b">{{ b }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label>
+                      Fecha de pago
+                      <input
+                        type="date"
+                        [value]="p.chequeFecha"
+                        (input)="setPagoCampo(p.id, 'chequeFecha', $any($event.target).value)"
+                      />
+                    </label>
+                    <label>
+                      Librador / CUIT
+                      <input
+                        [value]="p.chequeLibrador"
+                        (input)="setPagoCampo(p.id, 'chequeLibrador', $any($event.target).value)"
+                        placeholder="Propio del cliente"
+                      />
+                    </label>
+                  </div>
+                  <div class="mos__hint mos__hint--ia">
+                    Al confirmar entra a la cartera de cheques como recibido de
+                    {{ clienteNombre() }}, asociado a este comprobante.
+                  </div>
+                }
+
+                @if (p.tipo === 'transferencia') {
+                  <div class="mos__mp">
+                    <div class="mos__mp-h">
+                      <strong>Mercado Pago</strong>
+                      <span class="mos__chip" [attr.data-tono]="mpChipTono(p)">{{
+                        mpChipTxt(p)
+                      }}</span>
+                      @if (p.mpPendiente && !p.mpId) {
+                        <button type="button" class="mos__link" (click)="soltarMp(p.id)">
+                          Buscar acreditación
+                        </button>
+                      }
+                      <span class="mos__mp-sync">simuladas · demo</span>
+                    </div>
+                    @if (mpAsociadaVista(p); as a) {
+                      <div class="mos__mp-card">
+                        <div class="mos__mp-card-main">
+                          <div class="mos__mp-pagador">{{ a.pagador }}</div>
+                          <div class="mos__mp-ref">{{ a.ref }}</div>
+                        </div>
+                        <span class="mos__mp-imp">{{ a.importe }}</span>
+                        <button type="button" class="mos__link" (click)="soltarMp(p.id)">
+                          Cambiar
+                        </button>
+                      </div>
+                    } @else if (!p.mpPendiente) {
+                      <div class="mos__mp-list">
+                        <div class="mos__mp-list-h">Acreditaciones sin asociar</div>
+                        @for (c of mpCandidatos(p.id, montoPagoNum(p.id)); track c.a.id) {
+                          <button
+                            type="button"
+                            class="mos__mp-row"
+                            [class.mos__mp-row--ok]="c.coincide"
+                            [disabled]="!hayLineas()"
+                            (click)="asociarMp(p.id, c.a.id)"
+                          >
+                            <span class="mos__mp-hora">{{ c.a.hora }}</span>
+                            <div class="mos__mp-row-main">
+                              <div class="mos__mp-pagador">{{ c.a.pagador }}</div>
+                              <div class="mos__mp-ref">{{ c.a.ref }}</div>
+                            </div>
+                            @if (c.coincide) {
+                              <span class="mos__chip" data-tono="ok">coincide</span>
+                            }
+                            <span class="mos__mp-imp">{{ c.importeFmt }}</span>
+                          </button>
+                        }
+                        <button
+                          type="button"
+                          class="mos__mp-row mos__mp-row--pend"
+                          (click)="marcarMpPendiente(p.id)"
+                        >
+                          <span class="mos__mp-pend-txt">Todavía no acreditó</span>
+                          <span class="mos__mp-pend-cta">Cobrar como pendiente</span>
+                        </button>
+                      </div>
+                    }
+                    <label>
+                      Cuenta destino
+                      <select
+                        [value]="p.cuentaDestino"
+                        (change)="setPagoCampo(p.id, 'cuentaDestino', $any($event.target).value)"
+                      >
+                        <option value="">Elegí cuenta</option>
+                        @for (c of cuentasBanco(); track c.id) {
+                          <option [value]="c.nombre">{{ c.banco }} · {{ c.nombre }}</option>
+                        }
+                      </select>
+                    </label>
+                  </div>
+                }
+
+                @if (p.tipo === 'tarjeta') {
+                  <div class="mos__grid3">
+                    <label>
+                      Tarjeta
+                      <select
+                        [value]="p.tarjeta"
+                        (change)="setPagoCampo(p.id, 'tarjeta', $any($event.target).value)"
+                      >
+                        @for (t of tarjetasMos; track t) {
+                          <option [value]="t">{{ t }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label>
+                      Cuotas
+                      <select
+                        [value]="p.cuotas"
+                        (change)="setPagoCampo(p.id, 'cuotas', $any($event.target).value)"
+                      >
+                        @for (c of cuotasMos; track c) {
+                          <option [value]="c">{{ c }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label>
+                      Lote / cupón
+                      <input
+                        [value]="p.lote"
+                        (input)="setPagoCampo(p.id, 'lote', $any($event.target).value)"
+                        placeholder="0142 / 00891"
+                      />
+                    </label>
+                  </div>
+                }
+
+                @if (p.tipo === 'ctacte') {
+                  <div class="mos__cc">
+                    <div>
+                      <div class="mos__kpi-lab">Saldo actual</div>
+                      <div class="mos__kpi-val">{{ money(clienteSaldo()?.saldo ?? 0) }}</div>
+                    </div>
+                    <span>→</span>
+                    <div>
+                      <div class="mos__kpi-lab">Queda</div>
+                      <div class="mos__kpi-val" data-tono="debe">{{ ccNuevoSaldoFmt() }}</div>
+                    </div>
+                    <div>
+                      <div class="mos__kpi-lab">Vence</div>
+                      <div class="mos__kpi-val">—</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="mos__block">
+            <div class="mos__block-h"><span>Comprobante</span></div>
+            <div class="mos__comps">
+              <button
+                type="button"
+                class="mos__comp"
+                [class.mos__comp--on]="compMos() === 'factura_a'"
+                (click)="setCompMos('factura_a')"
+              >
+                Factura A
+              </button>
+              <button
+                type="button"
+                class="mos__comp"
+                [class.mos__comp--on]="compMos() === 'factura_b'"
+                (click)="setCompMos('factura_b')"
+              >
+                Factura B
+              </button>
+              <button
+                type="button"
+                class="mos__comp"
+                [class.mos__comp--on]="compMos() === 'remito'"
+                (click)="setCompMos('remito')"
+              >
+                Remito
+              </button>
+              <button
+                type="button"
+                class="mos__comp"
+                [class.mos__comp--on]="compMos() === 'ticket'"
+                (click)="setCompMos('ticket')"
+              >
+                Ticket
+              </button>
+            </div>
+            <p class="mos__hint">{{ notaComp() }}</p>
+          </div>
+        </div>
+
+        <div class="mos__pay-foot">
+          <div class="mos__tot-row">
+            <span>Cobrado</span><strong>{{ cobradoFmt() }}</strong>
+          </div>
+          @if (pagosVista().aAcreditar > 0) {
+            <div class="mos__tot-row mos__tot-row--warn">
+              <span>A acreditar</span><strong>{{ aAcreditarFmt() }}</strong>
+            </div>
+          }
+          <div class="mos__estado" [attr.data-tono]="estadoPago().tono">{{ estadoPago().txt }}</div>
+          <div class="mos__cta">
             <button
               type="button"
-              class="fact__btn fact__btn--dark fact__btn--sm"
-              (click)="aplicarPreviewIa()"
+              class="mos__btn mos__btn--ghost"
+              [disabled]="guardando()"
+              (click)="guardarPresupuesto()"
             >
-              Aplicar al ticket
+              Presupuesto
             </button>
             <button
               type="button"
-              class="fact__btn fact__btn--outline fact__btn--sm"
-              (click)="descartarPreviewIa()"
+              class="mos__btn mos__btn--primary mos__btn--cta"
+              [disabled]="ctaMos().bloqueado"
+              (click)="confirmarMostrador()"
             >
-              Descartar
+              {{ guardando() ? 'Emitiendo…' : ctaMos().label }}
             </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    @if (ticketMos(); as t) {
+      <div class="mos__overlay">
+        <div class="mos__ticket">
+          <div class="mos__ticket-h">
+            <div class="mos__ok">✓</div>
+            <div>
+              <div class="mos__ticket-t">{{ t.titulo }}</div>
+              <div class="mos__drop-meta">{{ t.sub }}</div>
+            </div>
+          </div>
+          <div class="mos__ticket-b">
+            @for (l of t.lineas; track l.label) {
+              <div class="mos__tot-row" [attr.data-tono]="l.tono">
+                <span>{{ l.label }}</span
+                ><strong>{{ l.value }}</strong>
+              </div>
+            }
+            <div class="mos__cta">
+              <button type="button" class="mos__btn mos__btn--ghost" (click)="nuevaVenta()">
+                Imprimir
+              </button>
+              <button
+                type="button"
+                class="mos__btn mos__btn--primary mos__btn--cta"
+                (click)="nuevaVenta()"
+              >
+                Nueva venta · F12
+              </button>
+            </div>
           </div>
         </div>
       </div>
     }
-  }
-
-  <div class="fact__body">
-    <div class="fact__main">
-      <div class="fact__search-card fact__search-card--cliente">
-        <div class="fact__f2">⌨ F3</div>
-        <div class="fact__search-wrap">
-          <input
-            class="fact__search fact__search--cliente fact__search--neutral"
-            [value]="clienteInput()"
-            (input)="onClienteInput($any($event.target).value)"
-            (focus)="onClienteFocus()"
-            (blur)="cerrarClienteQuick()"
-            placeholder="Nombre, fantasía o CUIT (mín. 3 caracteres)…"
-            autocomplete="off"
-          />
+  </section>
+} @else {
+  <section class="page fact">
+    <header class="fact__header">
+      <div class="fact__title-row">
+        <h1 class="fact__title">{{ titulo() }}</h1>
+        <span class="fact__meta">{{ metaComprobante() }}</span>
+      </div>
+      <div class="fact__actions">
+        @if (esFactura()) {
           <button
             type="button"
-            class="fact__clear"
-            title="Limpiar"
-            (mousedown)="clearInput($event)"
+            class="fact__btn fact__btn--outline"
+            [disabled]="guardando()"
+            (click)="guardarPresupuesto()"
           >
-            ✕
+            Guardar presupuesto
           </button>
-          @if (clienteQuickOpen()) {
-            <div class="fact__dropdown">
-              <div class="fact__dropdown-head">
-                @if (clienteBuscando()) {
-                  Buscando…
-                } @else if (clienteInput().trim().length < 3) {
-                  Autocompletado · escribí al menos 3 caracteres
-                } @else {
-                  Resultados
-                }
-              </div>
-              <button
-                type="button"
-                class="fact__dropdown-item fact__dropdown-item--simple"
-                (mousedown)="elegirCliente(null, 'Consumidor final')"
-              >
-                Consumidor final
-              </button>
-              @for (c of clientesAutocomplete(); track c.id) {
-                <button type="button" class="fact__dropdown-item" (mousedown)="elegirClienteRef(c)">
-                  <div>
-                    <div class="fact__dropdown-name">{{ c.nombre }}</div>
-                    <div class="fact__dropdown-sub">{{ metaDeCliente(c) }}</div>
-                  </div>
-                  @if (c.bloqueado) {
-                    <span class="fact__chip fact__chip--danger">Bloqueado</span>
-                  }
-                </button>
-              } @empty {
-                @if (!clienteBuscando() && clienteInput().trim().length >= 3) {
-                  <div class="fact__dropdown-empty">Sin coincidencias</div>
-                }
-              }
-            </div>
-          }
-        </div>
-        <button
-          type="button"
-          class="fact__icon-btn"
-          title="Búsqueda avanzada de clientes"
-          (click)="abrirBuscarCliente()"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
+          <button
+            type="button"
+            class="fact__btn fact__btn--dark"
+            [disabled]="guardando()"
+            (click)="guardarPrincipal()"
           >
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.3-4.3" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          class="fact__btn fact__btn--ghost"
-          title="Venta rápida sin cliente"
-          (click)="elegirCliente(null, 'Consumidor final')"
-        >
-          Consumidor final
-        </button>
+            {{ ctaPrincipal() }}
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="fact__btn fact__btn--outline"
+            [routerLink]="listadoTrasGuardar()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="fact__btn fact__btn--dark"
+            [disabled]="guardando()"
+            (click)="guardarPrincipal()"
+          >
+            {{ ctaPrincipal() }}
+          </button>
+        }
       </div>
+    </header>
 
-      <div class="fact__search-card">
-        <div class="fact__f2">⌨ F2</div>
+    @if (esFactura()) {
+      <div class="fact__search-card fact__ia-card">
+        <div class="fact__f2">IA</div>
         <div class="fact__search-wrap">
           <input
             class="fact__search"
-            [value]="busqueda()"
-            (input)="busqueda.set($any($event.target).value)"
-            (focus)="abrirBusqueda()"
-            (blur)="cerrarBusqueda()"
-            placeholder="Código, código de barras, descripción o marca…"
+            type="text"
+            placeholder="Pedí en lenguaje natural… Ej: 2 mouse inalámbrico para Distribuidora Norte"
+            [value]="textoIa()"
+            (input)="textoIa.set($any($event.target).value)"
+            (keydown.enter)="interpretarIa()"
+            autocomplete="off"
           />
-          <button
-            type="button"
-            class="fact__clear"
-            title="Limpiar"
-            (mousedown)="clearInput($event)"
-          >
-            ✕
-          </button>
-          @if (buscando()) {
-            <div class="fact__dropdown">
-              <div class="fact__dropdown-head">
-                {{ resultados().length }} resultados
-                @if (busqueda()) {
-                  para "{{ busqueda() }}"
-                }
-              </div>
-              @for (r of resultados(); track r.producto.id) {
-                <button
-                  type="button"
-                  class="fact__dropdown-item"
-                  (mousedown)="elegirProducto(r.producto)"
-                >
-                  <div>
-                    <div class="fact__dropdown-name">{{ r.nombre }}</div>
-                    <div class="fact__dropdown-sub">{{ r.detalle }}</div>
-                  </div>
-                  <div class="fact__dropdown-right">
-                    <div class="fact__dropdown-price">{{ r.precio }}</div>
-                    <div
-                      class="fact__dropdown-stock"
-                      [class.fact__dropdown-stock--ok]="r.stockTono === 'ok'"
-                      [class.fact__dropdown-stock--warn]="r.stockTono === 'warn'"
-                      [class.fact__dropdown-stock--danger]="r.stockTono === 'danger'"
-                    >
-                      {{ r.stockLabel }}
-                    </div>
-                  </div>
-                </button>
-              } @empty {
-                <div class="fact__dropdown-foot">No hay productos que coincidan</div>
-              }
-              <div class="fact__dropdown-foot">↑↓ para moverte · Enter selecciona · Esc cierra</div>
-            </div>
-          }
         </div>
         <div class="fact__search-actions">
           <button
             type="button"
+            class="fact__btn fact__btn--dark fact__btn--sm"
+            [disabled]="interpretandoIa()"
+            (click)="interpretarIa()"
+          >
+            {{ interpretandoIa() ? 'Interpretando…' : 'Interpretar' }}
+          </button>
+        </div>
+      </div>
+      @if (previewIa(); as preview) {
+        <div class="fact__search-card fact__ia-preview">
+          <div class="fact__ia-preview-body">
+            <div class="fact__ia-preview-head">
+              <strong>Vista previa</strong>
+              @if (preview.clienteNombre) {
+                <span> · {{ preview.clienteNombre }}</span>
+              }
+              <span class="fact__ia-conf"> {{ preview.confianza * 100 | number: '1.0-0' }}%</span>
+            </div>
+            @for (adv of preview.advertencias; track adv) {
+              <div class="fact__ia-warn">{{ adv }}</div>
+            }
+            <ul class="fact__ia-lines">
+              @for (l of preview.lineas; track l.descripcion) {
+                <li [class.fact__ia-line--miss]="!l.productoId">
+                  {{ l.cantidad }} × {{ l.productoNombre || l.descripcion }}
+                </li>
+              }
+            </ul>
+            <div class="fact__ia-preview-actions">
+              <button
+                type="button"
+                class="fact__btn fact__btn--dark fact__btn--sm"
+                (click)="aplicarPreviewIa()"
+              >
+                Aplicar al ticket
+              </button>
+              <button
+                type="button"
+                class="fact__btn fact__btn--outline fact__btn--sm"
+                (click)="descartarPreviewIa()"
+              >
+                Descartar
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+    <div class="fact__body">
+      <div class="fact__main">
+        <div class="fact__search-card fact__search-card--cliente">
+          <div class="fact__f2">⌨ F3</div>
+          <div class="fact__search-wrap">
+            <input
+              class="fact__search fact__search--cliente fact__search--neutral"
+              [value]="clienteInput()"
+              (input)="onClienteInput($any($event.target).value)"
+              (focus)="onClienteFocus()"
+              (blur)="cerrarClienteQuick()"
+              placeholder="Nombre, fantasía o CUIT (mín. 3 caracteres)…"
+              autocomplete="off"
+            />
+            <button
+              type="button"
+              class="fact__clear"
+              title="Limpiar"
+              (mousedown)="clearInput($event)"
+            >
+              ✕
+            </button>
+            @if (clienteQuickOpen()) {
+              <div class="fact__dropdown">
+                <div class="fact__dropdown-head">
+                  @if (clienteBuscando()) {
+                    Buscando…
+                  } @else if (clienteInput().trim().length < 3) {
+                    Autocompletado · escribí al menos 3 caracteres
+                  } @else {
+                    Resultados
+                  }
+                </div>
+                <button
+                  type="button"
+                  class="fact__dropdown-item fact__dropdown-item--simple"
+                  (mousedown)="elegirCliente(null, 'Consumidor final')"
+                >
+                  Consumidor final
+                </button>
+                @for (c of clientesAutocomplete(); track c.id) {
+                  <button
+                    type="button"
+                    class="fact__dropdown-item"
+                    (mousedown)="elegirClienteRef(c)"
+                  >
+                    <div>
+                      <div class="fact__dropdown-name">{{ c.nombre }}</div>
+                      <div class="fact__dropdown-sub">{{ metaDeCliente(c) }}</div>
+                    </div>
+                    @if (c.bloqueado) {
+                      <span class="fact__chip fact__chip--danger">Bloqueado</span>
+                    }
+                  </button>
+                } @empty {
+                  @if (!clienteBuscando() && clienteInput().trim().length >= 3) {
+                    <div class="fact__dropdown-empty">Sin coincidencias</div>
+                  }
+                }
+              </div>
+            }
+          </div>
+          <button
+            type="button"
             class="fact__icon-btn"
-            title="Búsqueda avanzada de artículos"
-            (click)="abrirBuscarArticulo()"
+            title="Búsqueda avanzada de clientes"
+            (click)="abrirBuscarCliente()"
           >
             <svg
               width="18"
@@ -271,318 +902,407 @@
               <path d="M21 21l-4.3-4.3" />
             </svg>
           </button>
-          <input
-            class="fact__qty"
-            type="text"
-            inputmode="numeric"
-            [value]="cantidadAgregar()"
-            (input)="cantidadAgregar.set(+$any($event.target).value || 1)"
-          />
           <button
             type="button"
-            class="fact__btn fact__btn--primary"
-            [disabled]="resultados().length === 0"
-            (click)="resultados()[0] && elegirProducto(resultados()[0].producto)"
+            class="fact__btn fact__btn--ghost"
+            title="Venta rápida sin cliente"
+            (click)="elegirCliente(null, 'Consumidor final')"
           >
-            Agregar ↵
+            Consumidor final
           </button>
         </div>
-      </div>
 
-      <div class="fact__table-card">
-        <table class="fact__table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Descripción</th>
-              <th class="fact__th-right">Stock</th>
-              <th class="fact__th-right">Cant.</th>
-              <th class="fact__th-right">P. unitario</th>
-              <th class="fact__th-right">Dto.</th>
-              <th class="fact__th-right">Importe</th>
-              <th class="fact__th-x"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (linea of lineas(); track linea.productoId) {
-              <tr>
-                <td class="fact__code">{{ linea.codigo }}</td>
-                <td class="fact__desc">{{ linea.descripcion }}</td>
-                <td
-                  class="fact__td-right fact__stock-cell"
-                  [class.fact__stock-cell--warn]="
-                    linea.stockDisponible - linea.cantidad <= 5 &&
-                    linea.stockDisponible - linea.cantidad > 0
-                  "
-                  [class.fact__stock-cell--danger]="linea.stockDisponible - linea.cantidad <= 0"
-                >
-                  {{ linea.stockDisponible }}
-                </td>
-                <td class="fact__td-right">
-                  <input
-                    class="fact__cant"
-                    type="text"
-                    inputmode="numeric"
-                    [value]="linea.cantidad"
-                    (change)="setCantidad(linea.productoId, $any($event.target).value)"
-                  />
-                </td>
-                <td class="fact__td-right">{{ formatearPrecio(linea.precioUnitario) }}</td>
-                <td class="fact__td-right fact__muted">{{ linea.dto }}</td>
-                <td class="fact__td-right fact__importe">{{ importeLinea(linea) }}</td>
-                <td class="fact__td-x">
+        <div class="fact__search-card">
+          <div class="fact__f2">⌨ F2</div>
+          <div class="fact__search-wrap">
+            <input
+              class="fact__search"
+              [value]="busqueda()"
+              (input)="busqueda.set($any($event.target).value)"
+              (focus)="abrirBusqueda()"
+              (blur)="cerrarBusqueda()"
+              placeholder="Código, código de barras, descripción o marca…"
+            />
+            <button
+              type="button"
+              class="fact__clear"
+              title="Limpiar"
+              (mousedown)="clearInput($event)"
+            >
+              ✕
+            </button>
+            @if (buscando()) {
+              <div class="fact__dropdown">
+                <div class="fact__dropdown-head">
+                  {{ resultados().length }} resultados
+                  @if (busqueda()) {
+                    para "{{ busqueda() }}"
+                  }
+                </div>
+                @for (r of resultados(); track r.producto.id) {
                   <button
                     type="button"
-                    class="fact__del"
-                    title="Eliminar renglón"
-                    (click)="eliminarLinea(linea.productoId)"
+                    class="fact__dropdown-item"
+                    (mousedown)="elegirProducto(r.producto)"
                   >
-                    ✕
+                    <div>
+                      <div class="fact__dropdown-name">{{ r.nombre }}</div>
+                      <div class="fact__dropdown-sub">{{ r.detalle }}</div>
+                    </div>
+                    <div class="fact__dropdown-right">
+                      <div class="fact__dropdown-price">{{ r.precio }}</div>
+                      <div
+                        class="fact__dropdown-stock"
+                        [class.fact__dropdown-stock--ok]="r.stockTono === 'ok'"
+                        [class.fact__dropdown-stock--warn]="r.stockTono === 'warn'"
+                        [class.fact__dropdown-stock--danger]="r.stockTono === 'danger'"
+                      >
+                        {{ r.stockLabel }}
+                      </div>
+                    </div>
                   </button>
+                } @empty {
+                  <div class="fact__dropdown-foot">No hay productos que coincidan</div>
+                }
+                <div class="fact__dropdown-foot">
+                  ↑↓ para moverte · Enter selecciona · Esc cierra
+                </div>
+              </div>
+            }
+          </div>
+          <div class="fact__search-actions">
+            <button
+              type="button"
+              class="fact__icon-btn"
+              title="Búsqueda avanzada de artículos"
+              (click)="abrirBuscarArticulo()"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.3-4.3" />
+              </svg>
+            </button>
+            <input
+              class="fact__qty"
+              type="text"
+              inputmode="numeric"
+              [value]="cantidadAgregar()"
+              (input)="cantidadAgregar.set(+$any($event.target).value || 1)"
+            />
+            <button
+              type="button"
+              class="fact__btn fact__btn--primary"
+              [disabled]="resultados().length === 0"
+              (click)="resultados()[0] && elegirProducto(resultados()[0].producto)"
+            >
+              Agregar ↵
+            </button>
+          </div>
+        </div>
+
+        <div class="fact__table-card">
+          <table class="fact__table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th class="fact__th-right">Stock</th>
+                <th class="fact__th-right">Cant.</th>
+                <th class="fact__th-right">P. unitario</th>
+                <th class="fact__th-right">Dto.</th>
+                <th class="fact__th-right">Importe</th>
+                <th class="fact__th-x"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (linea of lineas(); track linea.productoId) {
+                <tr>
+                  <td class="fact__code">{{ linea.codigo }}</td>
+                  <td class="fact__desc">{{ linea.descripcion }}</td>
+                  <td
+                    class="fact__td-right fact__stock-cell"
+                    [class.fact__stock-cell--warn]="
+                      linea.stockDisponible - linea.cantidad <= 5 &&
+                      linea.stockDisponible - linea.cantidad > 0
+                    "
+                    [class.fact__stock-cell--danger]="linea.stockDisponible - linea.cantidad <= 0"
+                  >
+                    {{ linea.stockDisponible }}
+                  </td>
+                  <td class="fact__td-right">
+                    <input
+                      class="fact__cant"
+                      type="text"
+                      inputmode="numeric"
+                      [value]="linea.cantidad"
+                      (change)="setCantidad(linea.productoId, $any($event.target).value)"
+                    />
+                  </td>
+                  <td class="fact__td-right">{{ formatearPrecio(linea.precioUnitario) }}</td>
+                  <td class="fact__td-right fact__muted">{{ linea.dto }}</td>
+                  <td class="fact__td-right fact__importe">{{ importeLinea(linea) }}</td>
+                  <td class="fact__td-x">
+                    <button
+                      type="button"
+                      class="fact__del"
+                      title="Eliminar renglón"
+                      (click)="eliminarLinea(linea.productoId)"
+                    >
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+              }
+              <tr>
+                <td colspan="8" class="fact__empty-row">
+                  @if (lineas().length === 0) {
+                    Escaneá o buscá artículos para armar el comprobante…
+                  } @else {
+                    Escaneá o buscá el próximo artículo…
+                  }
                 </td>
               </tr>
-            }
-            <tr>
-              <td colspan="8" class="fact__empty-row">
-                @if (lineas().length === 0) {
-                  Escaneá o buscá artículos para armar el comprobante…
-                } @else {
-                  Escaneá o buscá el próximo artículo…
-                }
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <aside class="fact__side">
-      <div class="fact__card">
-        <div class="fact__label">Cliente seleccionado</div>
-        <div class="fact__cliente-name">{{ clienteNombre() }}</div>
-        <div class="fact__cliente-meta">{{ clienteMeta() }}</div>
-        @if (clienteId()) {
-          <div class="fact__saldo" [attr.data-tono]="clienteSaldoVista()?.tono ?? 'loading'">
-            @if (clienteSaldoCargando()) {
-              <span class="fact__saldo-label">Cta. cte.</span>
-              <span class="fact__saldo-monto">…</span>
-            } @else if (clienteSaldoVista(); as saldo) {
-              <span class="fact__saldo-label">
-                @if (saldo.flecha) {
-                  <span class="fact__saldo-flecha" aria-hidden="true">{{ saldo.flecha }}</span>
-                }
-                {{ saldo.label }}
-              </span>
-              <span class="fact__saldo-monto">{{ saldo.monto }}</span>
-            } @else {
-              <span class="fact__saldo-label">Cta. cte.</span>
-              <span class="fact__saldo-monto">Sin datos</span>
-            }
-          </div>
-          @if (clienteSaldoVista()?.tono === 'debe') {
-            <button type="button" class="fact__btn-cobro" (click)="abrirCobro()">
-              Registrar cobro
-            </button>
-          }
-        }
-        <div class="fact__chips">
-          @if (clienteBloqueado()) {
-            <span class="fact__chip fact__chip--danger">Bloqueado</span>
-          }
-          <span class="fact__chip fact__chip--neutral">{{ titulo() }}</span>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      @if (esFactura()) {
+      <aside class="fact__side">
         <div class="fact__card">
-          <div class="fact__label">Condición de venta</div>
-          <div class="fact__seg">
-            <button
-              type="button"
-              class="fact__seg-btn"
-              [class.fact__seg-btn--on]="condicion() === 'ctacte'"
-              (click)="setCondicion('ctacte')"
-            >
-              Cta. cte.
-            </button>
-            <button
-              type="button"
-              class="fact__seg-btn"
-              [class.fact__seg-btn--on]="condicion() === 'contado'"
-              (click)="setCondicion('contado')"
-            >
-              Contado
-            </button>
-            <button
-              type="button"
-              class="fact__seg-btn"
-              [class.fact__seg-btn--on]="condicion() === 'tarjeta'"
-              (click)="setCondicion('tarjeta')"
-            >
-              Tarjeta
-            </button>
-            <button
-              type="button"
-              class="fact__seg-btn"
-              [class.fact__seg-btn--on]="condicion() === 'cheque'"
-              (click)="setCondicion('cheque')"
-            >
-              Cheque
-            </button>
-          </div>
-          @if (isCtaCte()) {
-            <div class="fact__hint">Va a cuenta corriente · se genera un remito</div>
-          }
-          @if (isPagoInmediato()) {
-            <div class="fact__hint">Podés emitir factura fiscal o remito sin factura fiscal</div>
-          }
-          @if (isContado()) {
-            <div class="fact__pago">
-              <div class="fact__label">Forma de pago</div>
-              <div class="fact__seg fact__seg--sm">
-                <button
-                  type="button"
-                  class="fact__seg-btn fact__seg-btn--sm"
-                  [class.fact__seg-btn--on]="medioPago() === 'efectivo'"
-                  (click)="medioPago.set('efectivo')"
-                >
-                  Efectivo
-                </button>
-                <button
-                  type="button"
-                  class="fact__seg-btn fact__seg-btn--sm"
-                  [class.fact__seg-btn--on]="medioPago() === 'debito'"
-                  (click)="medioPago.set('debito')"
-                >
-                  Débito
-                </button>
-                <button
-                  type="button"
-                  class="fact__seg-btn fact__seg-btn--sm"
-                  [class.fact__seg-btn--on]="medioPago() === 'transferencia'"
-                  (click)="medioPago.set('transferencia')"
-                >
-                  Transf.
-                </button>
-              </div>
-              @if (isEfectivo()) {
-                <div class="fact__recibe">
-                  <span class="fact__recibe-label">Recibe $</span>
-                  <input
-                    class="fact__recibe-input"
-                    [value]="montoRecibido()"
-                    (input)="montoRecibido.set($any($event.target).value)"
-                    placeholder="0,00"
-                  />
-                </div>
+          <div class="fact__label">Cliente seleccionado</div>
+          <div class="fact__cliente-name">{{ clienteNombre() }}</div>
+          <div class="fact__cliente-meta">{{ clienteMeta() }}</div>
+          @if (clienteId()) {
+            <div class="fact__saldo" [attr.data-tono]="clienteSaldoVista()?.tono ?? 'loading'">
+              @if (clienteSaldoCargando()) {
+                <span class="fact__saldo-label">Cta. cte.</span>
+                <span class="fact__saldo-monto">…</span>
+              } @else if (clienteSaldoVista(); as saldo) {
+                <span class="fact__saldo-label">
+                  @if (saldo.flecha) {
+                    <span class="fact__saldo-flecha" aria-hidden="true">{{ saldo.flecha }}</span>
+                  }
+                  {{ saldo.label }}
+                </span>
+                <span class="fact__saldo-monto">{{ saldo.monto }}</span>
+              } @else {
+                <span class="fact__saldo-label">Cta. cte.</span>
+                <span class="fact__saldo-monto">Sin datos</span>
               }
             </div>
+            @if (clienteSaldoVista()?.tono === 'debe') {
+              <button type="button" class="fact__btn-cobro" (click)="abrirCobro()">
+                Registrar cobro
+              </button>
+            }
           }
-          @if (isCheque()) {
-            <div class="fact__cheque">
-              <div class="fact__hint">El cheque entra a cartera y a caja como medio cheque.</div>
-              <label class="fact__cheque-field">
-                <span>Número</span>
-                <input
-                  class="fact__cheque-input"
-                  [value]="chequeNumero()"
-                  (input)="chequeNumero.set($any($event.target).value)"
-                />
-              </label>
-              <label class="fact__cheque-field">
-                <span>Banco</span>
-                <input
-                  class="fact__cheque-input"
-                  [value]="chequeBanco()"
-                  (input)="chequeBanco.set($any($event.target).value)"
-                />
-              </label>
-              <label class="fact__cheque-field">
-                <span>Librador</span>
-                <input
-                  class="fact__cheque-input"
-                  [value]="chequeLibrador()"
-                  (input)="chequeLibrador.set($any($event.target).value)"
-                  [placeholder]="clienteNombre()"
-                />
-              </label>
-              <label class="fact__cheque-field">
-                <span>Fecha</span>
-                <input
-                  class="fact__cheque-input"
-                  type="date"
-                  [value]="chequeFecha()"
-                  (input)="chequeFecha.set($any($event.target).value)"
-                />
-              </label>
-              <label class="fact__cheque-field">
-                <span>Vencimiento</span>
-                <input
-                  class="fact__cheque-input"
-                  type="date"
-                  [value]="chequeVto()"
-                  (input)="chequeVto.set($any($event.target).value)"
-                />
-              </label>
+          <div class="fact__chips">
+            @if (clienteBloqueado()) {
+              <span class="fact__chip fact__chip--danger">Bloqueado</span>
+            }
+            <span class="fact__chip fact__chip--neutral">{{ titulo() }}</span>
+          </div>
+        </div>
+
+        @if (esFactura()) {
+          <div class="fact__card">
+            <div class="fact__label">Condición de venta</div>
+            <div class="fact__seg">
+              <button
+                type="button"
+                class="fact__seg-btn"
+                [class.fact__seg-btn--on]="condicion() === 'ctacte'"
+                (click)="setCondicion('ctacte')"
+              >
+                Cta. cte.
+              </button>
+              <button
+                type="button"
+                class="fact__seg-btn"
+                [class.fact__seg-btn--on]="condicion() === 'contado'"
+                (click)="setCondicion('contado')"
+              >
+                Contado
+              </button>
+              <button
+                type="button"
+                class="fact__seg-btn"
+                [class.fact__seg-btn--on]="condicion() === 'tarjeta'"
+                (click)="setCondicion('tarjeta')"
+              >
+                Tarjeta
+              </button>
+              <button
+                type="button"
+                class="fact__seg-btn"
+                [class.fact__seg-btn--on]="condicion() === 'cheque'"
+                (click)="setCondicion('cheque')"
+              >
+                Cheque
+              </button>
+            </div>
+            @if (isCtaCte()) {
+              <div class="fact__hint">Va a cuenta corriente · se genera un remito</div>
+            }
+            @if (isPagoInmediato()) {
+              <div class="fact__hint">Podés emitir factura fiscal o remito sin factura fiscal</div>
+            }
+            @if (isContado()) {
+              <div class="fact__pago">
+                <div class="fact__label">Forma de pago</div>
+                <div class="fact__seg fact__seg--sm">
+                  <button
+                    type="button"
+                    class="fact__seg-btn fact__seg-btn--sm"
+                    [class.fact__seg-btn--on]="medioPago() === 'efectivo'"
+                    (click)="medioPago.set('efectivo')"
+                  >
+                    Efectivo
+                  </button>
+                  <button
+                    type="button"
+                    class="fact__seg-btn fact__seg-btn--sm"
+                    [class.fact__seg-btn--on]="medioPago() === 'debito'"
+                    (click)="medioPago.set('debito')"
+                  >
+                    Débito
+                  </button>
+                  <button
+                    type="button"
+                    class="fact__seg-btn fact__seg-btn--sm"
+                    [class.fact__seg-btn--on]="medioPago() === 'transferencia'"
+                    (click)="medioPago.set('transferencia')"
+                  >
+                    Transf.
+                  </button>
+                </div>
+                @if (isEfectivo()) {
+                  <div class="fact__recibe">
+                    <span class="fact__recibe-label">Recibe $</span>
+                    <input
+                      class="fact__recibe-input"
+                      [value]="montoRecibido()"
+                      (input)="montoRecibido.set($any($event.target).value)"
+                      placeholder="0,00"
+                    />
+                  </div>
+                }
+              </div>
+            }
+            @if (isCheque()) {
+              <div class="fact__cheque">
+                <div class="fact__hint">El cheque entra a cartera y a caja como medio cheque.</div>
+                <label class="fact__cheque-field">
+                  <span>Número</span>
+                  <input
+                    class="fact__cheque-input"
+                    [value]="chequeNumero()"
+                    (input)="chequeNumero.set($any($event.target).value)"
+                  />
+                </label>
+                <label class="fact__cheque-field">
+                  <span>Banco</span>
+                  <input
+                    class="fact__cheque-input"
+                    [value]="chequeBanco()"
+                    (input)="chequeBanco.set($any($event.target).value)"
+                  />
+                </label>
+                <label class="fact__cheque-field">
+                  <span>Librador</span>
+                  <input
+                    class="fact__cheque-input"
+                    [value]="chequeLibrador()"
+                    (input)="chequeLibrador.set($any($event.target).value)"
+                    [placeholder]="clienteNombre()"
+                  />
+                </label>
+                <label class="fact__cheque-field">
+                  <span>Fecha</span>
+                  <input
+                    class="fact__cheque-input"
+                    type="date"
+                    [value]="chequeFecha()"
+                    (input)="chequeFecha.set($any($event.target).value)"
+                  />
+                </label>
+                <label class="fact__cheque-field">
+                  <span>Vencimiento</span>
+                  <input
+                    class="fact__cheque-input"
+                    type="date"
+                    [value]="chequeVto()"
+                    (input)="chequeVto.set($any($event.target).value)"
+                  />
+                </label>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="fact__totales">
+          <div class="fact__tot-row">
+            <span>Subtotal</span><span>$ {{ subtotalFmt() }}</span>
+          </div>
+          <div class="fact__tot-row">
+            <span>Neto gravado</span><span>$ {{ netoFmt() }}</span>
+          </div>
+          <div class="fact__tot-row">
+            <span>IVA 21%</span><span>$ {{ ivaFmt() }}</span>
+          </div>
+          <div class="fact__tot-sep"></div>
+          <div class="fact__tot-final">
+            <span>TOTAL</span>
+            <span class="fact__tot-amount">$ {{ totalFmt() }}</span>
+          </div>
+          @if (esFactura() && isEfectivo()) {
+            <div class="fact__tot-sep"></div>
+            <div class="fact__tot-row">
+              <span>Recibe</span>
+              <span>$ {{ montoRecibidoFmt() }}</span>
+            </div>
+            <div class="fact__tot-final">
+              <span
+                class="fact__vuelto"
+                [class.fact__vuelto--ok]="vueltoOk()"
+                [class.fact__vuelto--falt]="!vueltoOk()"
+              >
+                {{ vueltoLabel() }}
+              </span>
+              <span
+                class="fact__vuelto-amount"
+                [class.fact__vuelto--ok]="vueltoOk()"
+                [class.fact__vuelto--falt]="!vueltoOk()"
+              >
+                $ {{ vueltoFmt() }}
+              </span>
             </div>
           }
         </div>
-      }
 
-      <div class="fact__totales">
-        <div class="fact__tot-row">
-          <span>Subtotal</span><span>$ {{ subtotalFmt() }}</span>
-        </div>
-        <div class="fact__tot-row">
-          <span>Neto gravado</span><span>$ {{ netoFmt() }}</span>
-        </div>
-        <div class="fact__tot-row">
-          <span>IVA 21%</span><span>$ {{ ivaFmt() }}</span>
-        </div>
-        <div class="fact__tot-sep"></div>
-        <div class="fact__tot-final">
-          <span>TOTAL</span>
-          <span class="fact__tot-amount">$ {{ totalFmt() }}</span>
-        </div>
-        @if (esFactura() && isEfectivo()) {
-          <div class="fact__tot-sep"></div>
-          <div class="fact__tot-row">
-            <span>Recibe</span>
-            <span>$ {{ montoRecibidoFmt() }}</span>
-          </div>
-          <div class="fact__tot-final">
-            <span
-              class="fact__vuelto"
-              [class.fact__vuelto--ok]="vueltoOk()"
-              [class.fact__vuelto--falt]="!vueltoOk()"
-            >
-              {{ vueltoLabel() }}
-            </span>
-            <span
-              class="fact__vuelto-amount"
-              [class.fact__vuelto--ok]="vueltoOk()"
-              [class.fact__vuelto--falt]="!vueltoOk()"
-            >
-              $ {{ vueltoFmt() }}
-            </span>
-          </div>
-        }
-      </div>
-
-      <div class="fact__shortcuts">
-        @if (esFactura()) {
-          @if (isCtaCte()) {
-            F2 artículo · F3 cliente · Guardar presupuesto · Generar remito
+        <div class="fact__shortcuts">
+          @if (esFactura()) {
+            @if (isCtaCte()) {
+              F2 artículo · F3 cliente · Guardar presupuesto · Generar remito
+            } @else {
+              F2 artículo · F3 cliente · Guardar presupuesto · Emitir factura o remito
+            }
           } @else {
-            F2 artículo · F3 cliente · Guardar presupuesto · Emitir factura o remito
+            F2 artículo · F3 cliente · Guardar {{ tipo() }}
           }
-        } @else {
-          F2 artículo · F3 cliente · Guardar {{ tipo() }}
-        }
-      </div>
-    </aside>
-  </div>
-</section>
+        </div>
+      </aside>
+    </div>
+  </section>
+}
 
 @if (buscarArticuloOpen()) {
   <div class="fact-modal" (click)="buscarArticuloOpen.set(false)">

@@ -11,6 +11,28 @@ export interface InventarioItem {
   cantidad: number;
   costo: number;
   precio: number;
+  marca: string;
+  rubro: string;
+  codigoBarras: string;
+}
+
+export interface LineaRemitoCompra {
+  id: string;
+  productoId: string;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+}
+
+export interface RemitoCompraItem {
+  id: string;
+  comprobante: string;
+  fecha: string;
+  proveedorId: string;
+  estado: string;
+  renglones: number;
+  total: number;
+  lineas: LineaRemitoCompra[];
 }
 
 interface InventarioItemDto {
@@ -21,6 +43,17 @@ interface InventarioItemDto {
   cantidad: number;
   costo: number;
   precio: number;
+  marca?: string;
+  rubro?: string;
+  codigo_barras?: string;
+}
+
+interface LineaCompraDto {
+  id: string;
+  producto_id: string;
+  descripcion?: string;
+  cantidad: number;
+  precio_unitario: number;
 }
 
 interface CompraDto {
@@ -31,7 +64,7 @@ interface CompraDto {
   total: number;
   numero: string | null;
   fecha: string;
-  lineas: unknown[];
+  lineas: LineaCompraDto[];
 }
 
 interface ProveedorPaginaDto {
@@ -56,22 +89,15 @@ export class StockService {
             cantidad: i.cantidad,
             costo: i.costo,
             precio: i.precio,
+            marca: i.marca ?? '',
+            rubro: i.rubro ?? '',
+            codigoBarras: i.codigo_barras ?? '',
           })),
         ),
       );
   }
 
-  listarRemitosCompra(): Observable<
-    {
-      id: string;
-      comprobante: string;
-      fecha: string;
-      proveedorId: string;
-      estado: string;
-      renglones: number;
-      total: number;
-    }[]
-  > {
+  listarRemitosCompra(): Observable<RemitoCompraItem[]> {
     return this.http
       .get<CompraDto[]>(`${this.api}/compras`, { params: { tipo: 'remito_compra' } })
       .pipe(
@@ -85,6 +111,13 @@ export class StockService {
             estado: c.estado,
             renglones: c.lineas?.length ?? 0,
             total: c.total,
+            lineas: (c.lineas ?? []).map((l) => ({
+              id: l.id,
+              productoId: l.producto_id,
+              descripcion: l.descripcion ?? '',
+              cantidad: l.cantidad,
+              precioUnitario: l.precio_unitario,
+            })),
           })),
         ),
       );

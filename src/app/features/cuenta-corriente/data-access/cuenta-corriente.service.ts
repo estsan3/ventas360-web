@@ -109,6 +109,10 @@ export class CuentaCorrienteService {
       .pipe(map((p) => p.items.map(clienteRefToModel)));
   }
 
+  obtenerCliente(id: string): Observable<ClienteRef> {
+    return this.http.get<ClienteRefDto>(`${this.api}/clientes/${id}`).pipe(map(clienteRefToModel));
+  }
+
   /** Saldos de un conjunto de clientes (paralelo, acotado a la búsqueda). */
   listarSaldosDeClientes(clienteIds: string[]): Observable<SaldoCliente[]> {
     const ids = [...new Set(clienteIds.filter(Boolean))];

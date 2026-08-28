@@ -1,0 +1,31 @@
+---
+description: Stock se implementa desde la maqueta DC, igual que CxC, Cheques y Mostrador.
+globs: "**/inventario/**,**/maquetas/**Stock*"
+alwaysApply: false
+---
+
+# Stock — maqueta DC
+
+Fuente: `maquetas/Stock.dc.html`. Código: `src/app/features/inventario/` (ruta `/inventario`, menú Stock).
+
+Hacer **el mismo trabajo que CxC / Cheques / Mostrador**: llevar la maqueta a producto (cuatro pestañas, KPIs, panel de alertas, grillas, toma, IA, reglas), no un listado mínimo.
+
+## Qué tiene la maqueta (no recortar)
+
+- Una sola pantalla viewport (sin topbar duplicada: el shell ya tiene menú)
+- Badge **Alertas de stock** con panel agrupado por regla
+- Pestañas: **Artículos** · **Recepción de remitos** · **Toma de inventario** · **Reglas de alerta**
+- Artículos: KPIs clicables, búsqueda ≥3 o depósito, chips de estado, grilla con min/máx/valorizado/alertas, pie con exportar
+- Remitos: subtabs Recibidos / Cargar con IA (foto), grilla de match, confirmar o dejar pendiente
+- Toma: KPIs, chips sin contar / con diferencia, conteo editable, cerrar y ajustar
+- Reglas: toggles, umbrales, canales de notificación, evaluar
+- Tokens **naranja** Ventas360, no azul/violeta de la maqueta (IA en naranja suave)
+
+## Cómo
+
+- UI en español; commits en inglés
+- Listados: no precargar artículos; depósito o búsqueda ≥3
+- Depósitos y proveedores (combos) sí pueden cargarse
+- Mín/máx operativos por defecto si la ficha aún no los tiene; rotación honesta si no hay historial
+- Verificar en el browser las cuatro pestañas
+- No tocar agro360 salvo pedido explícito

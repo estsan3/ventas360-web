@@ -1,0 +1,2343 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <meta name="design_doc_mode" content="canvas" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: oklch(0.955 0.008 80);
+            font-family: 'Instrument Sans', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+          }
+          a {
+            color: oklch(0.52 0.15 255);
+            text-decoration: none;
+          }
+          a:hover {
+            color: oklch(0.42 0.15 255);
+            text-decoration: underline;
+          }
+          input,
+          select,
+          button {
+            font-family: inherit;
+          }
+          input:focus,
+          select:focus {
+            outline: 2px solid oklch(0.52 0.15 255);
+            outline-offset: -1px;
+          }
+          ::placeholder {
+            color: oklch(0.65 0.01 60);
+          }
+        </style>
+      </helmet>
+
+      <section style="display: flex; flex-direction: column; gap: 28px; padding: 56px 56px 90px">
+        <div style="display: flex; flex-direction: column; gap: 6px; max-width: 760px">
+          <div
+            style="
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              color: oklch(0.55 0.01 60);
+            "
+          >
+            Turno 1 · dos variantes de layout
+          </div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 30px;
+              font-weight: 600;
+              letter-spacing: -0.02em;
+              color: oklch(0.25 0.01 60);
+            "
+          >
+            Cuentas corrientes de clientes
+          </h1>
+          <p
+            style="
+              margin: 4px 0 0;
+              font-size: 15px;
+              line-height: 1.55;
+              color: oklch(0.48 0.01 60);
+              text-wrap: pretty;
+            "
+          >
+            <a href="#1a">1a</a> master-detail: buscás el cliente y operás su cuenta sin cambiar de
+            pantalla. <a href="#1b">1b</a> pantalla completa: la búsqueda de cuentas por criterios
+            manda, y el detalle abre en panel lateral. Ambas son navegables.
+          </p>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 44px; align-items: flex-start">
+          <!-- ============ 1a ============ -->
+          <div id="1a" style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: baseline; gap: 12px">
+              <span
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: oklch(0.99 0 0);
+                  background: oklch(0.3 0.01 60);
+                  padding: 4px 9px;
+                  border-radius: 5px;
+                "
+                >1a</span
+              >
+              <span style="font-size: 15px; font-weight: 600; color: oklch(0.3 0.01 60)"
+                >Master-detail — cliente, cuenta y cobro en una vista</span
+              >
+            </div>
+
+            <div
+              style="
+                width: 1440px;
+                height: 900px;
+                background: oklch(0.985 0.006 80);
+                border: 1px solid oklch(0.885 0.01 80);
+                border-radius: 12px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                box-shadow:
+                  0 1px 2px oklch(0.3 0.02 60 / 0.05),
+                  0 12px 32px oklch(0.3 0.02 60 / 0.07);
+              "
+            >
+              <!-- topbar -->
+              <div
+                style="
+                  height: 54px;
+                  flex: none;
+                  background: oklch(0.995 0.004 80);
+                  border-bottom: 1px solid oklch(0.9 0.01 80);
+                  display: flex;
+                  align-items: center;
+                  gap: 20px;
+                  padding: 0 18px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 9px">
+                  <div
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 6px;
+                      background: oklch(0.52 0.15 255);
+                    "
+                  ></div>
+                  <span style="font-size: 14px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                    >Ventas</span
+                  >
+                </div>
+                <div style="display: flex; gap: 2px">
+                  <span
+                    style="
+                      font-size: 13.5px;
+                      color: oklch(0.5 0.01 60);
+                      padding: 6px 11px;
+                      border-radius: 7px;
+                    "
+                    >Comprobantes</span
+                  >
+                  <span
+                    style="
+                      font-size: 13.5px;
+                      color: oklch(0.5 0.01 60);
+                      padding: 6px 11px;
+                      border-radius: 7px;
+                    "
+                    >Clientes</span
+                  >
+                  <span
+                    style="
+                      font-size: 13.5px;
+                      font-weight: 600;
+                      color: oklch(0.36 0.13 255);
+                      background: oklch(0.955 0.028 255);
+                      padding: 6px 11px;
+                      border-radius: 7px;
+                    "
+                    >Cuentas corrientes</span
+                  >
+                  <span
+                    style="
+                      font-size: 13.5px;
+                      color: oklch(0.5 0.01 60);
+                      padding: 6px 11px;
+                      border-radius: 7px;
+                    "
+                    >Caja</span
+                  >
+                </div>
+                <div style="flex: 1"></div>
+                <div
+                  style="
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 12px;
+                    color: oklch(0.55 0.01 60);
+                  "
+                >
+                  27/08/26 · Sucursal Alvear
+                </div>
+                <div
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: oklch(0.88 0.03 255);
+                    color: oklch(0.36 0.13 255);
+                    font-size: 11.5px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  EA
+                </div>
+              </div>
+
+              <div style="flex: 1; display: flex; min-height: 0">
+                <!-- col 1: clientes -->
+                <div
+                  style="
+                    width: 330px;
+                    flex: none;
+                    border-right: 1px solid oklch(0.9 0.01 80);
+                    background: oklch(0.995 0.004 80);
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 14px;
+                      border-bottom: 1px solid oklch(0.925 0.01 80);
+                      position: relative;
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        border: 1px solid oklch(0.86 0.01 80);
+                        background: oklch(1 0 0);
+                        border-radius: 9px;
+                        padding: 0 10px;
+                        height: 38px;
+                      "
+                    >
+                      <span style="font-size: 14px; color: oklch(0.6 0.01 60)">⌕</span>
+                      <input
+                        value="{{ aQuery }}"
+                        onChange="{{ onAQuery }}"
+                        onFocus="{{ openA }}"
+                        placeholder="Nombre, CUIT o código…"
+                        style="
+                          border: none;
+                          outline: none;
+                          flex: 1;
+                          font-size: 14px;
+                          color: oklch(0.25 0.01 60);
+                          background: transparent;
+                        "
+                      />
+                      <span
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10.5px;
+                          color: oklch(0.62 0.01 60);
+                          border: 1px solid oklch(0.88 0.01 80);
+                          border-radius: 4px;
+                          padding: 2px 5px;
+                        "
+                        >F3</span
+                      >
+                    </div>
+                    <sc-if value="{{ aOpen }}" hint-placeholder-val="{{ false }}">
+                      <div
+                        style="
+                          position: absolute;
+                          left: 14px;
+                          right: 14px;
+                          top: 56px;
+                          z-index: 20;
+                          background: oklch(1 0 0);
+                          border: 1px solid oklch(0.87 0.01 80);
+                          border-radius: 10px;
+                          box-shadow: 0 10px 26px oklch(0.3 0.02 60 / 0.14);
+                          overflow: hidden;
+                        "
+                      >
+                        <div
+                          style="
+                            padding: 7px 12px;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10.5px;
+                            letter-spacing: 0.06em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                            background: oklch(0.975 0.005 80);
+                            border-bottom: 1px solid oklch(0.93 0.01 80);
+                          "
+                        >
+                          {{ aSuggestLabel }}
+                        </div>
+                        <sc-for list="{{ aSuggestions }}" as="s" hint-placeholder-count="4">
+                          <div
+                            onClick="{{ s.pick }}"
+                            style="
+                              padding: 9px 12px;
+                              display: flex;
+                              align-items: center;
+                              gap: 10px;
+                              cursor: pointer;
+                              border-bottom: 1px solid oklch(0.955 0.006 80);
+                            "
+                            style-hover="background: oklch(0.965 0.02 255);"
+                          >
+                            <div style="flex: 1; min-width: 0">
+                              <div
+                                style="
+                                  font-size: 13.5px;
+                                  font-weight: 500;
+                                  color: oklch(0.26 0.01 60);
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
+                              >
+                                {{ s.nombre }}
+                              </div>
+                              <div
+                                style="
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 11px;
+                                  color: oklch(0.58 0.01 60);
+                                "
+                              >
+                                {{ s.cuit }} · {{ s.zona }}
+                              </div>
+                            </div>
+                            <div style="text-align: right">
+                              <div
+                                style="
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 13px;
+                                  font-weight: 600;
+                                  color: oklch(0.28 0.01 60);
+                                "
+                              >
+                                {{ s.saldoFmt }}
+                              </div>
+                              <div style="font-size: 11px; color: {{ s.moraColor }};">
+                                {{ s.moraTxt }}
+                              </div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+
+                  <div
+                    style="
+                      padding: 11px 14px 8px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.06em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                      "
+                      >Con saldo · {{ aCount }}</span
+                    >
+                    <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Ordenar: mora ↓</span
+                    >
+                  </div>
+
+                  <div style="flex: 1; overflow: auto; padding: 0 8px 12px">
+                    <sc-for list="{{ aList }}" as="c" hint-placeholder-count="7">
+                      <div
+                        onClick="{{ c.pick }}"
+                        style="padding: 10px 10px; border-radius: 9px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; background: {{
+                          c.rowBg
+                        }}; box-shadow: {{ c.rowRing }};"
+                        style-hover="background: oklch(0.965 0.008 80);"
+                      >
+                        <div style="display: flex; align-items: baseline; gap: 8px">
+                          <span
+                            style="
+                              flex: 1;
+                              font-size: 13.5px;
+                              font-weight: 500;
+                              color: oklch(0.24 0.01 60);
+                              line-height: 1.3;
+                            "
+                            >{{ c.nombre }}</span
+                          >
+                          <span
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 13px;
+                              font-weight: 600;
+                              color: oklch(0.26 0.01 60);
+                            "
+                            >{{ c.saldoFmt }}</span
+                          >
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 7px">
+                          <span
+                            style="font-size: 11px; font-weight: 600; color: {{
+                              c.moraColor
+                            }}; background: {{ c.moraBg }}; padding: 2px 6px; border-radius: 4px;"
+                            >{{ c.moraTxt }}</span
+                          >
+                          <span style="font-size: 11.5px; color: oklch(0.58 0.01 60)">{{
+                            c.vendedor
+                          }}</span>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <!-- col 2: cuenta -->
+                <div
+                  style="
+                    flex: 1;
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 18px 22px 14px;
+                      border-bottom: 1px solid oklch(0.925 0.01 80);
+                      background: oklch(0.995 0.004 80);
+                    "
+                  >
+                    <div style="display: flex; align-items: flex-start; gap: 14px">
+                      <div style="flex: 1; min-width: 0">
+                        <div style="display: flex; align-items: center; gap: 10px">
+                          <h2
+                            style="
+                              margin: 0;
+                              font-size: 20px;
+                              font-weight: 600;
+                              letter-spacing: -0.01em;
+                              color: oklch(0.22 0.01 60);
+                            "
+                          >
+                            {{ cli.nombre }}
+                          </h2>
+                          <span
+                            style="font-size: 11px; font-weight: 600; color: {{
+                              cli.estadoColor
+                            }}; background: {{
+                              cli.estadoBg
+                            }}; padding: 3px 8px; border-radius: 5px;"
+                            >{{ cli.estado }}</span
+                          >
+                        </div>
+                        <div
+                          style="
+                            margin-top: 5px;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12px;
+                            color: oklch(0.55 0.01 60);
+                          "
+                        >
+                          {{ cli.cuit }} · {{ cli.codigo }} · {{ cli.zona }} · Vendedor
+                          {{ cli.vendedor }}
+                        </div>
+                      </div>
+                      <div style="display: flex; gap: 8px">
+                        <button
+                          style="
+                            height: 34px;
+                            padding: 0 13px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.86 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: oklch(0.32 0.01 60);
+                            cursor: pointer;
+                          "
+                          style-hover="background: oklch(0.97 0.006 80);"
+                        >
+                          Resumen
+                        </button>
+                        <button
+                          style="
+                            height: 34px;
+                            padding: 0 13px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.86 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: oklch(0.32 0.01 60);
+                            cursor: pointer;
+                          "
+                          style-hover="background: oklch(0.97 0.006 80);"
+                        >
+                          Recordatorio
+                        </button>
+                        <button
+                          style="
+                            height: 34px;
+                            padding: 0 13px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.86 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: oklch(0.32 0.01 60);
+                            cursor: pointer;
+                          "
+                          style-hover="background: oklch(0.97 0.006 80);"
+                        >
+                          Nueva venta
+                        </button>
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        margin-top: 16px;
+                        display: grid;
+                        grid-template-columns: repeat(5, 1fr);
+                        gap: 1px;
+                        background: oklch(0.9 0.01 80);
+                        border: 1px solid oklch(0.9 0.01 80);
+                        border-radius: 10px;
+                        overflow: hidden;
+                      "
+                    >
+                      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+                        <div style="background: oklch(1 0 0); padding: 11px 13px 12px">
+                          <div
+                            style="
+                              font-size: 11px;
+                              letter-spacing: 0.03em;
+                              text-transform: uppercase;
+                              color: oklch(0.58 0.01 60);
+                            "
+                          >
+                            {{ k.label }}
+                          </div>
+                          <div
+                            style="margin-top: 5px; font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; color: {{
+                              k.color
+                            }};"
+                          >
+                            {{ k.value }}
+                          </div>
+                          <div
+                            style="margin-top: 2px; font-size: 11.5px; color: oklch(0.6 0.01 60)"
+                          >
+                            {{ k.hint }}
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div
+                    style="padding: 13px 22px 10px; display: flex; align-items: center; gap: 8px"
+                  >
+                    <sc-for list="{{ movTabs }}" as="t" hint-placeholder-count="3">
+                      <div
+                        onClick="{{ t.pick }}"
+                        style="font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 7px; cursor: pointer; color: {{
+                          t.color
+                        }}; background: {{ t.bg }};"
+                      >
+                        {{ t.label }}
+                      </div>
+                    </sc-for>
+                    <div style="flex: 1"></div>
+                    <select
+                      style="
+                        height: 32px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.86 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 13px;
+                        color: oklch(0.35 0.01 60);
+                        padding: 0 8px;
+                      "
+                    >
+                      <option>Últimos 90 días</option>
+                      <option>Este mes</option>
+                      <option>Todo</option>
+                    </select>
+                  </div>
+
+                  <div style="flex: 1; overflow: auto; padding: 0 22px 22px; min-height: 0">
+                    <div
+                      style="
+                        border: 1px solid oklch(0.9 0.01 80);
+                        border-radius: 10px;
+                        overflow: hidden;
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 84px 1fr 92px 118px 118px 128px 40px;
+                          gap: 0;
+                          padding: 9px 14px;
+                          background: oklch(0.972 0.005 80);
+                          border-bottom: 1px solid oklch(0.91 0.01 80);
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10.5px;
+                          letter-spacing: 0.05em;
+                          text-transform: uppercase;
+                          color: oklch(0.5 0.01 60);
+                        "
+                      >
+                        <div>Fecha</div>
+                        <div>Comprobante</div>
+                        <div>Vence</div>
+                        <div style="text-align: right">Debe</div>
+                        <div style="text-align: right">Haber</div>
+                        <div style="text-align: right">Saldo</div>
+                        <div></div>
+                      </div>
+                      <sc-for list="{{ movs }}" as="m" hint-placeholder-count="9">
+                        <div
+                          style="display: grid; grid-template-columns: 84px 1fr 92px 118px 118px 128px 40px; align-items: center; padding: 10px 14px; border-bottom: 1px solid oklch(0.955 0.006 80); background: {{
+                            m.bg
+                          }};"
+                          style-hover="background: oklch(0.968 0.008 80);"
+                        >
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 12.5px;
+                              color: oklch(0.45 0.01 60);
+                            "
+                          >
+                            {{ m.fecha }}
+                          </div>
+                          <div style="min-width: 0; display: flex; align-items: center; gap: 9px">
+                            <span
+                              style="font-size: 10.5px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; color: {{
+                                m.tipoColor
+                              }}; background: {{ m.tipoBg }}; padding: 2px 6px; border-radius: 4px;"
+                              >{{ m.tipo }}</span
+                            >
+                            <span
+                              style="
+                                font-size: 13px;
+                                color: oklch(0.28 0.01 60);
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                              >{{ m.detalle }}</span
+                            >
+                          </div>
+                          <div style="min-width: 0; overflow: hidden">
+                            <div
+                              style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: {{
+                                m.venceColor
+                              }};"
+                            >
+                              {{ m.vence }}
+                            </div>
+                            <sc-if value="{{ m.mora }}" hint-placeholder-val="{{ false }}">
+                              <div
+                                style="
+                                  font-size: 11px;
+                                  font-weight: 600;
+                                  color: oklch(0.5 0.17 25);
+                                  white-space: nowrap;
+                                "
+                              >
+                                {{ m.moraTxt }}
+                              </div>
+                            </sc-if>
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 13px;
+                              color: oklch(0.26 0.01 60);
+                            "
+                          >
+                            {{ m.debe }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 13px;
+                              color: oklch(0.42 0.11 155);
+                            "
+                          >
+                            {{ m.haber }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 13px;
+                              font-weight: 600;
+                              color: oklch(0.24 0.01 60);
+                            "
+                          >
+                            {{ m.saldo }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-size: 14px;
+                              color: oklch(0.65 0.01 60);
+                              cursor: pointer;
+                            "
+                          >
+                            ⋯
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- col 3: cobro -->
+                <div
+                  style="
+                    width: 372px;
+                    flex: none;
+                    border-left: 1px solid oklch(0.9 0.01 80);
+                    background: oklch(0.995 0.004 80);
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 15px 18px 13px;
+                      border-bottom: 1px solid oklch(0.925 0.01 80);
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                    "
+                  >
+                    <div>
+                      <div style="font-size: 15px; font-weight: 600; color: oklch(0.24 0.01 60)">
+                        Registrar cobro
+                      </div>
+                      <div style="font-size: 12px; color: oklch(0.55 0.01 60); margin-top: 2px">
+                        Recibo X-0001-00004312
+                      </div>
+                    </div>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        color: oklch(0.62 0.01 60);
+                        border: 1px solid oklch(0.88 0.01 80);
+                        border-radius: 4px;
+                        padding: 2px 5px;
+                      "
+                      >F9</span
+                    >
+                  </div>
+
+                  <div
+                    style="
+                      flex: 1;
+                      overflow: auto;
+                      padding: 16px 18px 18px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 18px;
+                    "
+                  >
+                    <div style="display: flex; flex-direction: column; gap: 8px">
+                      <div
+                        style="display: flex; align-items: baseline; justify-content: space-between"
+                      >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10.5px;
+                            letter-spacing: 0.06em;
+                            text-transform: uppercase;
+                            color: oklch(0.55 0.01 60);
+                          "
+                          >Imputación</span
+                        >
+                        <span
+                          onClick="{{ autoImputar }}"
+                          style="
+                            font-size: 12.5px;
+                            font-weight: 500;
+                            color: oklch(0.52 0.15 255);
+                            cursor: pointer;
+                          "
+                          >Imputar automático</span
+                        >
+                      </div>
+                      <div
+                        style="
+                          border: 1px solid oklch(0.89 0.01 80);
+                          border-radius: 9px;
+                          overflow: hidden;
+                          background: oklch(1 0 0);
+                        "
+                      >
+                        <sc-for list="{{ pendientes }}" as="p" hint-placeholder-count="4">
+                          <div
+                            onClick="{{ p.toggle }}"
+                            style="display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-bottom: 1px solid oklch(0.955 0.006 80); cursor: pointer; background: {{
+                              p.bg
+                            }};"
+                          >
+                            <div
+                              style="width: 16px; height: 16px; flex: none; border-radius: 4px; border: 1.5px solid {{
+                                p.boxBorder
+                              }}; background: {{
+                                p.boxBg
+                              }}; color: oklch(1 0 0); font-size: 11px; display: flex; align-items: center; justify-content: center;"
+                            >
+                              {{ p.check }}
+                            </div>
+                            <div style="flex: 1; min-width: 0">
+                              <div
+                                style="
+                                  font-size: 12.5px;
+                                  color: oklch(0.27 0.01 60);
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
+                              >
+                                {{ p.comprobante }}
+                              </div>
+                              <div style="font-size: 11px; color: {{ p.venceColor }};">
+                                {{ p.venceTxt }}
+                              </div>
+                            </div>
+                            <div
+                              style="
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 12.5px;
+                                font-weight: 600;
+                                color: oklch(0.26 0.01 60);
+                              "
+                            >
+                              {{ p.importe }}
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px">
+                      <div
+                        style="display: flex; align-items: baseline; justify-content: space-between"
+                      >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10.5px;
+                            letter-spacing: 0.06em;
+                            text-transform: uppercase;
+                            color: oklch(0.55 0.01 60);
+                          "
+                          >Medios de pago</span
+                        >
+                        <span
+                          onClick="{{ addMedio }}"
+                          style="
+                            font-size: 12.5px;
+                            font-weight: 500;
+                            color: oklch(0.52 0.15 255);
+                            cursor: pointer;
+                          "
+                          >+ Agregar medio</span
+                        >
+                      </div>
+
+                      <sc-for list="{{ medios }}" as="md" hint-placeholder-count="2">
+                        <div
+                          style="
+                            border: 1px solid oklch(0.89 0.01 80);
+                            border-radius: 9px;
+                            background: oklch(1 0 0);
+                            padding: 10px 11px;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 9px;
+                          "
+                        >
+                          <div style="display: flex; align-items: center; gap: 8px">
+                            <select
+                              value="{{ md.tipo }}"
+                              onChange="{{ md.setTipo }}"
+                              style="
+                                flex: 1;
+                                height: 32px;
+                                border-radius: 7px;
+                                border: 1px solid oklch(0.88 0.01 80);
+                                background: oklch(0.99 0.004 80);
+                                font-size: 13px;
+                                color: oklch(0.28 0.01 60);
+                                padding: 0 7px;
+                              "
+                            >
+                              <sc-for list="{{ medioOpciones }}" as="o" hint-placeholder-count="4">
+                                <option value="{{ o }}">{{ o }}</option>
+                              </sc-for>
+                            </select>
+                            <input
+                              value="{{ md.montoTxt }}"
+                              onChange="{{ md.setMonto }}"
+                              placeholder="0,00"
+                              style="
+                                width: 118px;
+                                height: 32px;
+                                border-radius: 7px;
+                                border: 1px solid oklch(0.88 0.01 80);
+                                text-align: right;
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 13.5px;
+                                font-weight: 600;
+                                color: oklch(0.24 0.01 60);
+                                padding: 0 8px;
+                              "
+                            />
+                            <div
+                              onClick="{{ md.remove }}"
+                              style="
+                                width: 28px;
+                                height: 28px;
+                                flex: none;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: 7px;
+                                color: oklch(0.6 0.01 60);
+                                font-size: 15px;
+                                cursor: pointer;
+                              "
+                              style-hover="background: oklch(0.955 0.02 25); color: oklch(0.5 0.17 25);"
+                            >
+                              ×
+                            </div>
+                          </div>
+                          <sc-if value="{{ md.esCheque }}" hint-placeholder-val="{{ false }}">
+                            <div
+                              style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 8px;
+                                padding-top: 2px;
+                                border-top: 1px dashed oklch(0.9 0.01 80);
+                              "
+                            >
+                              <div style="display: flex; flex-direction: column; gap: 4px">
+                                <label style="font-size: 11px; color: oklch(0.55 0.01 60)"
+                                  >N° cheque</label
+                                >
+                                <input
+                                  placeholder="00483921"
+                                  style="
+                                    height: 30px;
+                                    border-radius: 7px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-family: 'IBM Plex Mono', monospace;
+                                    font-size: 12.5px;
+                                    padding: 0 8px;
+                                    color: oklch(0.26 0.01 60);
+                                  "
+                                />
+                              </div>
+                              <div style="display: flex; flex-direction: column; gap: 4px">
+                                <label style="font-size: 11px; color: oklch(0.55 0.01 60)"
+                                  >Banco</label
+                                >
+                                <select
+                                  style="
+                                    height: 30px;
+                                    border-radius: 7px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-size: 12.5px;
+                                    padding: 0 6px;
+                                    color: oklch(0.26 0.01 60);
+                                    background: oklch(1 0 0);
+                                  "
+                                >
+                                  <option>Banco Nación</option>
+                                  <option>Banco Provincia</option>
+                                  <option>Galicia</option>
+                                  <option>Credicoop</option>
+                                </select>
+                              </div>
+                              <div style="display: flex; flex-direction: column; gap: 4px">
+                                <label style="font-size: 11px; color: oklch(0.55 0.01 60)"
+                                  >Fecha de pago</label
+                                >
+                                <input
+                                  value="15/10/2026"
+                                  style="
+                                    height: 30px;
+                                    border-radius: 7px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-family: 'IBM Plex Mono', monospace;
+                                    font-size: 12.5px;
+                                    padding: 0 8px;
+                                    color: oklch(0.26 0.01 60);
+                                  "
+                                />
+                              </div>
+                              <div style="display: flex; flex-direction: column; gap: 4px">
+                                <label style="font-size: 11px; color: oklch(0.55 0.01 60)"
+                                  >Librador</label
+                                >
+                                <input
+                                  placeholder="Propio"
+                                  style="
+                                    height: 30px;
+                                    border-radius: 7px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-size: 12.5px;
+                                    padding: 0 8px;
+                                    color: oklch(0.26 0.01 60);
+                                  "
+                                />
+                              </div>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px">
+                      <label style="font-size: 11.5px; color: oklch(0.55 0.01 60)"
+                        >Observaciones</label
+                      >
+                      <input
+                        placeholder="Opcional"
+                        style="
+                          height: 34px;
+                          border-radius: 8px;
+                          border: 1px solid oklch(0.88 0.01 80);
+                          font-size: 13px;
+                          padding: 0 9px;
+                          color: oklch(0.26 0.01 60);
+                          background: oklch(1 0 0);
+                        "
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.91 0.01 80);
+                      background: oklch(1 0 0);
+                      padding: 14px 18px 16px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 11px;
+                    "
+                  >
+                    <div
+                      style="display: flex; align-items: baseline; justify-content: space-between"
+                    >
+                      <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">Imputado</span>
+                      <span
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 13px;
+                          color: oklch(0.35 0.01 60);
+                        "
+                        >{{ imputadoFmt }}</span
+                      >
+                    </div>
+                    <div
+                      style="display: flex; align-items: baseline; justify-content: space-between"
+                    >
+                      <span style="font-size: 14px; font-weight: 600; color: oklch(0.24 0.01 60)"
+                        >Total a cobrar</span
+                      >
+                      <span
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 22px;
+                          font-weight: 600;
+                          letter-spacing: -0.02em;
+                          color: oklch(0.24 0.01 60);
+                        "
+                        >{{ totalCobroFmt }}</span
+                      >
+                    </div>
+                    <div
+                      style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: {{
+                        diffColor
+                      }}; background: {{ diffBg }}; border-radius: 7px; padding: 7px 9px;"
+                    >
+                      {{ diffTxt }}
+                    </div>
+                    <button
+                      onClick="{{ confirmar }}"
+                      style="
+                        height: 42px;
+                        border: none;
+                        border-radius: 9px;
+                        background: oklch(0.52 0.15 255);
+                        color: oklch(1 0 0);
+                        font-size: 14.5px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        box-shadow: 0 1px 2px oklch(0.3 0.1 255 / 0.3);
+                      "
+                      style-hover="background: oklch(0.46 0.15 255);"
+                    >
+                      {{ confirmarLabel }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 1b ============ -->
+          <div id="1b" style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: baseline; gap: 12px">
+              <span
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: oklch(0.99 0 0);
+                  background: oklch(0.3 0.01 60);
+                  padding: 4px 9px;
+                  border-radius: 5px;
+                "
+                >1b</span
+              >
+              <span style="font-size: 15px; font-weight: 600; color: oklch(0.3 0.01 60)"
+                >Pantalla completa — búsqueda de cuentas por criterios, detalle en panel</span
+              >
+            </div>
+
+            <div
+              style="
+                width: 1440px;
+                height: 900px;
+                background: oklch(0.985 0.006 80);
+                border: 1px solid oklch(0.885 0.01 80);
+                border-radius: 12px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                box-shadow:
+                  0 1px 2px oklch(0.3 0.02 60 / 0.05),
+                  0 12px 32px oklch(0.3 0.02 60 / 0.07);
+              "
+            >
+              <div
+                style="
+                  height: 54px;
+                  flex: none;
+                  background: oklch(0.995 0.004 80);
+                  border-bottom: 1px solid oklch(0.9 0.01 80);
+                  display: flex;
+                  align-items: center;
+                  gap: 20px;
+                  padding: 0 18px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 9px">
+                  <div
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 6px;
+                      background: oklch(0.52 0.15 255);
+                    "
+                  ></div>
+                  <span style="font-size: 14px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                    >Ventas</span
+                  >
+                </div>
+                <span
+                  style="
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    color: oklch(0.36 0.13 255);
+                    background: oklch(0.955 0.028 255);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Cuentas corrientes</span
+                >
+                <div style="flex: 1"></div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    border: 1px solid oklch(0.86 0.01 80);
+                    background: oklch(1 0 0);
+                    border-radius: 9px;
+                    padding: 0 10px;
+                    height: 34px;
+                    width: 300px;
+                  "
+                >
+                  <span style="font-size: 14px; color: oklch(0.6 0.01 60)">⌕</span>
+                  <input
+                    value="{{ bQuery }}"
+                    onChange="{{ onBQuery }}"
+                    placeholder="Buscar cliente por nombre o CUIT…"
+                    style="
+                      border: none;
+                      outline: none;
+                      flex: 1;
+                      font-size: 13.5px;
+                      color: oklch(0.25 0.01 60);
+                      background: transparent;
+                    "
+                  />
+                </div>
+                <div
+                  style="
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: oklch(0.88 0.03 255);
+                    color: oklch(0.36 0.13 255);
+                    font-size: 11.5px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  EA
+                </div>
+              </div>
+
+              <!-- resumen cartera -->
+              <div
+                style="
+                  flex: none;
+                  padding: 18px 24px 0;
+                  display: flex;
+                  align-items: flex-end;
+                  justify-content: space-between;
+                  gap: 20px;
+                "
+              >
+                <div>
+                  <h2
+                    style="
+                      margin: 0;
+                      font-size: 22px;
+                      font-weight: 600;
+                      letter-spacing: -0.015em;
+                      color: oklch(0.22 0.01 60);
+                    "
+                  >
+                    Cartera de cuentas corrientes
+                  </h2>
+                  <div style="margin-top: 4px; font-size: 13px; color: oklch(0.52 0.01 60)">
+                    {{ bResumen }}
+                  </div>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    gap: 1px;
+                    background: oklch(0.9 0.01 80);
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 10px;
+                    overflow: hidden;
+                  "
+                >
+                  <sc-for list="{{ bKpis }}" as="k" hint-placeholder-count="4">
+                    <div style="background: oklch(1 0 0); padding: 9px 16px; min-width: 132px">
+                      <div
+                        style="
+                          font-size: 10.5px;
+                          letter-spacing: 0.04em;
+                          text-transform: uppercase;
+                          color: oklch(0.58 0.01 60);
+                        "
+                      >
+                        {{ k.label }}
+                      </div>
+                      <div
+                        style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; color: {{
+                          k.color
+                        }};"
+                      >
+                        {{ k.value }}
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <!-- criterios -->
+              <div
+                style="
+                  flex: none;
+                  margin: 16px 24px 0;
+                  border: 1px solid oklch(0.9 0.01 80);
+                  border-radius: 11px;
+                  background: oklch(1 0 0);
+                  padding: 13px 15px 14px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 10.5px;
+                      letter-spacing: 0.06em;
+                      text-transform: uppercase;
+                      color: oklch(0.55 0.01 60);
+                    "
+                    >Criterios</span
+                  >
+                  <div style="display: flex; gap: 6px">
+                    <sc-for list="{{ presets }}" as="p" hint-placeholder-count="4">
+                      <div
+                        onClick="{{ p.pick }}"
+                        style="font-size: 12.5px; font-weight: 500; padding: 4px 10px; border-radius: 20px; cursor: pointer; color: {{
+                          p.color
+                        }}; background: {{ p.bg }}; border: 1px solid {{ p.border }};"
+                      >
+                        {{ p.label }}
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="flex: 1"></div>
+                  <span
+                    onClick="{{ limpiar }}"
+                    style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                    >Limpiar</span
+                  >
+                </div>
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(6, 1fr);
+                    gap: 12px;
+                    align-items: end;
+                  "
+                >
+                  <div style="display: flex; flex-direction: column; gap: 5px">
+                    <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)">Saldo desde</label>
+                    <input
+                      value="{{ fSaldoMin }}"
+                      onChange="{{ setSaldoMin }}"
+                      placeholder="0"
+                      style="
+                        height: 34px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 13px;
+                        padding: 0 9px;
+                        text-align: right;
+                        color: oklch(0.26 0.01 60);
+                      "
+                    />
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px">
+                    <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                      >Días de mora desde</label
+                    >
+                    <input
+                      value="{{ fMoraMin }}"
+                      onChange="{{ setMoraMin }}"
+                      placeholder="0"
+                      style="
+                        height: 34px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 13px;
+                        padding: 0 9px;
+                        text-align: right;
+                        color: oklch(0.26 0.01 60);
+                      "
+                    />
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px">
+                    <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)">Vendedor</label>
+                    <select
+                      value="{{ fVendedor }}"
+                      onChange="{{ setVendedor }}"
+                      style="
+                        height: 34px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-size: 13px;
+                        padding: 0 7px;
+                        color: oklch(0.26 0.01 60);
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ vendedores }}" as="v" hint-placeholder-count="4"
+                        ><option value="{{ v }}">{{ v }}</option></sc-for
+                      >
+                    </select>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px">
+                    <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)">Zona</label>
+                    <select
+                      value="{{ fZona }}"
+                      onChange="{{ setZona }}"
+                      style="
+                        height: 34px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-size: 13px;
+                        padding: 0 7px;
+                        color: oklch(0.26 0.01 60);
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ zonas }}" as="z" hint-placeholder-count="4"
+                        ><option value="{{ z }}">{{ z }}</option></sc-for
+                      >
+                    </select>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px">
+                    <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                      >Condición de pago</label
+                    >
+                    <select
+                      value="{{ fCond }}"
+                      onChange="{{ setCond }}"
+                      style="
+                        height: 34px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-size: 13px;
+                        padding: 0 7px;
+                        color: oklch(0.26 0.01 60);
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ condiciones }}" as="c" hint-placeholder-count="4"
+                        ><option value="{{ c }}">{{ c }}</option></sc-for
+                      >
+                    </select>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px">
+                    <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                      >Sin movimientos hace</label
+                    >
+                    <select
+                      value="{{ fInactivo }}"
+                      onChange="{{ setInactivo }}"
+                      style="
+                        height: 34px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-size: 13px;
+                        padding: 0 7px;
+                        color: oklch(0.26 0.01 60);
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ inactivos }}" as="i" hint-placeholder-count="3"
+                        ><option value="{{ i }}">{{ i }}</option></sc-for
+                      >
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- tabla -->
+              <div
+                style="
+                  flex: 1;
+                  min-height: 0;
+                  margin: 14px 24px 0;
+                  display: flex;
+                  flex-direction: column;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 12px; padding: 0 2px 10px">
+                  <span style="font-size: 13px; font-weight: 600; color: oklch(0.3 0.01 60)">{{
+                    bCountTxt
+                  }}</span>
+                  <sc-if value="{{ bHasSel }}" hint-placeholder-val="{{ false }}">
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 5px 6px 5px 12px;
+                        border-radius: 20px;
+                        background: oklch(0.955 0.028 255);
+                        border: 1px solid oklch(0.87 0.05 255);
+                      "
+                    >
+                      <span
+                        style="font-size: 12.5px; font-weight: 600; color: oklch(0.36 0.13 255)"
+                        >{{ bSelTxt }}</span
+                      >
+                      <sc-for list="{{ bulkActions }}" as="a" hint-placeholder-count="5">
+                        <div
+                          style="
+                            font-size: 12.5px;
+                            color: oklch(0.32 0.01 60);
+                            background: oklch(1 0 0);
+                            border: 1px solid oklch(0.88 0.02 255);
+                            padding: 3px 9px;
+                            border-radius: 15px;
+                            cursor: pointer;
+                          "
+                          style-hover="border-color: oklch(0.6 0.12 255); color: oklch(0.36 0.13 255);"
+                        >
+                          {{ a }}
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <div style="flex: 1"></div>
+                  <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                    >Exportar a Excel</span
+                  >
+                  <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                    >Guardar búsqueda</span
+                  >
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    min-height: 0;
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 11px;
+                    background: oklch(1 0 0);
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                  "
+                >
+                  <div
+                    style="
+                      flex: none;
+                      display: grid;
+                      grid-template-columns: 34px 1fr 118px 100px 84px 120px 132px 180px;
+                      padding: 10px 14px;
+                      background: oklch(0.972 0.005 80);
+                      border-bottom: 1px solid oklch(0.91 0.01 80);
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 10.5px;
+                      letter-spacing: 0.05em;
+                      text-transform: uppercase;
+                      color: oklch(0.5 0.01 60);
+                    "
+                  >
+                    <div></div>
+                    <div>Cliente</div>
+                    <div>Vendedor / zona</div>
+                    <div style="text-align: right">Mora</div>
+                    <div style="text-align: right">Desc.</div>
+                    <div style="text-align: right">Últ. pago</div>
+                    <div style="text-align: right">Saldo</div>
+                    <div style="text-align: right">Acciones</div>
+                  </div>
+                  <div style="flex: 1; overflow: auto">
+                    <sc-for list="{{ bRows }}" as="r" hint-placeholder-count="8">
+                      <div
+                        style="display: grid; grid-template-columns: 34px 1fr 118px 100px 84px 120px 132px 180px; align-items: center; padding: 11px 14px; border-bottom: 1px solid oklch(0.955 0.006 80); background: {{
+                          r.bg
+                        }};"
+                        style-hover="background: oklch(0.968 0.008 80);"
+                      >
+                        <div onClick="{{ r.toggle }}" style="cursor: pointer">
+                          <div
+                            style="width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid {{
+                              r.boxBorder
+                            }}; background: {{
+                              r.boxBg
+                            }}; color: oklch(1 0 0); font-size: 11px; display: flex; align-items: center; justify-content: center;"
+                          >
+                            {{ r.check }}
+                          </div>
+                        </div>
+                        <div onClick="{{ r.open }}" style="min-width: 0; cursor: pointer">
+                          <div
+                            style="
+                              font-size: 13.5px;
+                              font-weight: 500;
+                              color: oklch(0.24 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.nombre }}
+                          </div>
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 11px;
+                              color: oklch(0.58 0.01 60);
+                            "
+                          >
+                            {{ r.cuit }} · {{ r.cond }}
+                          </div>
+                        </div>
+                        <div
+                          style="font-size: 12.5px; color: oklch(0.45 0.01 60); line-height: 1.35"
+                        >
+                          {{ r.vendedor }}<br />{{ r.zona }}
+                        </div>
+                        <div style="text-align: right">
+                          <span
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; color: {{
+                              r.moraColor
+                            }}; background: {{ r.moraBg }}; padding: 3px 7px; border-radius: 5px;"
+                            >{{ r.moraTxt }}</span
+                          >
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            color: oklch(0.5 0.01 60);
+                          "
+                        >
+                          {{ r.desc }}
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            color: oklch(0.5 0.01 60);
+                          "
+                        >
+                          {{ r.ultPago }}
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: oklch(0.23 0.01 60);
+                          "
+                        >
+                          {{ r.saldoFmt }}
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 6px">
+                          <button
+                            onClick="{{ r.open }}"
+                            style="
+                              height: 29px;
+                              padding: 0 10px;
+                              border-radius: 7px;
+                              border: none;
+                              background: oklch(0.52 0.15 255);
+                              color: oklch(1 0 0);
+                              font-size: 12.5px;
+                              font-weight: 600;
+                              cursor: pointer;
+                            "
+                            style-hover="background: oklch(0.46 0.15 255);"
+                          >
+                            Cobrar
+                          </button>
+                          <button
+                            style="
+                              height: 29px;
+                              padding: 0 9px;
+                              border-radius: 7px;
+                              border: 1px solid oklch(0.87 0.01 80);
+                              background: oklch(1 0 0);
+                              font-size: 12.5px;
+                              color: oklch(0.4 0.01 60);
+                              cursor: pointer;
+                            "
+                            style-hover="background: oklch(0.97 0.006 80);"
+                          >
+                            Recordar
+                          </button>
+                          <button
+                            style="
+                              height: 29px;
+                              width: 29px;
+                              border-radius: 7px;
+                              border: 1px solid oklch(0.87 0.01 80);
+                              background: oklch(1 0 0);
+                              font-size: 13px;
+                              color: oklch(0.5 0.01 60);
+                              cursor: pointer;
+                            "
+                            style-hover="background: oklch(0.97 0.006 80);"
+                          >
+                            ⋯
+                          </button>
+                        </div>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ bEmpty }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding: 60px 20px; text-align: center">
+                        <div
+                          style="font-size: 14.5px; font-weight: 500; color: oklch(0.35 0.01 60)"
+                        >
+                          Ninguna cuenta cumple estos criterios
+                        </div>
+                        <div style="margin-top: 5px; font-size: 13px; color: oklch(0.55 0.01 60)">
+                          Probá bajar el mínimo de mora o quitar el filtro de zona.
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.93 0.01 80);
+                      background: oklch(0.978 0.005 80);
+                      padding: 10px 14px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                    "
+                  >
+                    <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">Total filtrado</span>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: oklch(0.23 0.01 60);
+                      "
+                      >{{ bTotalFmt }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div style="flex: none; height: 24px"></div>
+
+              <!-- drawer detalle -->
+              <sc-if value="{{ bDrawer }}" hint-placeholder-val="{{ false }}">
+                <div
+                  style="
+                    position: absolute;
+                    inset: 0;
+                    background: oklch(0.25 0.02 60 / 0.28);
+                    display: flex;
+                    justify-content: flex-end;
+                  "
+                >
+                  <div
+                    style="
+                      width: 720px;
+                      height: 100%;
+                      background: oklch(0.99 0.005 80);
+                      border-left: 1px solid oklch(0.88 0.01 80);
+                      display: flex;
+                      flex-direction: column;
+                      box-shadow: -18px 0 40px oklch(0.3 0.02 60 / 0.16);
+                    "
+                  >
+                    <div
+                      style="
+                        flex: none;
+                        padding: 16px 20px 14px;
+                        border-bottom: 1px solid oklch(0.92 0.01 80);
+                        background: oklch(1 0 0);
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 14px;
+                      "
+                    >
+                      <div style="flex: 1; min-width: 0">
+                        <h3
+                          style="
+                            margin: 0;
+                            font-size: 18px;
+                            font-weight: 600;
+                            color: oklch(0.22 0.01 60);
+                          "
+                        >
+                          {{ dCli.nombre }}
+                        </h3>
+                        <div
+                          style="
+                            margin-top: 4px;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 11.5px;
+                            color: oklch(0.55 0.01 60);
+                          "
+                        >
+                          {{ dCli.cuit }} · {{ dCli.zona }} · {{ dCli.vendedor }} · Desc.
+                          {{ dCli.desc }}
+                        </div>
+                      </div>
+                      <div
+                        onClick="{{ closeDrawer }}"
+                        style="
+                          width: 30px;
+                          height: 30px;
+                          border-radius: 8px;
+                          border: 1px solid oklch(0.88 0.01 80);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          font-size: 15px;
+                          color: oklch(0.45 0.01 60);
+                          cursor: pointer;
+                          background: oklch(1 0 0);
+                        "
+                        style-hover="background: oklch(0.96 0.006 80);"
+                      >
+                        ×
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        flex: 1;
+                        overflow: auto;
+                        padding: 16px 20px 20px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                      "
+                    >
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: repeat(3, 1fr);
+                          gap: 1px;
+                          background: oklch(0.9 0.01 80);
+                          border: 1px solid oklch(0.9 0.01 80);
+                          border-radius: 10px;
+                          overflow: hidden;
+                        "
+                      >
+                        <sc-for list="{{ dKpis }}" as="k" hint-placeholder-count="3">
+                          <div style="background: oklch(1 0 0); padding: 11px 13px">
+                            <div
+                              style="
+                                font-size: 10.5px;
+                                letter-spacing: 0.04em;
+                                text-transform: uppercase;
+                                color: oklch(0.58 0.01 60);
+                              "
+                            >
+                              {{ k.label }}
+                            </div>
+                            <div
+                              style="margin-top: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: {{
+                                k.color
+                              }};"
+                            >
+                              {{ k.value }}
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+
+                      <div>
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10.5px;
+                            letter-spacing: 0.06em;
+                            text-transform: uppercase;
+                            color: oklch(0.55 0.01 60);
+                            margin-bottom: 7px;
+                          "
+                        >
+                          Movimientos
+                        </div>
+                        <div
+                          style="
+                            border: 1px solid oklch(0.9 0.01 80);
+                            border-radius: 10px;
+                            overflow: hidden;
+                            background: oklch(1 0 0);
+                          "
+                        >
+                          <sc-for list="{{ dMovs }}" as="m" hint-placeholder-count="6">
+                            <div
+                              style="
+                                display: grid;
+                                grid-template-columns: 78px 1fr 106px 116px;
+                                align-items: center;
+                                padding: 9px 12px;
+                                border-bottom: 1px solid oklch(0.955 0.006 80);
+                              "
+                            >
+                              <div
+                                style="
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 12px;
+                                  color: oklch(0.45 0.01 60);
+                                "
+                              >
+                                {{ m.fecha }}
+                              </div>
+                              <div
+                                style="display: flex; align-items: center; gap: 8px; min-width: 0"
+                              >
+                                <span
+                                  style="font-size: 10px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; color: {{
+                                    m.tipoColor
+                                  }}; background: {{
+                                    m.tipoBg
+                                  }}; padding: 2px 5px; border-radius: 4px;"
+                                  >{{ m.tipo }}</span
+                                >
+                                <span
+                                  style="
+                                    font-size: 12.5px;
+                                    color: oklch(0.28 0.01 60);
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                  "
+                                  >{{ m.detalle }}</span
+                                >
+                              </div>
+                              <div
+                                style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: {{
+                                  m.impColor
+                                }};"
+                              >
+                                {{ m.importe }}
+                              </div>
+                              <div
+                                style="
+                                  text-align: right;
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 12.5px;
+                                  font-weight: 600;
+                                  color: oklch(0.24 0.01 60);
+                                "
+                              >
+                                {{ m.saldo }}
+                              </div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        flex: none;
+                        border-top: 1px solid oklch(0.91 0.01 80);
+                        background: oklch(1 0 0);
+                        padding: 14px 20px 16px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                      "
+                    >
+                      <div style="flex: 1">
+                        <div style="font-size: 12px; color: oklch(0.52 0.01 60)">
+                          Saldo de la cuenta
+                        </div>
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 20px;
+                            font-weight: 600;
+                            color: oklch(0.23 0.01 60);
+                          "
+                        >
+                          {{ dCli.saldoFmt }}
+                        </div>
+                      </div>
+                      <button
+                        style="
+                          height: 40px;
+                          padding: 0 14px;
+                          border-radius: 9px;
+                          border: 1px solid oklch(0.87 0.01 80);
+                          background: oklch(1 0 0);
+                          font-size: 13.5px;
+                          font-weight: 500;
+                          color: oklch(0.33 0.01 60);
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.97 0.006 80);"
+                      >
+                        Imprimir resumen
+                      </button>
+                      <button
+                        style="
+                          height: 40px;
+                          padding: 0 14px;
+                          border-radius: 9px;
+                          border: 1px solid oklch(0.87 0.01 80);
+                          background: oklch(1 0 0);
+                          font-size: 13.5px;
+                          font-weight: 500;
+                          color: oklch(0.33 0.01 60);
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.97 0.006 80);"
+                      >
+                        Enviar recordatorio
+                      </button>
+                      <button
+                        style="
+                          height: 40px;
+                          padding: 0 18px;
+                          border-radius: 9px;
+                          border: none;
+                          background: oklch(0.52 0.15 255);
+                          color: oklch(1 0 0);
+                          font-size: 14px;
+                          font-weight: 600;
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.46 0.15 255);"
+                      >
+                        Registrar cobro
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </section>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"ordenMovimientos":{"editor":"enum","options":["recientes","antiguos"],"default":"recientes","tsType":"string","section":"Comportamiento"},"mostrarColumnaZona":{"editor":"boolean","default":true,"tsType":"boolean","section":"Comportamiento"}}'
+    >
+      const CLIENTES = [
+        { id: 1, nombre: "Distribuidora San Martín SRL", cuit: "30-71234567-9", codigo: "CL-0142", zona: "Alvear", vendedor: "Laura Gómez", saldo: 1284500, mora: 42, desc: 8, ultPago: "02/07/26", ultCompra: "12/08/26", cond: "Cuenta 30 días" },
+        { id: 2, nombre: "Supermercado Norte SRL", cuit: "30-70998877-4", codigo: "CL-0088", zona: "Trenel", vendedor: "Marina Paz", saldo: 2115400, mora: 19, desc: 12, ultPago: "18/08/26", ultCompra: "25/08/26", cond: "Cuenta 45 días" },
+        { id: 3, nombre: "Corralón Los Álamos", cuit: "20-24112233-1", codigo: "CL-0231", zona: "Gral. Pico", vendedor: "Marina Paz", saldo: 987250, mora: 121, desc: 5, ultPago: "14/04/26", ultCompra: "03/05/26", cond: "Cuenta 30 días" },
+        { id: 4, nombre: "Ferretería El Torno SA", cuit: "30-71555444-2", codigo: "CL-0177", zona: "Gral. Pico", vendedor: "Laura Gómez", saldo: 742980, mora: 78, desc: 6, ultPago: "22/05/26", ultCompra: "30/06/26", cond: "Cuenta 30 días" },
+        { id: 5, nombre: "Almacén Doña Rosa", cuit: "27-18994455-6", codigo: "CL-0305", zona: "Realicó", vendedor: "Diego Ruiz", saldo: 186300, mora: 6, desc: 0, ultPago: "20/08/26", ultCompra: "24/08/26", cond: "Contado 7 días" },
+        { id: 6, nombre: "Rotisería Mediterránea", cuit: "20-31445566-8", codigo: "CL-0412", zona: "Alvear", vendedor: "Laura Gómez", saldo: 143900, mora: 0, desc: 3, ultPago: "24/08/26", ultCompra: "26/08/26", cond: "Contado 7 días" },
+        { id: 7, nombre: "Kiosco 24hs Central", cuit: "20-35667788-3", codigo: "CL-0388", zona: "Alvear", vendedor: "Diego Ruiz", saldo: 58700, mora: 3, desc: 0, ultPago: "23/08/26", ultCompra: "26/08/26", cond: "Contado 7 días" },
+        { id: 8, nombre: "Hotel Plaza Alvear SRL", cuit: "30-71001199-0", codigo: "CL-0059", zona: "Alvear", vendedor: "Marina Paz", saldo: 431600, mora: 35, desc: 10, ultPago: "10/07/26", ultCompra: "01/08/26", cond: "Cuenta 45 días" }
+      ];
+
+      const MOVS = {
+        1: [
+          { fecha: "02/07/26", tipo: "RC", detalle: "Recibo X-0001-00004180", debe: 0, haber: 420000 },
+          { fecha: "09/07/26", tipo: "FA", detalle: "Factura A 0001-00012544", debe: 386200, haber: 0, vence: "08/08/26", mora: 19 },
+          { fecha: "18/07/26", tipo: "FA", detalle: "Factura A 0001-00012601", debe: 254300, haber: 0, vence: "17/08/26", mora: 10 },
+          { fecha: "24/07/26", tipo: "NC", detalle: "Nota de crédito 0001-00000318", debe: 0, haber: 62400 },
+          { fecha: "01/08/26", tipo: "FA", detalle: "Factura A 0001-00012712", debe: 498700, haber: 0, vence: "31/08/26" },
+          { fecha: "06/08/26", tipo: "ND", detalle: "Interés por mora 07/26", debe: 31400, haber: 0 },
+          { fecha: "12/08/26", tipo: "FA", detalle: "Factura A 0001-00012845", debe: 486200, haber: 0, vence: "11/09/26" },
+          { fecha: "19/08/26", tipo: "RC", detalle: "Recibo X-0001-00004266 · Transferencia", debe: 0, haber: 290000 },
+          { fecha: "25/08/26", tipo: "CH", detalle: "Cheque 00471299 Banco Nación · vto 20/09", debe: 0, haber: 180000 }
+        ]
+      };
+
+      const PEND = [
+        { id: "f1", comprobante: "Factura A 0001-00012544", importe: 386200, vence: "08/08/26", mora: 19 },
+        { id: "f2", comprobante: "Factura A 0001-00012601", importe: 254300, vence: "17/08/26", mora: 10 },
+        { id: "f3", comprobante: "Factura A 0001-00012712", importe: 498700, vence: "31/08/26", mora: 0 },
+        { id: "f4", comprobante: "Factura A 0001-00012845", importe: 486200, vence: "11/09/26", mora: 0 }
+      ];
+
+      const ACCENT = "oklch(0.52 0.15 255)";
+      const RED = "oklch(0.5 0.17 25)";
+      const RED_BG = "oklch(0.955 0.03 25)";
+      const AMBER = "oklch(0.52 0.12 70)";
+      const AMBER_BG = "oklch(0.96 0.035 80)";
+      const GREEN = "oklch(0.44 0.11 155)";
+      const GREEN_BG = "oklch(0.955 0.03 155)";
+      const GREY = "oklch(0.5 0.01 60)";
+      const GREY_BG = "oklch(0.96 0.006 80)";
+
+      const TIPO_STYLE = {
+        FA: [ "oklch(0.36 0.13 255)", "oklch(0.955 0.028 255)" ],
+        RC: [ GREEN, GREEN_BG ],
+        NC: [ GREEN, GREEN_BG ],
+        ND: [ AMBER, AMBER_BG ],
+        CH: [ "oklch(0.42 0.14 300)", "oklch(0.96 0.03 300)" ]
+      };
+
+      function money(n) {
+        const s = Math.round(Math.abs(n)).toLocaleString("es-AR");
+        return (n < 0 ? "-$ " : "$ ") + s;
+      }
+      function moraTone(d) {
+        if (d <= 0) return [ GREEN, GREEN_BG ];
+        if (d <= 15) return [ GREY, GREY_BG ];
+        if (d <= 60) return [ AMBER, AMBER_BG ];
+        return [ RED, RED_BG ];
+      }
+      function moraLabel(d) { return d <= 0 ? "Al día" : d + " d mora"; }
+      function parseNum(v) { const n = Number(String(v).replace(/[^0-9]/g, "")); return isNaN(n) ? 0 : n; }
+
+      class Component extends DCLogic {
+        state = {
+          aQuery: "", aOpen: false, aSel: 1,
+          movTab: "todos",
+          imput: [ "f1", "f2" ],
+          medios: [ { id: 1, tipo: "Efectivo", monto: "250000" }, { id: 2, tipo: "Cheque", monto: "390500" } ],
+          bQuery: "", fSaldoMin: "", fMoraMin: "", fVendedor: "Todos", fZona: "Todas", fCond: "Todas", fInactivo: "Sin filtro",
+          bSel: [], bDrawerId: null
+        };
+
+        set(k, v) { this.setState({ [k]: v }); }
+
+        cliente(id) { return CLIENTES.find(c => c.id === id) || CLIENTES[0]; }
+
+        movRows(id) {
+          const base = MOVS[id] || MOVS[1];
+          let saldo = 0;
+          return base.map(m => {
+            saldo += (m.debe || 0) - (m.haber || 0);
+            return Object.assign({}, m, { saldoAcum: saldo });
+          });
+        }
+
+        renderVals() {
+          const st = this.state;
+          const ordenAntiguos = this.props.ordenMovimientos === "antiguos";
+          const mostrarZona = this.props.mostrarColumnaZona !== false;
+
+          // ---------- 1a ----------
+          const q = st.aQuery.trim().toLowerCase();
+          const match = c => !q || c.nombre.toLowerCase().includes(q) || c.cuit.includes(q) || c.codigo.toLowerCase().includes(q);
+          const sug = CLIENTES.filter(match).slice(0, 5).map(c => {
+            const [ mc ] = moraTone(c.mora);
+            return { nombre: c.nombre, cuit: c.cuit, zona: c.zona, saldoFmt: money(c.saldo), moraTxt: moraLabel(c.mora), moraColor: mc,
+              pick: () => this.setState({ aSel: c.id, aQuery: "", aOpen: false }) };
+          });
+
+          const listaA = CLIENTES.slice().sort((a, b) => b.mora - a.mora).filter(match).map(c => {
+            const [ mc, mb ] = moraTone(c.mora);
+            const sel = c.id === st.aSel;
+            return { nombre: c.nombre, saldoFmt: money(c.saldo), moraTxt: moraLabel(c.mora), moraColor: mc, moraBg: mb, vendedor: c.vendedor,
+              rowBg: sel ? "oklch(0.955 0.028 255)" : "transparent",
+              rowRing: sel ? "inset 0 0 0 1px oklch(0.8 0.06 255)" : "none",
+              pick: () => this.setState({ aSel: c.id, aOpen: false }) };
+          });
+
+          const cli = this.cliente(st.aSel);
+          const [ estColor, estBg ] = moraTone(cli.mora);
+          const rowsAll = this.movRows(cli.id);
+          const filtered = rowsAll.filter(m => st.movTab === "todos" || (st.movTab === "deuda" ? m.debe > 0 : m.haber > 0));
+          const ordered = ordenAntiguos ? filtered : filtered.slice().reverse();
+
+          const movs = ordered.map(m => {
+            const [ tc, tb ] = TIPO_STYLE[m.tipo] || [ GREY, GREY_BG ];
+            return { fecha: m.fecha, tipo: m.tipo, detalle: m.detalle, vence: m.vence || "—",
+              debe: m.debe ? money(m.debe) : "—", haber: m.haber ? money(m.haber) : "—", saldo: money(m.saldoAcum),
+              tipoColor: tc, tipoBg: tb, mora: !!m.mora, moraTxt: m.mora ? "vencida " + m.mora + " d" : "",
+              venceColor: m.mora ? RED : "oklch(0.5 0.01 60)",
+              bg: m.mora ? "oklch(0.988 0.012 30)" : "oklch(1 0 0)" };
+          });
+
+          const vencido = PEND.filter(p => p.mora > 0).reduce((a, p) => a + p.importe, 0);
+          const kpis = [
+            { label: "Saldo total", value: money(cli.saldo), hint: cli.cond, color: "oklch(0.24 0.01 60)" },
+            { label: "Vencido", value: money(vencido), hint: PEND.filter(p => p.mora > 0).length + " comprobantes", color: RED },
+            { label: "Mora promedio", value: cli.mora + " d", hint: "últimos 6 meses", color: moraTone(cli.mora)[0] },
+            { label: "Último pago", value: cli.ultPago, hint: "Últ. compra " + cli.ultCompra, color: "oklch(0.3 0.01 60)" },
+            { label: "Descuento", value: cli.desc + " %", hint: "Vendedor " + cli.vendedor, color: "oklch(0.3 0.01 60)" }
+          ];
+
+          const movTabs = [ [ "todos", "Todos" ], [ "deuda", "Deudas" ], [ "pagos", "Pagos" ] ].map(([ k, label ]) => ({
+            label, pick: () => this.set("movTab", k),
+            color: st.movTab === k ? "oklch(0.36 0.13 255)" : GREY,
+            bg: st.movTab === k ? "oklch(0.955 0.028 255)" : "transparent"
+          }));
+
+          const pendientes = PEND.map(p => {
+            const on = st.imput.includes(p.id);
+            const [ vc ] = moraTone(p.mora);
+            return { comprobante: p.comprobante, importe: money(p.importe),
+              venceTxt: p.mora > 0 ? "Vencida el " + p.vence + " · " + p.mora + " d" : "Vence " + p.vence,
+              venceColor: vc, check: on ? "✓" : "",
+              boxBorder: on ? ACCENT : "oklch(0.8 0.01 80)", boxBg: on ? ACCENT : "oklch(1 0 0)",
+              bg: on ? "oklch(0.975 0.016 255)" : "oklch(1 0 0)",
+              toggle: () => this.setState(s => ({ imput: s.imput.includes(p.id) ? s.imput.filter(x => x !== p.id) : s.imput.concat(p.id) })) };
+          });
+
+          const medios = st.medios.map(m => ({
+            tipo: m.tipo, montoTxt: m.monto, esCheque: m.tipo === "Cheque",
+            setTipo: e => { const v = e.target.value; this.setState(s => ({ medios: s.medios.map(x => x.id === m.id ? Object.assign({}, x, { tipo: v }) : x) })); },
+            setMonto: e => { const v = e.target.value; this.setState(s => ({ medios: s.medios.map(x => x.id === m.id ? Object.assign({}, x, { monto: v }) : x) })); },
+            remove: () => this.setState(s => ({ medios: s.medios.filter(x => x.id !== m.id) }))
+          }));
+
+          const totalCobro = st.medios.reduce((a, m) => a + parseNum(m.monto), 0);
+          const imputado = PEND.filter(p => st.imput.includes(p.id)).reduce((a, p) => a + p.importe, 0);
+          const diff = totalCobro - imputado;
+          let diffTxt, diffColor, diffBg;
+          if (diff === 0) { diffTxt = "Cobro balanceado con la imputación."; diffColor = GREEN; diffBg = GREEN_BG; }
+          else if (diff > 0) { diffTxt = money(diff) + " quedan a cuenta del cliente."; diffColor = ACCENT; diffBg = "oklch(0.965 0.024 255)"; }
+          else { diffTxt = "Faltan " + money(-diff) + " para cubrir lo imputado."; diffColor = AMBER; diffBg = AMBER_BG; }
+
+          // ---------- 1b ----------
+          const bq = st.bQuery.trim().toLowerCase();
+          const inactDias = { "Sin filtro": 0, "30 días": 30, "60 días": 60, "90 días": 90 }[st.fInactivo] || 0;
+          const diasDesdePago = c => { const [ d, m, y ] = c.ultPago.split("/").map(Number); return Math.round((new Date(2026, 7, 27) - new Date(2000 + y, m - 1, d)) / 86400000); };
+
+          const filtradas = CLIENTES.filter(c =>
+            (!bq || c.nombre.toLowerCase().includes(bq) || c.cuit.includes(bq)) &&
+            c.saldo >= parseNum(st.fSaldoMin) &&
+            c.mora >= parseNum(st.fMoraMin) &&
+            (st.fVendedor === "Todos" || c.vendedor === st.fVendedor) &&
+            (st.fZona === "Todas" || c.zona === st.fZona) &&
+            (st.fCond === "Todas" || c.cond === st.fCond) &&
+            (!inactDias || diasDesdePago(c) >= inactDias)
+          ).sort((a, b) => b.saldo - a.saldo);
+
+          const bRows = filtradas.map(c => {
+            const [ mc, mb ] = moraTone(c.mora);
+            const on = st.bSel.includes(c.id);
+            return { nombre: c.nombre, cuit: c.cuit, cond: c.cond, vendedor: c.vendedor, zona: mostrarZona ? c.zona : "",
+              moraTxt: moraLabel(c.mora), moraColor: mc, moraBg: mb, desc: c.desc + " %", ultPago: c.ultPago, saldoFmt: money(c.saldo),
+              check: on ? "✓" : "", boxBorder: on ? ACCENT : "oklch(0.8 0.01 80)", boxBg: on ? ACCENT : "oklch(1 0 0)",
+              bg: on ? "oklch(0.975 0.016 255)" : "oklch(1 0 0)",
+              toggle: () => this.setState(s => ({ bSel: s.bSel.includes(c.id) ? s.bSel.filter(x => x !== c.id) : s.bSel.concat(c.id) })),
+              open: () => this.set("bDrawerId", c.id) };
+          });
+
+          const totalFiltrado = filtradas.reduce((a, c) => a + c.saldo, 0);
+          const carteraTotal = CLIENTES.reduce((a, c) => a + c.saldo, 0);
+          const enMora = CLIENTES.filter(c => c.mora > 0);
+          const bKpis = [
+            { label: "Cartera total", value: money(carteraTotal), color: "oklch(0.24 0.01 60)" },
+            { label: "En mora", value: money(enMora.reduce((a, c) => a + c.saldo, 0)), color: RED },
+            { label: "+90 días", value: money(CLIENTES.filter(c => c.mora > 90).reduce((a, c) => a + c.saldo, 0)), color: RED },
+            { label: "Mora prom.", value: Math.round(enMora.reduce((a, c) => a + c.mora, 0) / enMora.length) + " d", color: AMBER }
+          ];
+
+          const presets = [
+            [ "Todas", () => ({ fSaldoMin: "", fMoraMin: "", fVendedor: "Todos", fZona: "Todas", fCond: "Todas", fInactivo: "Sin filtro" }) ],
+            [ "Morosos +30 d", () => ({ fMoraMin: "30", fSaldoMin: "", fInactivo: "Sin filtro" }) ],
+            [ "Saldo alto +500k", () => ({ fSaldoMin: "500000", fMoraMin: "" }) ],
+            [ "Sin pagar hace 60 d", () => ({ fInactivo: "60 días", fMoraMin: "" }) ]
+          ].map(([ label, patch ]) => {
+            const active = label === "Morosos +30 d" ? parseNum(st.fMoraMin) === 30
+              : label === "Saldo alto +500k" ? parseNum(st.fSaldoMin) === 500000
+              : label === "Sin pagar hace 60 d" ? st.fInactivo === "60 días"
+              : !st.fMoraMin && !st.fSaldoMin && st.fInactivo === "Sin filtro" && st.fVendedor === "Todos" && st.fZona === "Todas";
+            return { label, pick: () => this.setState(patch()),
+              color: active ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: active ? "oklch(0.955 0.028 255)" : "oklch(1 0 0)",
+              border: active ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          const dId = st.bDrawerId;
+          const dCliRaw = dId ? this.cliente(dId) : CLIENTES[0];
+          const dRows = this.movRows(dCliRaw.id).slice().reverse().slice(0, 7).map(m => {
+            const [ tc, tb ] = TIPO_STYLE[m.tipo] || [ GREY, GREY_BG ];
+            const imp = m.debe ? m.debe : -m.haber;
+            return { fecha: m.fecha, tipo: m.tipo, detalle: m.detalle, tipoColor: tc, tipoBg: tb,
+              importe: money(imp), impColor: imp < 0 ? GREEN : "oklch(0.26 0.01 60)", saldo: money(m.saldoAcum) };
+          });
+
+          return {
+            // 1a
+            aQuery: st.aQuery, aOpen: st.aOpen && sug.length > 0, aSuggestions: sug, aList: listaA, aCount: listaA.length,
+            aSuggestLabel: q ? sug.length + " coincidencias" : "Sugeridos · últimos usados",
+            onAQuery: e => this.setState({ aQuery: e.target.value, aOpen: true }),
+            openA: () => this.set("aOpen", true),
+            cli: { nombre: cli.nombre, cuit: cli.cuit, codigo: cli.codigo, zona: cli.zona, vendedor: cli.vendedor,
+              estado: cli.mora > 60 ? "Bloqueo sugerido" : cli.mora > 0 ? "Con vencidos" : "Al día",
+              estadoColor: estColor, estadoBg: estBg },
+            kpis, movTabs, movs, pendientes, medios,
+            medioOpciones: [ "Efectivo", "Transferencia", "Cheque", "Tarjeta de débito", "Retención" ],
+            addMedio: () => this.setState(s => ({ medios: s.medios.concat({ id: Date.now(), tipo: "Efectivo", monto: "" }) })),
+            autoImputar: () => this.set("imput", PEND.filter(p => p.mora > 0).map(p => p.id)),
+            imputadoFmt: money(imputado), totalCobroFmt: money(totalCobro),
+            diffTxt, diffColor, diffBg,
+            confirmarLabel: totalCobro > 0 ? "Confirmar cobro · " + money(totalCobro) : "Confirmar cobro",
+            confirmar: () => this.setState({ medios: [ { id: Date.now(), tipo: "Efectivo", monto: "" } ], imput: [] }),
+            // 1b
+            bQuery: st.bQuery, onBQuery: e => this.set("bQuery", e.target.value),
+            bResumen: CLIENTES.length + " clientes con cuenta habilitada · " + enMora.length + " con vencidos",
+            bKpis, presets,
+            fSaldoMin: st.fSaldoMin, setSaldoMin: e => this.set("fSaldoMin", e.target.value),
+            fMoraMin: st.fMoraMin, setMoraMin: e => this.set("fMoraMin", e.target.value),
+            fVendedor: st.fVendedor, setVendedor: e => this.set("fVendedor", e.target.value),
+            fZona: st.fZona, setZona: e => this.set("fZona", e.target.value),
+            fCond: st.fCond, setCond: e => this.set("fCond", e.target.value),
+            fInactivo: st.fInactivo, setInactivo: e => this.set("fInactivo", e.target.value),
+            vendedores: [ "Todos", "Laura Gómez", "Marina Paz", "Diego Ruiz" ],
+            zonas: [ "Todas", "Alvear", "Gral. Pico", "Trenel", "Realicó" ],
+            condiciones: [ "Todas", "Contado 7 días", "Cuenta 30 días", "Cuenta 45 días" ],
+            inactivos: [ "Sin filtro", "30 días", "60 días", "90 días" ],
+            limpiar: () => this.setState({ fSaldoMin: "", fMoraMin: "", fVendedor: "Todos", fZona: "Todas", fCond: "Todas", fInactivo: "Sin filtro", bQuery: "", bSel: [] }),
+            bRows, bEmpty: bRows.length === 0,
+            bCountTxt: bRows.length + " cuentas encontradas",
+            bTotalFmt: money(totalFiltrado),
+            bHasSel: st.bSel.length > 0, bSelTxt: st.bSel.length + " seleccionadas",
+            bulkActions: [ "Recordatorio", "Exportar", "Tarea de cobranza", "Bloquear ventas", "Imprimir resúmenes" ],
+            bDrawer: !!dId,
+            dCli: { nombre: dCliRaw.nombre, cuit: dCliRaw.cuit, zona: dCliRaw.zona, vendedor: dCliRaw.vendedor, desc: dCliRaw.desc + " %", saldoFmt: money(dCliRaw.saldo) },
+            dKpis: [
+              { label: "Saldo", value: money(dCliRaw.saldo), color: "oklch(0.24 0.01 60)" },
+              { label: "Mora", value: dCliRaw.mora + " d", color: moraTone(dCliRaw.mora)[0] },
+              { label: "Último pago", value: dCliRaw.ultPago, color: "oklch(0.3 0.01 60)" }
+            ],
+            dMovs: dRows,
+            closeDrawer: () => this.set("bDrawerId", null)
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

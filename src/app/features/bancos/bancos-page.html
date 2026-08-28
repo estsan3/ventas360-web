@@ -1,120 +1,417 @@
-<section class="page">
-  <header class="page__header">
+<section class="page chq" tabindex="-1">
+  <header class="chq__header">
     <div>
-      <h1>Bancos</h1>
-      <p class="page__subtitle">Cuentas bancarias y cartera de cheques (propios y de tercero)</p>
+      <h1 class="chq__title">Cartera de cheques</h1>
+      <p class="chq__subtitle">{{ resumenTxt() }}</p>
     </div>
-    <div class="page__actions">
-      <app-button variant="outline" size="md" (clicked)="buscar()">Buscar</app-button>
-      <app-button variant="primary" size="md" (clicked)="abrirValor()">
-        <app-icon name="plus" />
-        Nuevo valor
-      </app-button>
+    <div class="chq__search" [class.chq__search--open]="sugOpen() && sugerencias().length > 0">
+      <span class="chq__search-ico">⌕</span>
+      <input
+        #buscaInput
+        class="chq__search-input"
+        type="search"
+        placeholder="N° de cheque, librador, cliente o proveedor…"
+        [ngModel]="q()"
+        (ngModelChange)="onQuery($event)"
+        (focus)="sugOpen.set(true)"
+        (blur)="sugOpen.set(false)"
+      />
+      <kbd>F3</kbd>
+      @if (sugOpen() && sugerencias().length > 0) {
+        <div class="chq__sug">
+          @for (s of sugerencias(); track s.id) {
+            <button type="button" class="chq__sug-item" (mousedown)="elegirSug(s.id)">
+              <span class="chq__mono">{{ s.numero }}</span>
+              <span class="chq__sug-sub">{{ s.sub }}</span>
+              <span class="chq__mono">{{ s.importe }}</span>
+            </button>
+          }
+        </div>
+      }
     </div>
+    <button type="button" class="chq__btn chq__btn--ghost" (click)="buscar()">Buscar</button>
+    <button type="button" class="chq__btn chq__btn--primary" (click)="abrirNuevo()">
+      {{ tab() === 'propios' ? '+ Emitir cheque' : '+ Ingresar cheque' }}
+    </button>
   </header>
 
-  @if (!buscado()) {
-    <div class="bancos__hint">Usá Buscar para listar cuentas y valores en cartera</div>
-  } @else {
-    <section class="panel">
-      <h3>Cuentas</h3>
-      <div class="tabla-scroll">
-        <app-table
-          [columns]="columnasCuentas"
-          [rows]="filasCuentas()"
-          headerVariant="soft"
-          [striped]="true"
-        >
-          <ng-template appTableCell="flags" let-row>
-            @if ($any(row)['default']) {
-              <app-badge variant="info">Default</app-badge>
-            }
-          </ng-template>
-        </app-table>
-      </div>
-    </section>
-
-    <section class="panel panel--grow">
-      <h3>Valores</h3>
-      <app-state-wrapper
-        [status]="estadoValores().status"
-        [error]="estadoValores().error ?? ''"
-        [empty]="filasValores().length === 0"
-        emptyMessage="No hay valores en cartera."
+  <div class="chq__toolbar">
+    <div class="chq__tabs">
+      <button
+        type="button"
+        class="chq__tab"
+        [class.chq__tab--on]="tab() === 'terceros'"
+        (click)="setTab('terceros')"
       >
-        <div class="tabla-scroll">
-          <app-table
-            [columns]="columnasValores"
-            [rows]="filasValores()"
-            headerVariant="soft"
-            [striped]="true"
+        De terceros
+      </button>
+      <button
+        type="button"
+        class="chq__tab"
+        [class.chq__tab--on]="tab() === 'propios'"
+        (click)="setTab('propios')"
+      >
+        Propios
+      </button>
+    </div>
+    @for (c of chipsEstado(); track c) {
+      <button
+        type="button"
+        class="chq__chip"
+        [class.chq__chip--on]="chip() === (c === 'Todos' ? 'todos' : c)"
+        (click)="setChip(c)"
+      >
+        {{ c }}
+      </button>
+    }
+    <div class="chq__spacer"></div>
+    <select class="chq__select" [ngModel]="banco()" (ngModelChange)="onBanco($event)">
+      <option value="">Todos los bancos</option>
+      @for (b of bancosFiltro(); track b) {
+        @if (b) {
+          <option [value]="b">{{ b }}</option>
+        }
+      }
+    </select>
+    <select class="chq__select" [ngModel]="plazo()" (ngModelChange)="onPlazo($any($event))">
+      <option value="cualquier">Cualquier plazo</option>
+      <option value="7">Vencen en 7 días</option>
+      <option value="15">Vencen en 15 días</option>
+      <option value="30">Vencen en 30 días</option>
+      <option value="vencidos">Vencidos</option>
+    </select>
+  </div>
+
+  <div class="chq__scroll">
+    @if (error()) {
+      <div class="chq__idle chq__idle--error">{{ error() }}</div>
+    }
+
+    <div class="chq__kpis">
+      @for (k of kpis(); track k.label) {
+        <div class="chq__kpi">
+          <div class="chq__kpi-label">{{ k.label }}</div>
+          <div
+            class="chq__kpi-val"
+            [class.chq__kpi-val--ok]="k.tono === 'ok'"
+            [class.chq__kpi-val--danger]="k.tono === 'danger'"
+            [class.chq__kpi-val--info]="k.tono === 'info'"
           >
-            <ng-template appTableCell="estado" let-row>
-              <app-badge [variant]="$any(row)['enCartera'] ? 'warning' : 'success'">
-                {{ $any(row)['estado'] }}
-              </app-badge>
-            </ng-template>
-            <ng-template appTableCell="acciones" let-row>
-              @if ($any(row)['enCartera']) {
-                <app-button variant="outline" size="sm" (clicked)="abrirEntregar($any(row)['id'])">
-                  Entregar
-                </app-button>
-                <app-button variant="outline" size="sm" (clicked)="depositar($any(row)['id'])">
-                  Depositar
-                </app-button>
-              }
-            </ng-template>
-          </app-table>
+            {{ k.value }}
+          </div>
+          <div class="chq__kpi-hint">{{ k.hint }}</div>
         </div>
-      </app-state-wrapper>
-    </section>
-  }
-
-  <app-side-drawer
-    [abierto]="drawerAbierto()"
-    titulo="Nuevo valor"
-    (cerrar)="drawerAbierto.set(false)"
-  >
-    <form class="form-drawer" [formGroup]="form">
-      <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
-      <app-text-input label="Monto" type="number" formControlName="monto" />
-      <app-text-input label="Número" formControlName="numero" />
-      <app-text-input label="Librador" formControlName="librador" />
-      <app-text-input label="Banco emisor" formControlName="bancoEmisor" />
-      <app-text-input label="Recibido de" formControlName="recibidoDe" />
-      <app-text-input label="Fecha" type="date" formControlName="fecha" />
-      <app-text-input label="Vencimiento" type="date" formControlName="fechaVto" />
-      <app-text-input label="Observación" formControlName="observacion" />
-    </form>
-    <div class="form-drawer__actions">
-      <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
-        Cancelar
-      </app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarValor()">
-        Guardar
-      </app-button>
+      }
     </div>
-  </app-side-drawer>
 
-  <app-side-drawer
-    [abierto]="drawerEntregar()"
-    titulo="Entregar cheque"
-    (cerrar)="drawerEntregar.set(false)"
-  >
-    <form class="form-drawer" [formGroup]="formEntregar">
-      <app-text-input
-        label="Entregado a"
-        formControlName="destinatario"
-        placeholder="Proveedor, persona, etc."
-      />
-    </form>
-    <div class="form-drawer__actions">
-      <app-button variant="outline" size="md" (clicked)="drawerEntregar.set(false)">
-        Cancelar
-      </app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarEntrega()">
-        Entregar
-      </app-button>
+    <div class="chq__alertas">
+      @for (a of alertas(); track a.key) {
+        <button
+          type="button"
+          class="chq__alerta"
+          [class]="'chq__alerta--' + a.tono"
+          (click)="aplicarAlerta(a.patch)"
+        >
+          <span class="chq__dot"></span>
+          <span class="chq__alerta-txt">
+            <span class="chq__alerta-t">{{ a.titulo }}</span>
+            <span class="chq__alerta-s">{{ a.sub }}</span>
+          </span>
+          <span class="chq__alerta-n">{{ a.n }}</span>
+        </button>
+      }
     </div>
-  </app-side-drawer>
+
+    <div class="chq__cal">
+      <div class="chq__cal-head">
+        <span class="chq__cal-title">Próximos {{ diasCal().length }} días</span>
+        <span class="chq__leyenda"
+          ><i class="chq__swatch chq__swatch--in"></i> Ingresan (terceros)</span
+        >
+        <span class="chq__leyenda"
+          ><i class="chq__swatch chq__swatch--out"></i> Se debitan (propios)</span
+        >
+      </div>
+      <div class="chq__cal-bars">
+        @for (d of diasCal(); track d.i) {
+          <button
+            type="button"
+            class="chq__dia"
+            [class.chq__dia--hoy]="d.hoy"
+            (click)="pickDia(d.i)"
+          >
+            <span class="chq__bars">
+              <span class="chq__bar chq__bar--in" [style.height.px]="d.inH"></span>
+              <span class="chq__bar chq__bar--out" [style.height.px]="d.outH"></span>
+            </span>
+            <span class="chq__dia-n" [class.chq__dia-n--on]="d.hoy || d.hay">{{ d.dia }}</span>
+            <span class="chq__dia-d">{{ d.dow }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="chq__body">
+      <div class="chq__list">
+        <div class="chq__thead">
+          <span></span>
+          <span>N° / banco</span>
+          <span>{{ tab() === 'terceros' ? 'Recibido de / origen' : 'Cuenta emisora' }}</span>
+          <span>{{ tab() === 'terceros' ? 'Destino actual' : 'Entregado a' }}</span>
+          <span>Vence</span>
+          <span class="chq__th-right">Importe</span>
+          <span class="chq__th-center">Estado</span>
+          <span class="chq__th-right">Acciones</span>
+        </div>
+        <div class="chq__rows">
+          @if (cargando()) {
+            <div class="chq__empty">Cargando cartera…</div>
+          } @else if (filas().length === 0) {
+            <div class="chq__empty">
+              @if (valores().length === 0) {
+                <div>No hay cheques en cartera</div>
+                <div class="chq__empty-sub">Ingresá o emití un cheque para empezar.</div>
+              } @else {
+                <div>Ningún cheque con estos filtros</div>
+                <div class="chq__empty-sub">
+                  Quitá el filtro de estado o de banco para ver la cartera.
+                </div>
+              }
+            </div>
+          } @else {
+            @for (r of filas(); track r.id) {
+              <div
+                class="chq__row"
+                [class.chq__row--on]="r.on"
+                [class.chq__row--sel]="r.sel"
+                (click)="abrirDetalle(r.id)"
+              >
+                <button type="button" class="chq__check" (click)="toggleSel(r.id, $event)">
+                  {{ r.sel ? '✓' : '' }}
+                </button>
+                <div>
+                  <div class="chq__mono chq__strong">{{ r.numero }}</div>
+                  <div class="chq__muted">{{ r.banco }}</div>
+                </div>
+                <div>
+                  <div>{{ r.origen }}</div>
+                  <div class="chq__ref">{{ r.origenRef }}</div>
+                </div>
+                <div>
+                  <div [class.chq__muted]="r.destinoMuted">{{ r.destino }}</div>
+                  <div class="chq__muted">{{ r.destinoRef }}</div>
+                </div>
+                <div>
+                  <div class="chq__mono" [class]="'chq__tone--' + r.venceColor">{{ r.vence }}</div>
+                  <div class="chq__vence-sub" [class]="'chq__tone--' + r.venceColor">
+                    {{ r.venceSub }}
+                  </div>
+                </div>
+                <div class="chq__td-right chq__mono chq__strong">{{ r.importe }}</div>
+                <div class="chq__td-center">
+                  <span class="chq__badge" [class]="'chq__badge--' + r.estTono">{{
+                    r.estado
+                  }}</span>
+                </div>
+                <div class="chq__td-right">
+                  @if (r.accion !== 'Ver' && r.accion !== 'Conciliar') {
+                    <button
+                      type="button"
+                      class="chq__accion"
+                      [class.chq__accion--danger]="r.accion === 'Gestionar'"
+                      (click)="accionFila(r.id, r.accion, $event)"
+                    >
+                      {{ r.accion }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+        <div class="chq__foot">
+          <span>{{ filas().length }} cheques</span>
+          @if (selIds().length > 0) {
+            <span class="chq__bulk">
+              {{ selIds().length }} seleccionados
+              <button type="button" class="chq__bulk-btn" (click)="depositarLote()">
+                Depositar en lote
+              </button>
+            </span>
+          }
+          <span class="chq__spacer"></span>
+          <span class="chq__muted">Total filtrado</span>
+          <span class="chq__mono chq__strong">{{ totalFiltrado() }}</span>
+        </div>
+      </div>
+
+      <aside class="chq__det">
+        @if (detalle(); as det) {
+          <div class="chq__det-head">
+            <div>
+              <div class="chq__det-num">{{ det.numero }}</div>
+              <div class="chq__muted">{{ det.banco }} · {{ det.tipoTxt }}</div>
+            </div>
+            <span class="chq__badge" [class]="'chq__badge--' + det.estTono">{{ det.estado }}</span>
+          </div>
+          <div class="chq__det-importe">
+            <div>
+              <div class="chq__kpi-label">Importe</div>
+              <div class="chq__det-money">{{ det.importe }}</div>
+            </div>
+            <div class="chq__det-vence">
+              <div class="chq__kpi-label">Fecha de pago</div>
+              <div class="chq__mono" [class]="'chq__tone--' + det.venceColor">{{ det.vence }}</div>
+              <div class="chq__vence-sub" [class]="'chq__tone--' + det.venceColor">
+                {{ det.venceSub }}
+              </div>
+            </div>
+          </div>
+          <div class="chq__det-scroll">
+            <div class="chq__campos">
+              @for (c of det.campos; track c.label) {
+                <div class="chq__campo">
+                  <div class="chq__kpi-label">{{ c.label }}</div>
+                  <div>{{ c.value }}</div>
+                </div>
+              }
+            </div>
+            <div class="chq__cal-title">Cadena de custodia</div>
+            <div class="chq__tl">
+              @for (t of det.timeline; track $index) {
+                <div class="chq__tl-item">
+                  <div class="chq__tl-rail">
+                    <span class="chq__tl-dot" [class.chq__tl-dot--last]="$last"></span>
+                    @if (!$last) {
+                      <span class="chq__tl-line"></span>
+                    }
+                  </div>
+                  <div>
+                    <div class="chq__tl-top">
+                      <strong>{{ t.titulo }}</strong>
+                      <span class="chq__mono chq__muted">{{ t.fecha }}</span>
+                    </div>
+                    <div class="chq__muted">{{ t.detalle }}</div>
+                    @if (t.refTxt) {
+                      <div class="chq__ref">{{ t.refTxt }}</div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="chq__aviso" [class]="'chq__aviso--' + det.avisoTono">
+              <span class="chq__dot"></span>
+              <div>
+                <div class="chq__aviso-t">{{ det.avisoTitulo }}</div>
+                <div>{{ det.avisoTxt }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="chq__det-actions">
+            @for (a of det.acciones; track a.label) {
+              <button
+                type="button"
+                class="chq__btn"
+                [class.chq__btn--primary]="$first"
+                [class.chq__btn--ghost]="!$first"
+                [disabled]="!a.kind || (!det.enCartera && a.kind !== 'gestionar')"
+                (click)="a.kind && abrirModal(a.kind)"
+              >
+                {{ a.label }}
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="chq__empty">Seleccioná un cheque para ver la ficha</div>
+        }
+      </aside>
+    </div>
+  </div>
 </section>
+
+@if (modalCfg(); as mc) {
+  <div class="chq-modal" (click)="cerrarModal()">
+    <div class="chq-modal__panel" (click)="$event.stopPropagation()">
+      <div class="chq-modal__head">
+        <div>
+          <h2>{{ mc.titulo }}</h2>
+          <p>{{ mc.sub }}</p>
+        </div>
+        <button type="button" class="chq-modal__x" (click)="cerrarModal()">×</button>
+      </div>
+      <form class="chq-modal__body" [formGroup]="formModal">
+        <label>
+          {{ mc.destLabel }}
+          @if (destinosModal().length > 0) {
+            <select formControlName="destino">
+              <option value="">Elegí…</option>
+              @for (d of destinosModal(); track d.value) {
+                <option [value]="d.value">{{ d.label }}</option>
+              }
+            </select>
+          } @else {
+            <input type="text" formControlName="destino" placeholder="Proveedor o destinatario" />
+          }
+        </label>
+        <label>
+          Fecha del movimiento
+          <input type="date" formControlName="fecha" />
+        </label>
+        <label class="chq-modal__wide">
+          Comprobante
+          <input type="text" formControlName="comprobante" placeholder="Opcional" />
+        </label>
+        @if (detalle(); as det) {
+          <div class="chq-modal__cheque">
+            <div>
+              <div class="chq__muted">Cheque</div>
+              <div class="chq__mono chq__strong">{{ det.numero }} · {{ det.banco }}</div>
+            </div>
+            <div class="chq-modal__importe">
+              <div class="chq__muted">Vence {{ det.vence }}</div>
+              <div class="chq__mono chq__strong">{{ det.importe }}</div>
+            </div>
+          </div>
+        }
+        <p class="chq__muted">{{ mc.nota }}</p>
+        <div class="chq-modal__foot">
+          <button type="button" class="chq__btn chq__btn--ghost" (click)="cerrarModal()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="chq__btn chq__btn--primary"
+            [disabled]="guardando()"
+            (click)="confirmarModal()"
+          >
+            {{ mc.cta }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<app-side-drawer
+  [abierto]="drawerNuevo()"
+  [titulo]="tab() === 'propios' ? 'Emitir cheque propio' : 'Ingresar cheque de tercero'"
+  (cerrar)="drawerNuevo.set(false)"
+>
+  <form class="form-drawer" [formGroup]="form">
+    <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
+    <app-text-input label="Monto" type="number" formControlName="monto" />
+    <app-text-input label="Número" formControlName="numero" />
+    <app-text-input label="Librador" formControlName="librador" />
+    <app-select-input label="Banco emisor" [options]="bancoOptions" formControlName="bancoEmisor" />
+    <app-text-input label="Recibido de" formControlName="recibidoDe" />
+    <app-text-input label="Fecha" type="date" formControlName="fecha" />
+    <app-text-input label="Vencimiento" type="date" formControlName="fechaVto" />
+    <app-text-input label="Observación" formControlName="observacion" />
+  </form>
+  <div class="form-drawer__actions">
+    <app-button variant="outline" size="md" (clicked)="drawerNuevo.set(false)">Cancelar</app-button>
+    <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarNuevo()">
+      Guardar
+    </app-button>
+  </div>
+</app-side-drawer>
