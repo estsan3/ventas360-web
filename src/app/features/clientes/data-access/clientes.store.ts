@@ -31,7 +31,7 @@ export class ClientesStore {
     this._page.set(1);
   }
 
-  cargar(opts: { q?: string; filtro?: FiltroActivo; page?: number } = {}): void {
+  cargar(opts: { q?: string; filtro?: FiltroActivo; page?: number; pageSize?: number } = {}): void {
     const actual = this._clientes();
     if (actual.status === 'loading') {
       return;
@@ -39,14 +39,16 @@ export class ClientesStore {
     const page = opts.page ?? this._page();
     const prev = actual.data;
     this._clientes.set({ ...asyncLoading(), data: prev });
-    this.api.listar({ q: opts.q, filtro: opts.filtro, page, pageSize: 50 }).subscribe({
-      next: (pagina) => {
-        this._page.set(pagina.page);
-        this._total.set(pagina.total);
-        this._clientes.set(asyncSuccess(pagina.items));
-      },
-      error: (error: Error) => this._clientes.set({ ...asyncError(error.message), data: prev }),
-    });
+    this.api
+      .listar({ q: opts.q, filtro: opts.filtro, page, pageSize: opts.pageSize ?? 50 })
+      .subscribe({
+        next: (pagina) => {
+          this._page.set(pagina.page);
+          this._total.set(pagina.total);
+          this._clientes.set(asyncSuccess(pagina.items));
+        },
+        error: (error: Error) => this._clientes.set({ ...asyncError(error.message), data: prev }),
+      });
   }
 
   crear(body: CrearCliente): Observable<Cliente> {

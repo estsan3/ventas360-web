@@ -172,6 +172,18 @@ export class CuentaCorrienteService {
     });
   }
 
+  listarListasPrecio(): Observable<ListaPrecioRef[]> {
+    return this.http
+      .get<ListaPrecioDto[]>(`${this.api}/precios/listas`)
+      .pipe(map((items) => items.map(listaPrecioToModel)));
+  }
+
+  listarPreciosLista(listaId: string): Observable<{ articuloId: string; precio: number }[]> {
+    return this.http
+      .get<PrecioArticuloDto[]>(`${this.api}/precios/listas/${listaId}/articulos`)
+      .pipe(map((arts) => arts.map((a) => ({ articuloId: a.articulo_id, precio: a.precio }))));
+  }
+
   /** Carga la lista default y un mapa articulo_id → precio vigente. */
   cargarMapaPreciosListaDefault(): Observable<{
     lista: ListaPrecioRef | null;

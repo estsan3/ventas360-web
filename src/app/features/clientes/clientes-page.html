@@ -1,365 +1,866 @@
-@if (!fichaAbierta()) {
-  <section class="page lst">
-    <header class="lst__header">
-      <h1 class="lst__title">Clientes</h1>
-      @if (esAdmin()) {
-        <button type="button" class="lst__cta" (click)="abrirCrear()">+ Nuevo cliente</button>
-      }
-    </header>
+<section class="cli">
+  <header class="cli__header">
+    <div>
+      <h1 class="cli__title">Clientes</h1>
+      <p class="cli__sub">Cartera, ficha comercial y listas de precios</p>
+    </div>
+  </header>
 
-    <div class="lst__toolbar">
-      <input
-        class="lst__search"
-        type="search"
-        placeholder="Buscar por nombre, fantasía o CUIT…"
-        [ngModel]="busqueda()"
-        (ngModelChange)="busqueda.set($event)"
-      />
-      <select class="lst__select" [ngModel]="filtroZona()" (ngModelChange)="filtroZona.set($event)">
-        <option value="">Zona: todas</option>
-        @for (z of zonasOptions(); track z.id) {
-          <option [value]="z.id">{{ z.nombre }}</option>
-        }
-      </select>
-      <select class="lst__select" [ngModel]="filtro()" (ngModelChange)="filtro.set($any($event))">
-        <option value="todos">Estado: todos</option>
-        <option value="activos">Estado: activos</option>
-        <option value="inactivos">Bloqueados / inactivos</option>
-      </select>
-      <select
-        class="lst__select"
-        [ngModel]="filtroVendedor()"
-        (ngModelChange)="filtroVendedor.set($event)"
+  <div class="cli__tabs-row">
+    <div class="cli__tabs">
+      <button
+        type="button"
+        class="cli__tab"
+        [class.cli__tab--on]="tab() === 'cartera'"
+        (click)="setTab('cartera')"
       >
-        <option value="">Vendedor: todos</option>
-      </select>
-    </div>
-
-    <div class="lst__card">
-      @if (busqueda().trim().length < minChars) {
-        <div class="lst__empty">
-          Escribí al menos {{ minChars }} caracteres para buscar clientes
-        </div>
-      } @else if (filasVista().length === 0) {
-        <table class="lst__table">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>CUIT</th>
-              <th>Localidad</th>
-              <th>Zona</th>
-              <th>Cond. IVA</th>
-              <th class="lst__th-right">Saldo cta. cte.</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of filasVista(); track row.id) {
-              <tr class="lst__row" (click)="abrirFicha(row.id)">
-                <td>
-                  <div class="lst__name">{{ row.nombre }}</div>
-                  <div class="lst__sub">{{ row.fantasia }}</div>
-                </td>
-                <td>{{ row.cuit }}</td>
-                <td>{{ row.localidad }}</td>
-                <td>{{ row.zona }}</td>
-                <td>{{ row.condicionLabel }}</td>
-                <td
-                  class="lst__td-right lst__strong"
-                  [class.lst__danger]="row.saldoTono === 'danger'"
-                  [class.lst__muted]="row.saldoTono === 'muted'"
-                >
-                  {{ row.saldo }}
-                </td>
-                <td>
-                  <span
-                    class="lst__badge"
-                    [class.lst__badge--ok]="row.estado === 'Activo'"
-                    [class.lst__badge--danger]="row.estado === 'Bloqueado'"
-                    [class.lst__badge--neutral]="row.estado === 'Inactivo'"
-                  >
-                    {{ row.estado }}
-                  </span>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-        <div class="lst__footer">
-          <div>{{ total() }} clientes · mostrando 1–{{ filasVista().length }}</div>
-          <div class="lst__pager">
-            <button type="button" class="lst__page-btn lst__page-btn--muted" disabled>
-              ‹ Anterior
-            </button>
-            <button type="button" class="lst__page-btn">Siguiente ›</button>
-          </div>
-        </div>
-      }
-    </div>
-  </section>
-} @else if (detalle(); as det) {
-  <section class="page ficha">
-    <div class="ficha__back">
-      <button type="button" class="ficha__back-btn" (click)="cerrarFicha()">
-        ← Volver a clientes
+        Cartera
+      </button>
+      <button
+        type="button"
+        class="cli__tab"
+        [class.cli__tab--on]="tab() === 'ficha'"
+        (click)="setTab('ficha')"
+      >
+        Fichas
+        @if (badgeFicha() > 0) {
+          <span class="cli__badge">{{ badgeFicha() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="cli__tab"
+        [class.cli__tab--on]="tab() === 'listas'"
+        (click)="setTab('listas')"
+      >
+        Listas y descuentos
       </button>
     </div>
+    <span class="cli__ctx">{{ contextoTxt() }}</span>
+  </div>
 
-    <div class="ficha__hero">
-      <div class="ficha__hero-left">
-        <div class="ficha__avatar">{{ iniciales() }}</div>
-        <div>
-          <div class="ficha__name-row">
-            <h1 class="ficha__title">{{ det.nombre }}</h1>
-            <span
-              class="lst__badge"
-              [class.lst__badge--ok]="det.activo && !det.bloqueado"
-              [class.lst__badge--danger]="det.bloqueado"
-              [class.lst__badge--neutral]="!det.activo"
-            >
-              {{ det.bloqueado ? 'Bloqueado' : det.activo ? 'Activo' : 'Inactivo' }}
-            </span>
-          </div>
-          <div class="ficha__meta">
-            {{ det.email || '—' }} · CUIT {{ det.cuit || '—' }} · {{ condicionLabel() }} · Zona
-            {{ zonaNombre() }}
-          </div>
-        </div>
-      </div>
-      <div class="ficha__hero-actions">
-        @if (esAdmin()) {
-          <button type="button" class="ficha__btn ficha__btn--ghost" (click)="abrirConfig()">
-            Editar
+  @if (tab() === 'cartera') {
+    <div class="cli__main cli__main--col">
+      <div class="cli__kpis cli__kpis--6">
+        @for (k of kpis(); track k.label) {
+          <button
+            type="button"
+            class="cli__kpi"
+            [class.cli__kpi--on]="k.on"
+            (click)="setChip(k.id)"
+          >
+            <div class="cli__kpi-lab">{{ k.label }}</div>
+            <div class="cli__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+            <div class="cli__kpi-hint">{{ k.hint }}</div>
           </button>
         }
-        <a routerLink="/ventas" class="ficha__btn ficha__btn--primary">+ Nueva venta</a>
       </div>
-    </div>
-
-    <div class="ficha__grid">
-      <div class="ficha__col">
-        <div class="ficha__card">
-          <div class="ficha__card-label">Contacto</div>
-          <div class="ficha__fields">
-            <div>
-              <div class="ficha__field-label">Email</div>
-              {{ det.email || '—' }}
-            </div>
-            <div>
-              <div class="ficha__field-label">Teléfono</div>
-              {{ det.telefono || '—' }}
-            </div>
-            <div>
-              <div class="ficha__field-label">CUIT</div>
-              {{ det.cuit || '—' }}
-            </div>
-            <div>
-              <div class="ficha__field-label">Observaciones</div>
-              {{ det.observaciones || '—' }}
-            </div>
-          </div>
+      <div class="cli__toolbar">
+        <div class="cli__search">
+          <span>⌕</span>
+          <input
+            type="search"
+            [ngModel]="q()"
+            (ngModelChange)="q.set($event)"
+            placeholder="Nombre, CUIT, código o teléfono"
+          />
         </div>
-        <div class="ficha__card">
-          <div class="ficha__card-label">Condiciones comerciales</div>
-          <div class="ficha__kv">
-            <div class="ficha__kv-row">
-              <span>Cond. IVA</span><b>{{ condicionLabel() }}</b>
-            </div>
-            <div class="ficha__kv-row">
-              <span>Límite de crédito</span><b>{{ formatearLimite(det.limiteCredito) }}</b>
-            </div>
-            <div class="ficha__kv-row">
-              <span>Zona</span><b>{{ zonaNombre() }}</b>
-            </div>
-            <div class="ficha__kv-row">
-              <span>Estado</span>
-              <b>{{ det.bloqueado ? 'Bloqueado' : det.activo ? 'Activo' : 'Inactivo' }}</b>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ficha__col ficha__col--wide">
-        <div class="ficha__kpis">
-          <div class="ficha__kpi">
-            <div class="ficha__kpi-label">Límite de crédito</div>
-            <div class="ficha__kpi-val">{{ formatearLimite(det.limiteCredito) }}</div>
-          </div>
-          <div class="ficha__kpi">
-            <div class="ficha__kpi-label">Crédito disponible</div>
-            <div class="ficha__kpi-val ficha__kpi-val--ok">{{ creditoDisponible() }}</div>
-          </div>
-          <div class="ficha__kpi">
-            <div class="ficha__kpi-label">Pedidos</div>
-            <div class="ficha__kpi-val">{{ pedidosDelCliente().length }}</div>
-          </div>
-        </div>
-
-        <div class="ficha__card ficha__card--table">
-          <div class="ficha__card-head">
-            <div class="ficha__card-title">Últimos movimientos</div>
-            <a routerLink="/cuenta-corriente" class="ficha__link">Ver cuenta corriente</a>
-          </div>
-          @if (pedidosDelCliente().length === 0) {
-            <p class="ficha__empty">Este cliente aún no tiene pedidos.</p>
-          } @else {
-            <app-table
-              [columns]="pedidosColumns"
-              [rows]="pedidosDelCliente()"
-              headerVariant="soft"
-              [striped]="true"
-              [compact]="true"
-            />
+        <select class="cli__select" [ngModel]="fZona()" (ngModelChange)="fZona.set($event)">
+          <option value="">Todas las zonas</option>
+          @for (z of zonas(); track z.id) {
+            <option [value]="z.id">{{ z.nombre }}</option>
           }
-        </div>
-      </div>
-    </div>
-  </section>
-}
-
-<app-modal
-  [abierto]="configModalAbierto()"
-  [titulo]="configModalTitulo()"
-  ancho="960px"
-  (cerrar)="cerrarConfigModal()"
->
-  @if (detalle(); as det) {
-    <div class="config-modal">
-      <section class="config-modal__master">
-        <div class="config-modal__head config-modal__head--master">
-          <h3>Datos del cliente</h3>
-          <app-badge [variant]="det.activo ? 'success' : 'neutral'">
-            {{ det.activo ? 'Activo' : 'Inactivo' }}
-          </app-badge>
-        </div>
-        <form class="config-modal__form config-modal__form--master" [formGroup]="form">
-          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
-          <app-text-input
-            label="Email"
-            type="email"
-            formControlName="email"
-            [error]="errorCampo('email')"
-          />
-          <app-text-input
-            label="Teléfono"
-            formControlName="telefono"
-            [error]="errorCampo('telefono')"
-          />
-          <app-text-input label="CUIT" formControlName="cuit" [error]="errorCampo('cuit')" />
-          <app-select-input
-            label="Condición IVA"
-            formControlName="condicionIva"
-            [options]="condicionIvaOptions"
-            [error]="errorCampo('condicionIva')"
-          />
-          <app-text-input
-            label="Límite de crédito"
-            type="number"
-            formControlName="limiteCredito"
-            [error]="errorCampo('limiteCredito')"
-          />
-          <app-text-input
-            label="Observaciones"
-            formControlName="observaciones"
-            [error]="errorCampo('observaciones')"
-          />
-        </form>
-      </section>
-
-      <section class="config-modal__section">
-        <div class="config-modal__head">
-          <h3>Opciones</h3>
-          @if (esAdmin() && det.activo) {
-            <app-button variant="danger" size="sm" (clicked)="desactivar(det)">
-              <app-icon name="alert-circle" />
-              Desactivar cliente
-            </app-button>
+        </select>
+        <select class="cli__select" [ngModel]="fVend()" (ngModelChange)="fVend.set($event)">
+          <option value="">Todos los vendedores</option>
+          @for (v of vendedores(); track v.id) {
+            <option [value]="v.id">{{ v.nombre }}</option>
           }
-        </div>
-        <p class="config-modal__hint">
-          Datos fiscales, crédito y contacto. Total en listado: {{ total() }} clientes.
-        </p>
-      </section>
-
-      <section class="config-modal__section">
-        <div class="config-modal__head">
-          <h3>Pedidos del cliente</h3>
-        </div>
-        @if (pedidosDelCliente().length === 0) {
-          <p class="config-modal__hint">Este cliente aún no tiene pedidos.</p>
-        } @else {
-          <div class="config-modal__tabla-scroll config-modal__tabla">
-            <app-table
-              [columns]="pedidosColumns"
-              [rows]="pedidosDelCliente()"
-              headerVariant="soft"
-              [striped]="true"
-              [compact]="true"
-            />
-          </div>
-        }
-      </section>
-
-      <footer class="config-modal__footer">
-        <app-button variant="outline" size="md" (clicked)="cerrarConfigModal()">
-          Salir sin guardar
-        </app-button>
-        @if (esAdmin()) {
-          <app-button
-            variant="primary"
-            size="md"
-            [disabled]="!masterDirty() || guardando()"
-            (clicked)="guardarMaster()"
+        </select>
+        @for (c of chips(); track c.id) {
+          <button
+            type="button"
+            class="cli__chip"
+            [class.cli__chip--on]="c.on"
+            (click)="setChip(c.id)"
           >
-            Guardar cambios
-          </app-button>
+            {{ c.label }}
+          </button>
         }
-      </footer>
+        <div class="cli__spacer"></div>
+        <button type="button" class="cli__link" (click)="limpiar()">Limpiar</button>
+        @if (esAdmin()) {
+          <button type="button" class="cli__cta" (click)="abrirAlta()">+ Nuevo cliente</button>
+        }
+      </div>
+      <div class="cli__card">
+        <div class="cli__thead cli__thead--car">
+          <div>Cliente</div>
+          <div>Vendedor</div>
+          <div>Lista</div>
+          <div>Condición</div>
+          <div class="cli__right">Mora</div>
+          <div class="cli__right">Crédito</div>
+          <div class="cli__right">Saldo</div>
+          <div class="cli__right">Últ. compra</div>
+          <div class="cli__center">Estado</div>
+        </div>
+        <div class="cli__body">
+          @for (r of rows(); track r.id) {
+            <button
+              type="button"
+              class="cli__row cli__row--car"
+              [class.cli__row--on]="r.sel"
+              (click)="abrirFicha(r.id)"
+            >
+              <div class="cli__clip">
+                <div class="cli__strong">{{ r.nombre }}</div>
+                <div class="cli__muted cli__mono">
+                  {{ r.cuit || '—' }} · {{ r.telefono || r.email || '—' }}
+                </div>
+              </div>
+              <div>
+                {{ r.vend }}
+                <div class="cli__muted">{{ r.zona }}</div>
+              </div>
+              <div>{{ r.lista }}</div>
+              <div>{{ r.cond }}</div>
+              <div class="cli__right">
+                <span class="cli__pill" [attr.data-tono]="r.moraTone">{{ r.moraTxt }}</span>
+              </div>
+              <div class="cli__right">
+                <div class="cli__mono" [attr.data-tono]="r.credTone">{{ r.credTxt }}</div>
+                <div class="cli__bar">
+                  <div
+                    class="cli__bar-fill"
+                    [style.width]="r.credPct"
+                    [attr.data-tono]="r.credTone"
+                  ></div>
+                </div>
+              </div>
+              <div class="cli__right cli__mono cli__strong">{{ r.saldoTxt }}</div>
+              <div class="cli__right cli__mono" [attr.data-tono]="r.ultTone">{{ r.ultFmt }}</div>
+              <div class="cli__center cli__tags">
+                @for (t of r.tags; track t.label) {
+                  <span class="cli__pill" [attr.data-tono]="t.tone">{{ t.label }}</span>
+                }
+              </div>
+            </button>
+          }
+          @if (vacio()) {
+            <div class="cli__empty">
+              @if (estado().status === 'loading') {
+                Cargando clientes…
+              } @else {
+                <div>Ningún cliente con estos filtros</div>
+                <div class="cli__muted">Probá quitar el filtro de zona o el chip de estado.</div>
+              }
+            </div>
+          }
+        </div>
+        <div class="cli__foot">
+          <span>{{ countTxt() }}</span>
+          <button type="button" class="cli__link" (click)="whatsapp()">Campaña de WhatsApp</button>
+          @if (esAdmin()) {
+            <button type="button" class="cli__link" (click)="abrirAsignarVend()">
+              Asignar vendedor
+            </button>
+          }
+          <button type="button" class="cli__link" (click)="exportar()">Exportar</button>
+          <div class="cli__spacer"></div>
+          <span>Saldo de la selección</span>
+          <strong class="cli__mono">{{ totalFmt() }}</strong>
+        </div>
+      </div>
     </div>
   }
-</app-modal>
 
-<app-side-drawer [abierto]="drawerAbierto()" titulo="Nuevo cliente" (cerrar)="cerrarDrawer()">
-  <div class="form-drawer">
-    <form [formGroup]="form">
-      <section class="form-section">
-        <header class="form-section__head">
-          <h4>Datos del cliente</h4>
-        </header>
-        <div class="form-section__body">
-          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
-          <app-text-input
-            label="Email"
-            type="email"
-            formControlName="email"
-            [error]="errorCampo('email')"
-          />
-          <app-text-input
-            label="Teléfono"
-            formControlName="telefono"
-            [error]="errorCampo('telefono')"
-          />
-          <app-text-input label="CUIT" formControlName="cuit" [error]="errorCampo('cuit')" />
-          <app-select-input
-            label="Condición IVA"
-            formControlName="condicionIva"
-            [options]="condicionIvaOptions"
-            [error]="errorCampo('condicionIva')"
-          />
-          <app-text-input
-            label="Límite de crédito"
-            type="number"
-            formControlName="limiteCredito"
-            [error]="errorCampo('limiteCredito')"
-          />
+  @if (tab() === 'ficha') {
+    <div class="cli__split">
+      <div class="cli__rail">
+        <div class="cli__rail-h">
+          <div class="cli__search">
+            <span>⌕</span>
+            <input
+              type="search"
+              [ngModel]="q()"
+              (ngModelChange)="q.set($event)"
+              placeholder="Buscar cliente"
+            />
+          </div>
         </div>
-      </section>
-    </form>
-    <footer class="form-drawer__footer">
-      <app-button variant="outline" size="md" (clicked)="cerrarDrawer()">Cancelar</app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarNuevo()">
-        Guardar
-      </app-button>
-    </footer>
+        <div class="cli__rail-b">
+          @for (c of listaLateral(); track c.id) {
+            <button
+              type="button"
+              class="cli__plist"
+              [class.cli__plist--on]="c.sel"
+              (click)="abrirFicha(c.id)"
+            >
+              <div class="cli__plist-t">
+                <span>{{ c.nombre }}</span>
+                <span class="cli__mono">{{ c.saldoTxt }}</span>
+              </div>
+              <div class="cli__plist-m">
+                <span class="cli__pill" [attr.data-tono]="c.moraTone">{{ c.moraTxt }}</span>
+                <span class="cli__muted">{{ c.zona }}</span>
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+      @if (ficha(); as c) {
+        <div class="cli__main">
+          <div class="cli__ficha-h">
+            <div class="cli__grow">
+              <div class="cli__ficha-tit">
+                <h2>{{ c.nombre }}</h2>
+                @for (t of c.tags; track t.label) {
+                  <span class="cli__pill" [attr.data-tono]="t.tone">{{ t.label }}</span>
+                }
+              </div>
+              <div class="cli__muted cli__mono">{{ c.meta }}</div>
+            </div>
+            <div class="cli__ficha-acts">
+              <button type="button" class="cli__btn" (click)="irCuenta()">Cuenta corriente</button>
+              @if (esAdmin()) {
+                <button type="button" class="cli__btn" (click)="abrirEditar()">Editar ficha</button>
+              }
+              <button type="button" class="cli__cta" (click)="irVenta()">Nueva venta</button>
+            </div>
+          </div>
+          <div class="cli__kpis cli__kpis--6">
+            @for (k of c.kpis; track k.label) {
+              <div class="cli__kpi">
+                <div class="cli__kpi-lab">{{ k.label }}</div>
+                <div class="cli__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+                <div class="cli__kpi-hint">{{ k.hint }}</div>
+              </div>
+            }
+          </div>
+          <div class="cli__subtabs">
+            <button
+              type="button"
+              class="cli__stab"
+              [class.cli__stab--on]="sub() === 'cond'"
+              (click)="sub.set('cond')"
+            >
+              Condiciones
+            </button>
+            <button
+              type="button"
+              class="cli__stab"
+              [class.cli__stab--on]="sub() === 'cred'"
+              (click)="sub.set('cred')"
+            >
+              Crédito y riesgo
+            </button>
+            <button
+              type="button"
+              class="cli__stab"
+              [class.cli__stab--on]="sub() === 'dir'"
+              (click)="sub.set('dir')"
+            >
+              Direcciones y contactos
+            </button>
+            <button
+              type="button"
+              class="cli__stab"
+              [class.cli__stab--on]="sub() === 'hist'"
+              (click)="sub.set('hist')"
+            >
+              Historial de compras
+            </button>
+            <div class="cli__spacer"></div>
+            <button type="button" class="cli__link" (click)="irCuenta()">
+              Ver cuenta corriente
+            </button>
+          </div>
+
+          @if (sub() === 'cond') {
+            <div class="cli__bloques">
+              @for (b of bloques(); track b.titulo) {
+                <div class="cli__bloque">
+                  <div class="cli__bloque-h">
+                    {{ b.titulo }}
+                    <span class="cli__muted">{{ b.sub }}</span>
+                  </div>
+                  @for (f of b.filas; track f.label) {
+                    <div class="cli__bloque-r">
+                      <span>{{ f.label }}</span>
+                      <span>{{ f.value }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          @if (sub() === 'cred') {
+            <div class="cli__scroll">
+              <div class="cli__cred" [attr.data-tono]="c.credTone">
+                <div class="cli__grow">
+                  <div class="cli__strong">{{ c.credTitulo }}</div>
+                  <div class="cli__muted">{{ c.credSub }}</div>
+                  <div class="cli__bar cli__bar--lg">
+                    <div class="cli__bar-fill" [style.width]="c.barSano" data-tono="ok"></div>
+                    <div
+                      class="cli__bar-fill"
+                      [style.width]="c.barVencido"
+                      data-tono="danger"
+                    ></div>
+                  </div>
+                  <div class="cli__cred-leg">
+                    <span>Al día {{ c.sanoFmt }}</span>
+                    <span>Vencido {{ c.vencidoFmt }}</span>
+                    <span>Disponible {{ c.dispFmt }}</span>
+                  </div>
+                </div>
+                <div class="cli__ficha-acts">
+                  @if (esAdmin()) {
+                    <button type="button" class="cli__btn" (click)="abrirLimite()">
+                      Cambiar límite
+                    </button>
+                  }
+                  <button type="button" class="cli__cta" (click)="credCta()">
+                    {{ c.credCtaLabel }}
+                  </button>
+                </div>
+              </div>
+              <div class="cli__duo-grid">
+                <div class="cli__bloque">
+                  <div class="cli__bloque-h">Reglas de venta para este cliente</div>
+                  <div class="cli__reglas">
+                    @for (r of reglasVista(); track r.id) {
+                      <button type="button" class="cli__regla" (click)="toggleRegla(r.id)">
+                        <span class="cli__sw" [class.cli__sw--on]="r.on"
+                          ><span class="cli__sw-knob"></span
+                        ></span>
+                        <span>
+                          <span class="cli__regla-t">{{ r.label }}</span>
+                          <span class="cli__muted">{{ r.sub }}</span>
+                        </span>
+                      </button>
+                    }
+                    <p class="cli__hint">
+                      Salvo el bloqueo, estas reglas son de sesión: el API no las persiste.
+                    </p>
+                  </div>
+                </div>
+                <div class="cli__bloque">
+                  <div class="cli__bloque-h">Historial de cobranza</div>
+                  @for (b of cobranza(); track b.fecha + b.detalle) {
+                    <div class="cli__cob">
+                      <span class="cli__mono cli__muted">{{ b.fecha }}</span>
+                      <span class="cli__grow">{{ b.detalle }}</span>
+                      <span class="cli__mono cli__strong" [attr.data-tono]="b.tone">{{
+                        b.valor
+                      }}</span>
+                    </div>
+                  } @empty {
+                    <div class="cli__empty cli__empty--sm">Sin movimientos de cuenta corriente</div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (sub() === 'dir') {
+            <div class="cli__scroll">
+              <div class="cli__bloque">
+                <div class="cli__bloque-h">
+                  Direcciones de entrega
+                  <div class="cli__spacer"></div>
+                  <span class="cli__muted">el API no guarda domicilios extra</span>
+                </div>
+                <div class="cli__empty cli__empty--sm">
+                  No hay direcciones de entrega. Se usa el dato de contacto del cliente.
+                </div>
+              </div>
+              <div class="cli__bloque">
+                <div class="cli__bloque-h">Contactos</div>
+                <div class="cli__cob">
+                  <span>{{ c.nombre }}</span>
+                  <span class="cli__muted">Principal</span>
+                  <span class="cli__mono">{{ c.telefono || '—' }} · {{ c.email || '—' }}</span>
+                </div>
+              </div>
+              <div class="cli__bloque">
+                <div class="cli__bloque-h">Notas internas</div>
+                @if (c.observaciones) {
+                  <div class="cli__cob">
+                    <span class="cli__grow">{{ c.observaciones }}</span>
+                  </div>
+                } @else {
+                  <div class="cli__empty cli__empty--sm">Sin notas internas</div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (sub() === 'hist') {
+            <div class="cli__hist">
+              <div class="cli__card">
+                <div class="cli__thead cli__thead--hist">
+                  <div>Comprobante</div>
+                  <div>Fecha</div>
+                  <div>Detalle</div>
+                  <div class="cli__right">Ítems</div>
+                  <div class="cli__right">Total</div>
+                  <div class="cli__center">Estado</div>
+                </div>
+                <div class="cli__body">
+                  @for (h of historial(); track h.id) {
+                    <div class="cli__row cli__row--hist">
+                      <div class="cli__mono cli__strong">{{ h.num }}</div>
+                      <div class="cli__mono">{{ h.fecha }}</div>
+                      <div class="cli__clip">{{ h.detalle }}</div>
+                      <div class="cli__right cli__mono">{{ h.items }}</div>
+                      <div class="cli__right cli__mono cli__strong">{{ h.total }}</div>
+                      <div class="cli__center">
+                        <span class="cli__pill" [attr.data-tono]="h.tone">{{ h.estado }}</span>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="cli__empty">Este cliente aún no tiene comprobantes.</div>
+                  }
+                </div>
+                <div class="cli__foot">
+                  <span>{{ histNota() }}</span>
+                  <div class="cli__spacer"></div>
+                  <span>Facturado</span>
+                  <strong class="cli__mono">{{ histTotal() }}</strong>
+                </div>
+              </div>
+              <div class="cli__side-col">
+                <div class="cli__bloque">
+                  <div class="cli__bloque-h">Lo que más compra</div>
+                  @for (t of topCompras(); track t.nom) {
+                    <div class="cli__top">
+                      <div class="cli__grow">
+                        <div class="cli__clip">{{ t.nom }}</div>
+                        <div class="cli__bar">
+                          <div class="cli__bar-fill" [style.width]="t.pct" data-tono="accent"></div>
+                        </div>
+                      </div>
+                      <span class="cli__mono cli__strong">{{ t.imp }}</span>
+                    </div>
+                  } @empty {
+                    <div class="cli__empty cli__empty--sm">Sin facturas para armar el ranking</div>
+                  }
+                </div>
+                <div class="cli__bloque">
+                  <div class="cli__bloque-h">Comportamiento</div>
+                  @for (b of comportamiento(); track b.label) {
+                    <div class="cli__cob">
+                      <span class="cli__grow cli__muted">{{ b.label }}</span>
+                      <span class="cli__mono cli__strong" [attr.data-tono]="b.tone">{{
+                        b.value
+                      }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="cli__empty">Elegí un cliente en la cartera.</div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'listas') {
+    <div class="cli__listas">
+      <div class="cli__listas-main">
+        <div class="cli__bloque cli__bloque--static">
+          <div class="cli__bloque-h">
+            Listas de precios
+            <span class="cli__muted"
+              >el mostrador usa la lista pública; el API no asigna lista al cliente</span
+            >
+            <div class="cli__spacer"></div>
+            @if (esAdmin()) {
+              <button type="button" class="cli__link" (click)="abrirNuevaLista()">
+                + Nueva lista
+              </button>
+            }
+          </div>
+          <div class="cli__thead cli__thead--listas">
+            <div>Lista</div>
+            <div class="cli__right">Sobre costo</div>
+            <div class="cli__right">vs. pública</div>
+            <div class="cli__right">Clientes</div>
+            <div class="cli__right">Facturado mes</div>
+            <div class="cli__center">Vigencia</div>
+          </div>
+          @for (l of listasRows(); track l.id) {
+            <button
+              type="button"
+              class="cli__row cli__row--listas"
+              [class.cli__row--on]="l.sel"
+              (click)="pickLista(l.id)"
+            >
+              <div class="cli__clip">
+                <div class="cli__strong">{{ l.nombre }}</div>
+                <div class="cli__muted">{{ l.sub }}</div>
+              </div>
+              <div class="cli__right cli__mono">{{ l.margen }}</div>
+              <div class="cli__right cli__mono" [attr.data-tono]="l.difTone">{{ l.dif }}</div>
+              <div class="cli__right cli__mono">{{ l.clientes }}</div>
+              <div class="cli__right cli__mono">{{ l.facturado }}</div>
+              <div class="cli__center">
+                <span class="cli__pill" [attr.data-tono]="l.estTone">{{ l.estado }}</span>
+              </div>
+            </button>
+          } @empty {
+            <div class="cli__empty cli__empty--sm">
+              No hay listas de precios. Creá una desde acá o en Configuración.
+            </div>
+          }
+        </div>
+        <div class="cli__card">
+          <div class="cli__bloque-h">
+            {{ listaSelNombre() }}
+            <div class="cli__spacer"></div>
+            <button type="button" class="cli__link" (click)="exportar()">Exportar</button>
+          </div>
+          <div class="cli__thead cli__thead--arts">
+            <div>Código</div>
+            <div>Artículo</div>
+            <div class="cli__right">Costo</div>
+            <div class="cli__right">Precio lista</div>
+            <div class="cli__right">Margen</div>
+            <div class="cli__right">Público</div>
+            <div class="cli__right">Dif.</div>
+          </div>
+          <div class="cli__body">
+            @for (a of artRows(); track a.id) {
+              <div class="cli__row cli__row--arts">
+                <div class="cli__mono">{{ a.cod }}</div>
+                <div class="cli__clip">{{ a.nom }}</div>
+                <div class="cli__right cli__mono">{{ a.costo }}</div>
+                <div class="cli__right cli__mono cli__strong">{{ a.precio }}</div>
+                <div class="cli__right cli__mono">{{ a.margen }}</div>
+                <div class="cli__right cli__mono">{{ a.publico }}</div>
+                <div class="cli__right cli__mono" [attr.data-tono]="a.difTone">{{ a.dif }}</div>
+              </div>
+            } @empty {
+              <div class="cli__empty">Esta lista todavía no tiene artículos con precio.</div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="cli__side-col">
+        <div class="cli__bloque">
+          <div class="cli__bloque-h">Descuentos vigentes</div>
+          @for (d of descRows(); track d.nombre) {
+            <div class="cli__desc">
+              <div class="cli__plist-t">
+                <span>{{ d.nombre }}</span>
+                <span class="cli__mono" [attr.data-tono]="d.tone">{{ d.valor }}</span>
+              </div>
+              <div class="cli__muted">{{ d.regla }}</div>
+            </div>
+          }
+        </div>
+        <div class="cli__bloque">
+          <div class="cli__bloque-h">Cómo se arma el precio final</div>
+          <div class="cli__cascada">
+            @for (p of cascada(); track p.n) {
+              <div class="cli__cas">
+                <span class="cli__mono cli__muted">{{ p.n }}</span>
+                <div class="cli__grow">
+                  <div>{{ p.label }}</div>
+                  <div class="cli__muted">{{ p.detalle }}</div>
+                </div>
+                <span class="cli__mono cli__strong" [attr.data-tono]="p.tone">{{ p.valor }}</span>
+              </div>
+            }
+            <p class="cli__hint">
+              Los descuentos no se suman entre sí: se aplica el mayor de los que correspondan, salvo
+              el de pago contado, que sí acumula. Hoy el mostrador cobra el precio de la lista.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</section>
+
+@if (altaOpen()) {
+  <div class="cli-ov" (click)="altaOpen.set(false)">
+    <div class="cli-ov__panel cli-ov__panel--wide" (click)="$event.stopPropagation()">
+      <div class="cli-ov__h">
+        <div>
+          <h3>{{ altaModo() === 'editar' ? 'Editar cliente' : 'Alta de cliente' }}</h3>
+          <p>
+            {{
+              altaPaso() === 1
+                ? 'Identificación y contacto'
+                : altaPaso() === 2
+                  ? 'Comercial y crédito'
+                  : 'Confirmación'
+            }}
+          </p>
+        </div>
+        <button type="button" class="cli-ov__x" (click)="altaOpen.set(false)">×</button>
+      </div>
+      <div class="cli-ov__pasos">
+        <button
+          type="button"
+          class="cli-ov__paso"
+          [class.cli-ov__paso--on]="altaPaso() === 1"
+          (click)="altaPaso.set(1)"
+        >
+          <span>1</span>
+          <div>
+            <div>Identificación</div>
+            <small>CUIT, IVA y contacto</small>
+          </div>
+        </button>
+        <button
+          type="button"
+          class="cli-ov__paso"
+          [class.cli-ov__paso--on]="altaPaso() === 2"
+          (click)="altaPaso.set(2)"
+        >
+          <span>2</span>
+          <div>
+            <div>Comercial</div>
+            <small>Zona, vendedor y límite</small>
+          </div>
+        </button>
+        <button
+          type="button"
+          class="cli-ov__paso"
+          [class.cli-ov__paso--on]="altaPaso() === 3"
+          (click)="altaPaso.set(3)"
+        >
+          <span>3</span>
+          <div>
+            <div>Confirmar</div>
+            <small>Revisá antes de guardar</small>
+          </div>
+        </button>
+      </div>
+      <div class="cli-ov__b">
+        @if (altaPaso() === 1) {
+          <div class="cli-ov__card">
+            <div class="cli-ov__card-t">Identificación fiscal</div>
+            <div class="cli-ov__grid cli-ov__grid--3">
+              <label
+                >Razón social
+                <input [ngModel]="altaNombre()" (ngModelChange)="altaNombre.set($event)"
+              /></label>
+              <label
+                >CUIT
+                <input [ngModel]="altaCuit()" (ngModelChange)="altaCuit.set($event)" maxlength="13"
+              /></label>
+              <label>
+                Condición IVA
+                <select [ngModel]="altaIva()" (ngModelChange)="altaIva.set($any($event))">
+                  <option value="responsable_inscripto">Resp. inscripto</option>
+                  <option value="monotributo">Monotributo</option>
+                  <option value="exento">Exento</option>
+                  <option value="consumidor_final">Consumidor final</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="cli-ov__card">
+            <div class="cli-ov__card-t">Contacto</div>
+            <div class="cli-ov__grid cli-ov__grid--3">
+              <label
+                >Email
+                <input type="email" [ngModel]="altaEmail()" (ngModelChange)="altaEmail.set($event)"
+              /></label>
+              <label
+                >Teléfono <input [ngModel]="altaTel()" (ngModelChange)="altaTel.set($event)"
+              /></label>
+            </div>
+          </div>
+        }
+        @if (altaPaso() === 2) {
+          <div class="cli-ov__card">
+            <div class="cli-ov__card-t">Comercial y crédito</div>
+            <div class="cli-ov__grid cli-ov__grid--3">
+              <label>
+                Zona
+                <select [ngModel]="altaZona()" (ngModelChange)="altaZona.set($event)">
+                  <option value="">Sin zona</option>
+                  @for (z of zonas(); track z.id) {
+                    <option [value]="z.id">{{ z.nombre }}</option>
+                  }
+                </select>
+              </label>
+              <label>
+                Vendedor
+                <select [ngModel]="altaVend()" (ngModelChange)="altaVend.set($event)">
+                  <option value="">Sin vendedor</option>
+                  @for (v of vendedores(); track v.id) {
+                    <option [value]="v.id">{{ v.nombre }}</option>
+                  }
+                </select>
+              </label>
+              <label
+                >Límite de crédito
+                <input
+                  type="number"
+                  min="0"
+                  [ngModel]="altaLimite()"
+                  (ngModelChange)="altaLimite.set($event)"
+              /></label>
+              <label class="cli-ov__span"
+                >Observaciones <input [ngModel]="altaObs()" (ngModelChange)="altaObs.set($event)"
+              /></label>
+            </div>
+          </div>
+        }
+        @if (altaPaso() === 3) {
+          <div class="cli-ov__check">
+            <div class="cli-ov__card-t">Antes de guardar</div>
+            <div class="cli-ov__dot">
+              <b>Identificación</b>
+              <span
+                >{{ altaNombre() || 'sin nombre' }} · {{ altaCuit() || 'sin CUIT' }} ·
+                {{ altaIva() }}</span
+              >
+            </div>
+            <div class="cli-ov__dot">
+              <b>Contacto</b>
+              <span>{{ altaEmail() || 'sin email' }} · {{ altaTel() || 'sin teléfono' }}</span>
+            </div>
+            <div class="cli-ov__dot">
+              <b>Crédito</b>
+              <span>Límite {{ altaLimite() || '0' }} · zona y vendedor opcionales</span>
+            </div>
+            <div class="cli-ov__dot">
+              <b>Listas y direcciones</b>
+              <span
+                >La lista default se usa en el mostrador. No hay domicilios extra en el API.</span
+              >
+            </div>
+          </div>
+        }
+      </div>
+      <div class="cli-ov__f">
+        <div class="cli__grow cli__muted">
+          El email es obligatorio. Lista de precios y direcciones de entrega no se guardan en el
+          cliente.
+        </div>
+        <button type="button" class="cli__btn" (click)="altaPrev()" [disabled]="altaPaso() === 1">
+          Atrás
+        </button>
+        <button type="button" class="cli__cta" [disabled]="guardando()" (click)="altaNext()">
+          {{
+            altaPaso() === 3
+              ? altaModo() === 'editar'
+                ? 'Guardar cambios'
+                : 'Crear cliente'
+              : 'Continuar'
+          }}
+        </button>
+      </div>
+    </div>
   </div>
-</app-side-drawer>
+}
+
+@if (listaOpen()) {
+  <div class="cli-ov" (click)="listaOpen.set(false)">
+    <div class="cli-ov__panel" (click)="$event.stopPropagation()">
+      <div class="cli-ov__h">
+        <div>
+          <h3>Nueva lista de precios</h3>
+          <p>Código corto y nombre. Los artículos se cargan después en Configuración.</p>
+        </div>
+        <button type="button" class="cli-ov__x" (click)="listaOpen.set(false)">×</button>
+      </div>
+      <div class="cli-ov__b">
+        <div class="cli-ov__grid">
+          <label
+            >Código
+            <input
+              [ngModel]="listaCodigo()"
+              (ngModelChange)="listaCodigo.set($event)"
+              maxlength="20"
+          /></label>
+          <label
+            >Nombre <input [ngModel]="listaNombre()" (ngModelChange)="listaNombre.set($event)"
+          /></label>
+        </div>
+      </div>
+      <div class="cli-ov__f">
+        <div class="cli__spacer"></div>
+        <button type="button" class="cli__cta" [disabled]="guardando()" (click)="crearLista()">
+          Crear lista
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (vendOpen()) {
+  <div class="cli-ov" (click)="vendOpen.set(false)">
+    <div class="cli-ov__panel" (click)="$event.stopPropagation()">
+      <div class="cli-ov__h">
+        <div>
+          <h3>Asignar vendedor</h3>
+          <p>Se aplica al cliente de la ficha, o al primero de la selección en cartera.</p>
+        </div>
+        <button type="button" class="cli-ov__x" (click)="vendOpen.set(false)">×</button>
+      </div>
+      <div class="cli-ov__b">
+        <label>
+          Vendedor
+          <select
+            class="cli__select cli__select--block"
+            [ngModel]="vendDraft()"
+            (ngModelChange)="vendDraft.set($event)"
+          >
+            <option value="">Sin vendedor</option>
+            @for (v of vendedores(); track v.id) {
+              <option [value]="v.id">{{ v.nombre }}</option>
+            }
+          </select>
+        </label>
+      </div>
+      <div class="cli-ov__f">
+        <div class="cli__spacer"></div>
+        <button type="button" class="cli__cta" [disabled]="guardando()" (click)="guardarVendedor()">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (limiteOpen()) {
+  <div class="cli-ov" (click)="limiteOpen.set(false)">
+    <div class="cli-ov__panel" (click)="$event.stopPropagation()">
+      <div class="cli-ov__h">
+        <div>
+          <h3>Cambiar límite de crédito</h3>
+          <p>{{ ficha()?.nombre }}</p>
+        </div>
+        <button type="button" class="cli-ov__x" (click)="limiteOpen.set(false)">×</button>
+      </div>
+      <div class="cli-ov__b">
+        <label
+          >Límite
+          <input
+            type="number"
+            min="0"
+            [ngModel]="limiteDraft()"
+            (ngModelChange)="limiteDraft.set($event)"
+        /></label>
+      </div>
+      <div class="cli-ov__f">
+        <div class="cli__spacer"></div>
+        <button type="button" class="cli__cta" [disabled]="guardando()" (click)="guardarLimite()">
+          Guardar límite
+        </button>
+      </div>
+    </div>
+  </div>
+}

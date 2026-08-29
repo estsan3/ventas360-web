@@ -16,7 +16,7 @@ Los datos se traen **siempre filtrados**, después de una búsqueda o de un crit
 - Texto: mínimo **3 caracteres** antes de pegarle a la API.
 - Empty state: «Escribí al menos 3 caracteres para buscar» (o «aplicá un filtro y Buscar»).
 - Catálogos chicos de UI (zonas, depósitos para un combo) sí pueden cargarse.
-- Excepciones: dashboard (agregados), configuración, estado operativo de caja del turno, mostrador (productos para cargar líneas; clientes van por autocomplete ≥3), **cartera de cheques** (KPIs, alertas y calendario necesitan el universo; la grilla se filtra en cliente).
+- Excepciones: dashboard (agregados), configuración, estado operativo de caja del turno, mostrador (productos para cargar líneas; clientes van por autocomplete ≥3), **cartera de cheques** (KPIs, alertas y calendario necesitan el universo; la grilla se filtra en cliente), **compras** (KPIs, fichas y conciliación del workspace `Compras.dc`; se filtra en cliente), **ventas/comprobantes** (KPIs, ficha y circuito del workspace `Ventas.dc`; se filtra en cliente), **clientes** (KPIs, ficha y listas del workspace `Clientes.dc`; se filtra en cliente).
 
 ```ts
 // ❌ BAD — constructor de un listado

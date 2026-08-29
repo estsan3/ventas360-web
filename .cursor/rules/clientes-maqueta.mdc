@@ -1,0 +1,29 @@
+---
+description: Clientes se implementa desde la maqueta DC, igual que Compras, Ventas y Caja.
+globs: "**/clientes/**,**/maquetas/**Clientes*"
+alwaysApply: false
+---
+
+# Clientes — maqueta DC
+
+Fuente: `maquetas/Clientes.dc.html`. Código: `src/app/features/clientes/` (ruta `/clientes`, menú Clientes).
+
+Hacer **el mismo trabajo que Compras / Ventas**: un workspace a pantalla completa (tres pestañas, KPIs, ficha, listas), no un listado mínimo ni un drawer genérico.
+
+## Qué tiene la maqueta (no recortar)
+
+- Una sola pantalla viewport (sin topbar duplicada: el shell ya tiene menú)
+- Pestañas: **Cartera** · **Fichas** · **Listas y descuentos**
+- Cartera: 6 KPIs clicables, búsqueda, zona/vendedor, chips, grilla, footer
+- Ficha: riel izquierdo + ficha (KPIs, Condiciones · Crédito y riesgo · Direcciones y contactos · Historial)
+- Listas: listas de precios, artículos, reglas de descuento y cascada
+- Overlay **Alta de cliente** en 3 pasos (identificación/contacto → comercial/crédito → confirmación)
+- Tokens **naranja** Ventas360, no azul/violeta de la maqueta
+
+## Cómo
+
+- UI en español; commits en inglés
+- KPIs y ficha necesitan el universo: se carga al entrar (como Compras/Ventas)
+- El API no asigna lista ni fecha de alta ni direcciones extra: mostrar derivado o vacío, no inventar AFIP/CUIT lookup
+- Verificar en el browser las tres pestañas y el alta
+- No tocar agro360 salvo pedido explícito
