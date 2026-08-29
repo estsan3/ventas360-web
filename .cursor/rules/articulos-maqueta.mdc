@@ -1,0 +1,28 @@
+---
+description: Artículos se implementa desde la maqueta DC, igual que Stock, CxC, Cheques y Mostrador.
+globs: "**/productos/**,**/maquetas/**Articulos*"
+alwaysApply: false
+---
+
+# Artículos — maqueta DC
+
+Fuente: `maquetas/Articulos.dc.html`. Código: `src/app/features/productos/` (ruta `/productos`, menú Artículos).
+
+Hacer **el mismo trabajo que Stock / Cheques / Mostrador**: llevar la maqueta a producto (tres pestañas, ficha, importación, listas), no un listado mínimo ni un modal de edición.
+
+## Qué tiene la maqueta (no recortar)
+
+- Una sola pantalla viewport (sin topbar duplicada: el shell ya tiene menú)
+- Pestañas: **Catálogo** · **Importar lista de precios** · **Listas de precios**
+- Catálogo: búsqueda ≥3, chips, grilla con SKU **propio** distinto del **código del proveedor**, ficha lateral (General / Precios / Stock)
+- Importar: 3 pasos (archivo → mapeo de columnas + SKU + margen → revisión con KPIs). La preview puede ser **demo** si no hay Excel; no inventar un webhook
+- Listas: márgenes, ejemplo de precio, historial de importaciones de proveedores, reglas locales
+- Tokens **naranja** Ventas360, no azul/violeta de la maqueta
+
+## Cómo
+
+- UI en español; commits en inglés
+- Listados: no precargar artículos; búsqueda ≥3. Combos de proveedores, depósitos y listas sí
+- Persistir SKU, nombre, marca, rubro, EAN, costo, precio, stock y activo. Unidad/IVA/mín-máx de ficha son operativos de UI si el API no los tiene
+- Verificar en el browser las tres pestañas
+- No tocar agro360 salvo pedido explícito

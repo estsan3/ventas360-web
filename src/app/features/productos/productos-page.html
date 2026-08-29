@@ -1,264 +1,815 @@
-<section class="page lst">
-  <header class="lst__header">
+<section class="art">
+  <header class="art__header">
     <div>
-      <h1 class="lst__title">Artículos</h1>
-      <p class="lst__subtitle">Catálogo, costos y precios de lista</p>
+      <h1 class="art__title">Artículos</h1>
+      <p class="art__sub">Catálogo propio. La lista del proveedor se importa en Compras, no acá.</p>
     </div>
-    @if (esAdmin()) {
-      <div class="lst__actions">
-        <button type="button" class="lst__btn lst__btn--ghost" (click)="irAActualizarPrecios()">
-          Actualizar precios
-        </button>
-        <button type="button" class="lst__cta" (click)="abrirCrear()">+ Nuevo artículo</button>
-      </div>
-    }
   </header>
 
-  <div class="lst__toolbar">
-    <input
-      class="lst__search"
-      type="search"
-      placeholder="Buscar por código, descripción o código de barras…"
-      [ngModel]="busqueda()"
-      (ngModelChange)="busqueda.set($event)"
-    />
-    <div class="lst__filters">
+  <div class="art__tabs-row">
+    <div class="art__tabs">
       <button
         type="button"
-        class="lst__chip"
-        [class.lst__chip--on]="chip() === 'todos'"
-        (click)="chip.set('todos')"
+        class="art__tab"
+        [class.art__tab--on]="tab() === 'catalogo'"
+        (click)="setTab('catalogo')"
       >
-        Todos
+        Catálogo
       </button>
-      @for (rubro of rubros(); track rubro) {
-        <button
-          type="button"
-          class="lst__chip"
-          [class.lst__chip--on]="chip() === rubro"
-          (click)="chip.set(rubro)"
-        >
-          {{ rubro }}
-        </button>
-      }
       <button
         type="button"
-        class="lst__chip lst__chip--danger"
-        [class.lst__chip--on]="chip() === 'bajo_minimo'"
-        (click)="chip.set('bajo_minimo')"
+        class="art__tab"
+        [class.art__tab--on]="tab() === 'importar'"
+        (click)="setTab('importar')"
       >
-        ⚠ Bajo mínimo ({{ bajoMinimoCount() }})
+        Importar lista de precios
+        @if (nRevImport() > 0 && tab() !== 'importar') {
+          <span class="art__badge">{{ nRevImport() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="art__tab"
+        [class.art__tab--on]="tab() === 'listas'"
+        (click)="setTab('listas')"
+      >
+        Listas de precios
       </button>
     </div>
+    <span class="art__ctx">{{ contextoTxt() }}</span>
   </div>
 
-  <div class="lst__card">
-    @if (estado().status === 'error') {
-      <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
-    } @else if (busqueda().trim().length < minChars) {
-      <div class="lst__empty">Escribí al menos {{ minChars }} caracteres para buscar artículos</div>
-    } @else if (filasVista().length === 0) {
-      <div class="lst__empty">
-        {{
-          estado().status === 'loading' ? 'Cargando artículos…' : 'No hay productos para mostrar'
-        }}
-      </div>
-    } @else {
-      <table class="lst__table">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Descripción</th>
-            <th>Rubro</th>
-            <th>Marca</th>
-            <th class="lst__th-right">Stock</th>
-            <th class="lst__th-right">Costo</th>
-            <th class="lst__th-right">Precio 1</th>
-            <th class="lst__th-right">Precio 2</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of filasVista(); track row.id) {
-            <tr class="lst__row" (click)="abrirConfig(row.id)">
-              <td class="lst__sku">{{ row.sku }}</td>
-              <td class="lst__name">{{ row.nombre }}</td>
-              <td>{{ row.rubro || '—' }}</td>
-              <td>{{ row.marca || '—' }}</td>
-              <td class="lst__td-right">
-                @if (row.stockTone === 'danger' || row.stockTone === 'warn') {
-                  <span
-                    class="lst__badge"
-                    [class.lst__badge--danger]="row.stockTone === 'danger'"
-                    [class.lst__badge--warn]="row.stockTone === 'warn'"
-                  >
-                    {{ row.stock }}
-                  </span>
-                } @else {
-                  <span class="lst__strong">{{ row.stock }}</span>
-                }
-              </td>
-              <td class="lst__td-right lst__muted">{{ row.costoFmt }}</td>
-              <td class="lst__td-right lst__strong">{{ row.precio1Fmt }}</td>
-              <td class="lst__td-right">{{ row.precio2Fmt }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      <div class="lst__footer">
-        {{ total() }} artículos activos · mostrando 1–{{ filasVista().length }}
-      </div>
-    }
-  </div>
-</section>
-
-<app-modal
-  [abierto]="configModalAbierto()"
-  [titulo]="configModalTitulo()"
-  ancho="960px"
-  (cerrar)="cerrarConfigModal()"
->
-  @if (detalle(); as det) {
-    <div class="config-modal">
-      <section class="config-modal__master">
-        <div class="config-modal__head config-modal__head--master">
-          <h3>Datos del producto</h3>
-          <app-badge [variant]="det.activo ? 'success' : 'neutral'">
-            {{ det.activo ? 'Activo' : 'Inactivo' }}
-          </app-badge>
-        </div>
-        <form class="config-modal__form config-modal__form--master" [formGroup]="form">
-          <app-text-input label="SKU" formControlName="sku" [error]="errorCampo('sku')" />
-          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
-          <app-text-input label="Marca" formControlName="marca" [error]="errorCampo('marca')" />
-          <app-text-input label="Rubro" formControlName="rubro" [error]="errorCampo('rubro')" />
-          <app-text-input
-            label="Código de barras"
-            formControlName="codigoBarras"
-            [error]="errorCampo('codigoBarras')"
-          />
-          <app-text-input
-            label="Costo"
-            type="number"
-            formControlName="costo"
-            [error]="errorCampo('costo')"
-          />
-          <app-text-input
-            label="Precio de lista"
-            type="number"
-            formControlName="precio"
-            [error]="errorCampo('precio')"
-          />
-          <app-text-input
-            label="Stock"
-            type="number"
-            formControlName="stock"
-            [error]="errorCampo('stock')"
-          />
-        </form>
-      </section>
-
-      <section class="config-modal__section">
-        <div class="config-modal__head">
-          <h3>Opciones</h3>
-          @if (esAdmin()) {
-            <app-button
-              [variant]="det.activo ? 'danger' : 'primary'"
-              size="sm"
-              (clicked)="toggleActivo(det)"
-            >
-              <app-icon [name]="det.activo ? 'alert-circle' : 'check-circle'" />
-              {{ det.activo ? 'Desactivar producto' : 'Activar producto' }}
-            </app-button>
-          }
-        </div>
-        <p class="config-modal__hint">
-          Catálogo enriquecido Fase A. Total: {{ total() }} artículos (página server-side).
-        </p>
-      </section>
-
-      <section class="config-modal__section">
-        <div class="config-modal__head">
-          <h3>Pedidos que lo incluyen</h3>
-        </div>
-        @if (pedidosDelProducto().length === 0) {
-          <p class="config-modal__hint">Ningún pedido incluye este producto todavía.</p>
-        } @else {
-          <div class="config-modal__tabla-scroll config-modal__tabla">
-            <app-table
-              [columns]="pedidosColumns"
-              [rows]="pedidosDelProducto()"
-              headerVariant="soft"
-              [striped]="true"
-              [compact]="true"
+  @if (tab() === 'catalogo') {
+    <div class="art__split">
+      <div class="art__main">
+        <div class="art__toolbar">
+          <div class="art__search">
+            <span>⌕</span>
+            <input
+              type="search"
+              [ngModel]="query()"
+              (ngModelChange)="query.set($event)"
+              placeholder="SKU, descripción, EAN, marca o cód. proveedor"
             />
           </div>
-        }
-      </section>
+          <select [ngModel]="fRubro()" (ngModelChange)="fRubro.set($event)">
+            @for (r of rubrosCombo(); track r) {
+              <option [value]="r">{{ r }}</option>
+            }
+          </select>
+          <select [ngModel]="fProv()" (ngModelChange)="fProv.set($event)">
+            @for (p of provsCombo(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+          @for (c of chipsArt; track c.id) {
+            <button
+              type="button"
+              class="art__chip"
+              [class.art__chip--on]="chip() === c.id"
+              (click)="setChip(c.id)"
+            >
+              {{ c.label }}
+            </button>
+          }
+          <button type="button" class="art__btn" (click)="etiqueta()">Etiquetas</button>
+          @if (esAdmin()) {
+            <button type="button" class="art__cta" (click)="abrirNuevo()">+ Nuevo artículo</button>
+          }
+        </div>
 
-      <footer class="config-modal__footer">
-        <app-button variant="outline" size="md" (clicked)="cerrarConfigModal()">
-          Salir sin guardar
-        </app-button>
-        @if (esAdmin()) {
-          <app-button
-            variant="primary"
-            size="md"
-            [disabled]="!masterDirty() || guardando()"
-            (clicked)="guardarMaster()"
-          >
-            Guardar cambios
-          </app-button>
+        <div class="art__card">
+          <div class="art__thead">
+            <div></div>
+            <div>SKU</div>
+            <div>Artículo</div>
+            <div>Proveedor</div>
+            <div class="art__r">Costo</div>
+            <div class="art__r">Venta</div>
+            <div class="art__r">Marg.</div>
+            <div class="art__r">Actualizado</div>
+            <div class="art__c">Estado</div>
+          </div>
+          <div class="art__tbody">
+            @if (estado().status === 'error') {
+              <div class="art__empty art__empty--error">{{ estado().error }}</div>
+            } @else if (query().trim().length < minChars) {
+              <div class="art__empty">
+                Escribí al menos {{ minChars }} caracteres para buscar artículos
+              </div>
+            } @else if (filasVista().length === 0) {
+              <div class="art__empty">
+                {{
+                  estado().status === 'loading'
+                    ? 'Cargando artículos…'
+                    : 'Ningún artículo con estos filtros. Probá quitar el filtro de rubro.'
+                }}
+              </div>
+            } @else {
+              @for (row of filasVista(); track row.id) {
+                <div
+                  class="art__row"
+                  [class.art__row--on]="seleccionadoId() === row.id"
+                  [class.art__row--sel]="sel().includes(row.id)"
+                  [class.art__row--sku]="row.sinSku"
+                  (click)="abrirFila(row.id)"
+                >
+                  <div (click)="toggleSel(row.id, $event)">
+                    <span class="art__box" [class.art__box--on]="sel().includes(row.id)">{{
+                      sel().includes(row.id) ? '✓' : ''
+                    }}</span>
+                  </div>
+                  <div class="art__sku">{{ row.sku }}</div>
+                  <div class="art__cell-main">
+                    <div class="art__nom">{{ row.nombre }}</div>
+                    <div class="art__subline">{{ row.sub }}</div>
+                  </div>
+                  <div class="art__muted">{{ row.prov }}</div>
+                  <div class="art__r art__mono art__muted">{{ row.costo }}</div>
+                  <div class="art__r art__mono art__strong">{{ row.venta }}</div>
+                  <div class="art__r art__mono" [attr.data-tono]="row.margTono">{{ row.marg }}</div>
+                  <div class="art__r art__mono art__muted">{{ row.act }}</div>
+                  <div class="art__c">
+                    <span class="art__pill" [attr.data-tono]="row.estTono">{{ row.estado }}</span>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+          <div class="art__foot">
+            <span>{{ countTxt() }}</span>
+            @if (sel().length > 0) {
+              <div class="art__bulk">
+                <span>{{ sel().length }} seleccionados</span>
+                <button type="button" (click)="bulk('Cambiar rubro')">Cambiar rubro</button>
+                <button type="button" (click)="bulk('Aplicar margen')">Aplicar margen</button>
+                <button type="button" (click)="bulk('Imprimir etiquetas')">
+                  Imprimir etiquetas
+                </button>
+                <button type="button" (click)="bulk('Desactivar')">Desactivar</button>
+              </div>
+            }
+            <button type="button" class="art__link" (click)="exportar()">Exportar catálogo</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="art__ficha">
+        @if (!esNuevo() && !fichaProducto()) {
+          <div class="art__empty art__empty--ficha">
+            Elegí un artículo del listado para ver la ficha.
+          </div>
+        } @else {
+          <div class="art__ficha-h">
+            <div>
+              <div class="art__sku">
+                {{ esNuevo() ? 'Nuevo artículo' : skuTxt() || '— sin SKU —' }}
+              </div>
+              <div class="art__ficha-nom">{{ esNuevo() ? 'Completá la ficha' : nombreTxt() }}</div>
+            </div>
+            <span class="art__pill" [attr.data-tono]="fichaEstado().tono">{{
+              fichaEstado().label
+            }}</span>
+          </div>
+          <div class="art__seg">
+            @for (t of fichaTabs; track t) {
+              <button
+                type="button"
+                [class.art__seg--on]="fichaTab() === t"
+                (click)="fichaTab.set(t)"
+              >
+                {{ t }}
+              </button>
+            }
+          </div>
+          <div class="art__ficha-b">
+            @if (fichaTab() === 'General') {
+              <div class="art__sec">
+                <div class="art__sec-h">Identificación</div>
+                <div class="art__grid2">
+                  <label>
+                    SKU propio
+                    <input
+                      class="art__mono"
+                      [ngModel]="skuTxt()"
+                      (ngModelChange)="skuTxt.set($event); marcarDirty()"
+                    />
+                    <span class="art__ayuda">Prefijo por rubro si lo importás de un proveedor</span>
+                  </label>
+                  <label>
+                    Código de barras (EAN)
+                    <input
+                      class="art__mono"
+                      [ngModel]="eanTxt()"
+                      (ngModelChange)="eanTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                  <label class="art__span2">
+                    Descripción
+                    <input
+                      [ngModel]="nombreTxt()"
+                      (ngModelChange)="nombreTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                  <label>
+                    Marca
+                    <input
+                      [ngModel]="marcaTxt()"
+                      (ngModelChange)="marcaTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                  <label>
+                    Rubro
+                    <input
+                      [ngModel]="rubroTxt()"
+                      (ngModelChange)="rubroTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                  <label>
+                    Unidad de medida
+                    <select
+                      [ngModel]="unidadTxt()"
+                      (ngModelChange)="unidadTxt.set($event); marcarDirty()"
+                    >
+                      <option>Unidad</option>
+                      <option>Kg</option>
+                      <option>Litro</option>
+                      <option>Metro</option>
+                      <option>Caja</option>
+                    </select>
+                  </label>
+                  <label>
+                    Estado
+                    <select
+                      [ngModel]="estadoTxt()"
+                      (ngModelChange)="estadoTxt.set($event); marcarDirty()"
+                    >
+                      <option>Activo</option>
+                      <option>Sin stock</option>
+                      <option>Descontinuado</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="art__sec">
+                <div class="art__sec-h">Proveedor</div>
+                <div class="art__grid2">
+                  <label class="art__span2">
+                    Proveedor principal
+                    <select
+                      [ngModel]="proveedorTxt()"
+                      (ngModelChange)="proveedorTxt.set($event); marcarDirty()"
+                    >
+                      <option value="">Sin proveedor</option>
+                      @for (p of provsCombo(); track p) {
+                        @if (p !== 'Todos los proveedores') {
+                          <option [value]="p">{{ p }}</option>
+                        }
+                      }
+                    </select>
+                  </label>
+                  <label class="art__span2">
+                    Código del proveedor
+                    <input
+                      class="art__mono"
+                      [ngModel]="codProvTxt()"
+                      (ngModelChange)="codProvTxt.set($event); marcarDirty()"
+                      placeholder="el de su lista, no el SKU"
+                    />
+                  </label>
+                </div>
+              </div>
+            }
+            @if (fichaTab() === 'Precios') {
+              <div class="art__sec">
+                <div class="art__sec-h">Costo e impuestos</div>
+                <div class="art__grid2">
+                  <label>
+                    Costo neto
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="costoTxt()"
+                      (ngModelChange)="costoTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                  <label>
+                    IVA
+                    <select
+                      [ngModel]="ivaTxt()"
+                      (ngModelChange)="ivaTxt.set($event); marcarDirty()"
+                    >
+                      <option value="21">21 %</option>
+                      <option value="10.5">10,5 %</option>
+                      <option value="27">27 %</option>
+                      <option value="0">Exento</option>
+                    </select>
+                  </label>
+                  <label>
+                    Margen
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="margenTxt()"
+                      (ngModelChange)="setMargenFicha($event)"
+                    />
+                  </label>
+                  <label>
+                    Precio de venta
+                    <input
+                      class="art__mono art__right art__hl"
+                      [ngModel]="precioTxt()"
+                      (ngModelChange)="precioTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                </div>
+              </div>
+              <div class="art__sec">
+                <div class="art__sec-h">Otras listas</div>
+                <div class="art__grid2">
+                  <label>
+                    Mostrador
+                    <input class="art__mono art__right" [value]="precioTxt()" readonly />
+                  </label>
+                  <label>
+                    Mayorista (−12 %)
+                    <input class="art__mono art__right" [value]="precioMayorista()" readonly />
+                  </label>
+                  <label>
+                    Contado efectivo (−5 %)
+                    <input class="art__mono art__right" [value]="precioContado()" readonly />
+                  </label>
+                  <label>
+                    Precio promocional
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="promoTxt()"
+                      (ngModelChange)="promoTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                </div>
+              </div>
+              <div class="art__calc">
+                @for (c of fichaCalculo(); track c.label) {
+                  <div [class.art__calc--dest]="c.dest">
+                    <span>{{ c.label }}</span>
+                    <strong>{{ c.value }}</strong>
+                  </div>
+                }
+              </div>
+            }
+            @if (fichaTab() === 'Stock') {
+              <div class="art__sec">
+                <div class="art__sec-h">Parámetros de stock</div>
+                <div class="art__grid2">
+                  <label>
+                    Mínimo
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="minTxt()"
+                      (ngModelChange)="minTxt.set($event)"
+                    />
+                  </label>
+                  <label>
+                    Máximo
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="maxTxt()"
+                      (ngModelChange)="maxTxt.set($event)"
+                    />
+                  </label>
+                  <label>
+                    Punto de pedido
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="pedidoTxt()"
+                      (ngModelChange)="pedidoTxt.set($event)"
+                    />
+                  </label>
+                  <label>
+                    Lote de compra
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="loteTxt()"
+                      (ngModelChange)="loteTxt.set($event)"
+                    />
+                  </label>
+                  <label class="art__span2">
+                    Depósito principal
+                    <select [ngModel]="depositoTxt()" (ngModelChange)="depositoTxt.set($event)">
+                      @for (d of depositos(); track d.id) {
+                        <option [value]="d.nombre">{{ d.nombre }}</option>
+                      }
+                    </select>
+                  </label>
+                </div>
+                <p class="art__ayuda">
+                  Mín/máx operativos de la ficha; el stock real vive en Stock.
+                </p>
+              </div>
+              <div class="art__sec">
+                <div class="art__sec-h">Existencias</div>
+                <div class="art__grid2">
+                  <label>
+                    Stock actual
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="stockTxt()"
+                      (ngModelChange)="stockTxt.set($event); marcarDirty()"
+                    />
+                  </label>
+                  <label>
+                    Ubicación en góndola
+                    <input [ngModel]="ubicacionTxt()" (ngModelChange)="ubicacionTxt.set($event)" />
+                  </label>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="art__ficha-f">
+            @if (!esNuevo()) {
+              <button type="button" class="art__btn" (click)="duplicar()">Duplicar</button>
+              <button type="button" class="art__btn" (click)="etiqueta()">Etiqueta</button>
+            }
+            @if (esAdmin()) {
+              <button
+                type="button"
+                class="art__cta art__cta--grow"
+                [disabled]="guardando() || (!esNuevo() && !fichaDirty())"
+                (click)="guardarFicha()"
+              >
+                {{ esNuevo() ? 'Crear artículo' : 'Guardar cambios' }}
+              </button>
+            }
+          </div>
         }
-      </footer>
+      </aside>
     </div>
   }
-</app-modal>
 
-<app-side-drawer [abierto]="drawerAbierto()" titulo="Nuevo producto" (cerrar)="cerrarDrawer()">
-  <div class="form-drawer">
-    <form [formGroup]="form">
-      <section class="form-section">
-        <header class="form-section__head">
-          <h4>Datos del producto</h4>
-        </header>
-        <div class="form-section__body">
-          <div class="form-section__grid-2">
-            <app-text-input label="SKU" formControlName="sku" [error]="errorCampo('sku')" />
-            <app-text-input
-              label="Stock"
-              type="number"
-              formControlName="stock"
-              [error]="errorCampo('stock')"
-            />
-          </div>
-          <app-text-input label="Nombre" formControlName="nombre" [error]="errorCampo('nombre')" />
-          <app-text-input label="Marca" formControlName="marca" [error]="errorCampo('marca')" />
-          <app-text-input label="Rubro" formControlName="rubro" [error]="errorCampo('rubro')" />
-          <app-text-input
-            label="Código de barras"
-            formControlName="codigoBarras"
-            [error]="errorCampo('codigoBarras')"
-          />
-          <app-text-input
-            label="Costo"
-            type="number"
-            formControlName="costo"
-            [error]="errorCampo('costo')"
-          />
-          <app-text-input
-            label="Precio de lista"
-            type="number"
-            formControlName="precio"
-            [error]="errorCampo('precio')"
-          />
+  @if (tab() === 'importar') {
+    <div class="art__imp">
+      <p class="art__ayuda">
+        Importar el Excel del proveedor no da de alta tu catálogo. La lista queda en
+        <a routerLink="/compras" [queryParams]="{ tab: 'listas' }">Compras → Listas de precios</a>
+        y ahí definís el SKU propio solo de lo que comprás.
+      </p>
+      <div class="art__pasos">
+        @for (n of [1, 2, 3]; track n) {
+          <button
+            type="button"
+            class="art__paso"
+            [class.art__paso--on]="paso() === n"
+            (click)="setPaso(n)"
+          >
+            <span
+              class="art__dot"
+              [class.art__dot--done]="paso() > n"
+              [class.art__dot--on]="paso() === n"
+              >{{ paso() > n ? '✓' : n }}</span
+            >
+            <span>
+              <strong>{{ n === 1 ? 'Archivo' : n === 2 ? 'Mapeo' : 'Revisión' }}</strong>
+              <small>{{
+                n === 1 ? 'Excel del proveedor' : n === 2 ? 'columnas y SKU' : 'altas y cambios'
+              }}</small>
+            </span>
+          </button>
+          @if (n < 3) {
+            <div class="art__paso-line"></div>
+          }
+        }
+        <div class="art__arch">
+          <strong>{{ archivoNombre() }}</strong>
+          <span>{{ archivoSub() }}</span>
+          <label class="art__link">
+            Cambiar
+            <input type="file" accept=".xlsx,.xls,.csv" hidden (change)="elegirArchivo($event)" />
+          </label>
         </div>
-      </section>
-    </form>
-    <footer class="form-drawer__footer">
-      <app-button variant="outline" size="md" (clicked)="cerrarDrawer()">Cancelar</app-button>
-      <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardarNuevo()">
-        Guardar
-      </app-button>
-    </footer>
-  </div>
-</app-side-drawer>
+      </div>
+
+      @if (paso() === 1) {
+        <div class="art__imp-1">
+          <div class="art__drop">
+            <div class="art__drop-ico">↑</div>
+            <div>
+              <strong>Arrastrá la lista de precios del proveedor</strong>
+              <p>
+                Excel (.xlsx, .xls) o CSV. Si el proveedor manda siempre el mismo formato, el mapeo
+                queda guardado.
+              </p>
+            </div>
+            <div class="art__drop-act">
+              <label class="art__cta">
+                Elegir archivo
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  hidden
+                  (change)="elegirArchivo($event)"
+                />
+              </label>
+              <button type="button" class="art__btn" (click)="irMapeoDemo()">
+                Usar lista demo
+              </button>
+            </div>
+          </div>
+          <div class="art__formatos">
+            <div class="art__sec-h">Formatos guardados</div>
+            @for (f of formatosGuardados(); track f.id) {
+              <button type="button" class="art__fmt" (click)="usarFormato(f.id)">
+                <div>
+                  <div>{{ f.prov }}</div>
+                  <small>{{ f.sub }}</small>
+                </div>
+                <span>{{ f.cols }}</span>
+              </button>
+            } @empty {
+              <p class="art__ayuda">
+                Todavía no hay formatos de proveedores. Usá la lista demo o elegí un Excel.
+              </p>
+            }
+            <p class="art__ayuda">
+              Cada formato recuerda el mapeo del proveedor. Elegí uno para saltear el paso de mapeo.
+            </p>
+          </div>
+        </div>
+      }
+
+      @if (paso() === 2) {
+        <div class="art__imp-2">
+          <div class="art__card art__card--map">
+            <div class="art__map-h">
+              <strong>Mapeo de columnas</strong>
+              <span>{{ mapeoEstado().usados }} de 11 columnas asignadas</span>
+              <button type="button" class="art__link" (click)="autoMapear()">
+                Sugerir automáticamente
+              </button>
+            </div>
+            <div class="art__map-list">
+              @for (c of columnasMapeo(); track c.letra) {
+                <div class="art__map-row" [class.art__map-row--dup]="c.dup">
+                  <span class="art__letra">{{ c.letra }}</span>
+                  <div class="art__cell-main">
+                    <div>{{ c.encabezado }}</div>
+                    <div class="art__subline">{{ c.muestra }}</div>
+                  </div>
+                  <select
+                    [ngModel]="c.destino"
+                    (ngModelChange)="setDestino(c.letra, $event)"
+                    [class.art__sel--off]="c.ignorado"
+                    [class.art__sel--on]="!c.ignorado && !c.dup"
+                    [class.art__sel--dup]="c.dup"
+                  >
+                    @for (d of destinos; track d) {
+                      <option [value]="d">{{ d }}</option>
+                    }
+                  </select>
+                  <span class="art__nota" [class.art__nota--dup]="c.dup">{{ c.nota }}</span>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="art__map-side">
+            <div class="art__side-card">
+              <div class="art__sec-h">Tu SKU</div>
+              @for (s of skuModosVista(); track s.id) {
+                <button
+                  type="button"
+                  class="art__radio"
+                  [class.art__radio--on]="s.on"
+                  (click)="skuModo.set(s.id)"
+                >
+                  <span class="art__radio-dot"></span>
+                  <span>
+                    <strong>{{ s.label }}</strong>
+                    <small>{{ s.ejemplo }}</small>
+                  </span>
+                </button>
+              }
+              @if (skuModo() === 'propio') {
+                <div class="art__grid3">
+                  <label>
+                    Prefijo
+                    <input
+                      class="art__mono"
+                      [ngModel]="skuPrefijo()"
+                      (ngModelChange)="skuPrefijo.set($event)"
+                    />
+                  </label>
+                  <label>
+                    Desde
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="skuDesde()"
+                      (ngModelChange)="skuDesde.set($event)"
+                    />
+                  </label>
+                  <label>
+                    Dígitos
+                    <input
+                      class="art__mono art__right"
+                      [ngModel]="skuDigitos()"
+                      (ngModelChange)="skuDigitos.set($event)"
+                    />
+                  </label>
+                </div>
+              }
+            </div>
+            <div class="art__side-card">
+              <div class="art__sec-h">Precio de venta</div>
+              <div class="art__margen-row">
+                <span>Margen sobre el costo</span>
+                <input
+                  class="art__mono art__right"
+                  [ngModel]="margenImp()"
+                  (ngModelChange)="margenImp.set($event)"
+                />
+                <span>%</span>
+                <select [ngModel]="redondeo()" (ngModelChange)="redondeo.set($event)">
+                  @for (r of redondeos; track r) {
+                    <option [value]="r">{{ r }}</option>
+                  }
+                </select>
+              </div>
+              @for (o of opcionesImp; track o.id) {
+                <button type="button" class="art__check" (click)="toggleOpcion(o.id)">
+                  <span class="art__box" [class.art__box--on]="opciones().includes(o.id)">{{
+                    opciones().includes(o.id) ? '✓' : ''
+                  }}</span>
+                  {{ o.label }}
+                </button>
+              }
+            </div>
+            <button
+              type="button"
+              class="art__cta art__cta--full"
+              [disabled]="!mapeoEstado().ok"
+              (click)="irPreview()"
+            >
+              {{ mapeoEstado().label }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (paso() === 3) {
+        <div class="art__kpis">
+          @for (k of prevKpis(); track k.f) {
+            <button
+              type="button"
+              class="art__kpi"
+              [class.art__kpi--on]="k.on"
+              (click)="prevF.set(k.f)"
+            >
+              <span>{{ k.label }}</span>
+              <strong [attr.data-tono]="k.tono">{{ k.value }}</strong>
+              <small>{{ k.hint }}</small>
+            </button>
+          }
+        </div>
+        <div class="art__card">
+          <div class="art__thead art__thead--prev">
+            <div>SKU</div>
+            <div>Descripción</div>
+            <div>Cód. prov.</div>
+            <div class="art__r">Costo</div>
+            <div class="art__r">Costo ant.</div>
+            <div class="art__r">Venta</div>
+            <div class="art__r">Variación</div>
+            <div class="art__r">Acción</div>
+          </div>
+          <div class="art__tbody">
+            @for (r of prevRows(); track r.i) {
+              <div class="art__row art__row--prev" [attr.data-fila]="r.tonoFila">
+                <div class="art__sku" [attr.data-tono]="r.skuTono">{{ r.sku }}</div>
+                <div class="art__cell-main">
+                  <div class="art__nom">{{ r.nombre }}</div>
+                  @if (r.nota) {
+                    <div class="art__subline" [attr.data-tono]="r.notaTono">{{ r.notaTxt }}</div>
+                  }
+                </div>
+                <div class="art__mono art__muted">{{ r.codProv }}</div>
+                <div class="art__r art__mono art__strong">{{ r.costo }}</div>
+                <div class="art__r art__mono art__muted">{{ r.costoAnt }}</div>
+                <div class="art__r art__mono">{{ r.venta }}</div>
+                <div class="art__r art__mono" [attr.data-tono]="r.varTono">{{ r.variacion }}</div>
+                <div class="art__acc">
+                  <span class="art__pill" [attr.data-tono]="r.accTono">{{ r.accion }}</span>
+                  <button type="button" class="art__link" (click)="toggleOmitir(r.i)">
+                    {{ r.omitirTxt }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="art__foot art__foot--prev">
+            <div class="art__res" [attr.data-tono]="prevResumen().tono">
+              {{ prevResumen().txt }}
+            </div>
+            <button type="button" class="art__check" (click)="guardarMapeo.set(!guardarMapeo())">
+              <span class="art__box" [class.art__box--on]="guardarMapeo()">{{
+                guardarMapeo() ? '✓' : ''
+              }}</span>
+              Guardar este mapeo para el proveedor
+            </button>
+            <button type="button" class="art__btn" (click)="setPaso(2)">Volver al mapeo</button>
+            <button type="button" class="art__cta" (click)="importarDemo()">
+              Importar {{ prevResumen().nAplicar }} líneas
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'listas') {
+    <div class="art__listas">
+      <div class="art__listas-h">
+        <div>
+          <h2>Listas de precios</h2>
+          <p>
+            Cada lista aplica su propio margen sobre el costo. El mostrador toma la lista según el
+            cliente.
+          </p>
+        </div>
+        <button type="button" class="art__cta" (click)="nuevaLista()">+ Nueva lista</button>
+      </div>
+      <div class="art__listas-cards">
+        @for (l of listasVista(); track l.id) {
+          <div class="art__lista">
+            <div>
+              <div class="art__lista-nom">
+                {{ l.nombre }}
+                @if (l.esDefault) {
+                  <span class="art__pill" data-tono="info">Por defecto</span>
+                }
+              </div>
+              <div class="art__muted">{{ l.detalle }}</div>
+            </div>
+            <label class="art__margen-inline">
+              Margen
+              <input
+                class="art__mono art__right"
+                [ngModel]="l.margen"
+                (ngModelChange)="setMargenLista(l.id, $event)"
+              />
+              %
+            </label>
+            <div>
+              <div class="art__kpi-l">Artículos</div>
+              <div class="art__mono art__strong">{{ l.arts }}</div>
+            </div>
+            <div>
+              <div class="art__kpi-l">Ejemplo</div>
+              <div class="art__mono art__strong">{{ l.ejemplo }}</div>
+            </div>
+            <div class="art__lista-act">
+              <button type="button" class="art__link" (click)="recalcularLista(l.nombre)">
+                Recalcular
+              </button>
+              <button type="button" class="art__link" (click)="irEditarLista()">Editar</button>
+            </div>
+          </div>
+        } @empty {
+          <div class="art__empty">No hay listas de precios. Creálas en Configuración.</div>
+        }
+      </div>
+      <div class="art__listas-bot">
+        <div class="art__side-card art__side-card--grow">
+          <div class="art__sec-h">Últimas actualizaciones de costo</div>
+          @for (h of historialVista(); track h.prov) {
+            <div class="art__hist">
+              <div>
+                <div>{{ h.prov }}</div>
+                <small>{{ h.detalle }}</small>
+              </div>
+              <strong>{{ h.variacion }}</strong>
+              <span>{{ h.fecha }}</span>
+            </div>
+          } @empty {
+            <p class="art__ayuda">Todavía no hay importaciones de proveedores.</p>
+          }
+        </div>
+        <div class="art__side-card">
+          <div class="art__sec-h">Reglas de actualización</div>
+          @for (r of reglasPrecioDef; track r.id) {
+            <button
+              type="button"
+              class="art__regla"
+              [class.art__regla--on]="reglasOn().includes(r.id)"
+              (click)="toggleRegla(r.id)"
+            >
+              <span class="art__box" [class.art__box--on]="reglasOn().includes(r.id)">{{
+                reglasOn().includes(r.id) ? '✓' : ''
+              }}</span>
+              <span>
+                <strong>{{ r.label }}</strong>
+                <small>{{ r.sub }}</small>
+              </span>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>

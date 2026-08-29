@@ -1,0 +1,144 @@
+<section class="page chq chq--nest" tabindex="-1">
+  <header class="chq__header">
+    <div>
+      <h1 class="chq__title">Pagos a proveedores</h1>
+      <p class="chq__subtitle">Baja la deuda y pega en caja, banco o cartera</p>
+    </div>
+    <button type="button" class="chq__btn chq__btn--ghost" (click)="cargar()">Buscar</button>
+    <button type="button" class="chq__btn chq__btn--primary" (click)="abrirNuevo()">
+      + Registrar pago
+    </button>
+  </header>
+
+  <div class="chq__scroll">
+    <div class="chq__kpis">
+      @for (k of kpis(); track k.label) {
+        <div class="chq__kpi">
+          <div class="chq__kpi-label">{{ k.label }}</div>
+          <div
+            class="chq__kpi-val"
+            [class.chq__kpi-val--ok]="k.tono === 'ok'"
+            [class.chq__kpi-val--danger]="k.tono === 'danger'"
+            [class.chq__kpi-val--info]="k.tono === 'info'"
+          >
+            {{ k.value }}
+          </div>
+          <div class="chq__kpi-hint">{{ k.hint }}</div>
+        </div>
+      }
+    </div>
+
+    <div class="chq__body">
+      <div class="chq__list">
+        <div class="chq__thead">
+          <span></span>
+          <span>Fecha</span>
+          <span>Proveedor</span>
+          <span>Medio</span>
+          <span class="chq__th-right">Importe</span>
+        </div>
+        <div class="chq__rows">
+          @if (cargando()) {
+            <div class="chq__empty">Cargando pagos…</div>
+          } @else if (filas().length === 0) {
+            <div class="chq__empty">
+              <div>No hay pagos a proveedores</div>
+              <div class="chq__empty-sub">
+                Registrá un pago en efectivo, transferencia o cheque de la cartera.
+              </div>
+            </div>
+          } @else {
+            @for (r of filas(); track r.id) {
+              <div class="chq__row" [class.chq__row--on]="r.on" (click)="abrirDetalle(r.id)">
+                <span></span>
+                <div class="chq__mono">{{ r.fecha }}</div>
+                <div>{{ r.proveedor }}</div>
+                <div>{{ r.medio }}</div>
+                <div class="chq__td-right chq__mono chq__strong">{{ r.importe }}</div>
+              </div>
+            }
+          }
+        </div>
+        <div class="chq__foot">
+          <span>{{ filas().length }} pagos</span>
+        </div>
+      </div>
+
+      <aside class="chq__det">
+        @if (detalle(); as det) {
+          <div class="chq__det-head">
+            <div>
+              <div class="chq__det-num">{{ det.numero }}</div>
+              <div class="chq__muted">{{ det.proveedor }}</div>
+            </div>
+            <span class="chq__badge chq__badge--ok">Pagado</span>
+          </div>
+          <div class="chq__det-importe">
+            <div>
+              <div class="chq__kpi-label">Importe</div>
+              <div class="chq__det-money">{{ det.importe }}</div>
+            </div>
+            <div>
+              <div class="chq__kpi-label">Fecha</div>
+              <div class="chq__mono">{{ det.fecha }}</div>
+            </div>
+          </div>
+          <div class="chq__det-scroll">
+            <div class="chq__campos">
+              <div class="chq__campo">
+                <div class="chq__kpi-label">Medio</div>
+                <div>{{ det.medio }}</div>
+              </div>
+              <div class="chq__campo">
+                <div class="chq__kpi-label">Detalle</div>
+                <div>{{ det.observacion }}</div>
+              </div>
+            </div>
+            @if (det.lineas.length) {
+              <div class="chq__cal-title">Medios</div>
+              @for (l of det.lineas; track l) {
+                <div class="chq__muted">{{ l }}</div>
+              }
+            }
+          </div>
+        } @else {
+          <div class="chq__empty">Seleccioná un pago</div>
+        }
+      </aside>
+    </div>
+  </div>
+</section>
+
+<app-side-drawer
+  [abierto]="drawer()"
+  titulo="Registrar pago a proveedor"
+  (cerrar)="drawer.set(false)"
+>
+  <form class="form-drawer" [formGroup]="form">
+    <app-select-input
+      label="Proveedor"
+      [options]="proveedoresOpts()"
+      formControlName="proveedorId"
+    />
+    <app-text-input label="Importe" type="number" formControlName="monto" />
+    <app-select-input label="Medio" [options]="medioOpts" formControlName="medioUi" />
+    @if (medioUi() === 'cheque_cartera') {
+      <app-select-input
+        label="Cheque en cartera"
+        [options]="chequesOpts()"
+        formControlName="chequeId"
+      />
+    }
+    @if (medioUi() === 'cheque_propio') {
+      <app-text-input label="N° de cheque" formControlName="numero" />
+      <app-select-input label="Banco" [options]="bancoOpts" formControlName="bancoEmisor" />
+      <app-text-input label="Vencimiento" type="date" formControlName="fechaVto" />
+    }
+  </form>
+  <div class="form-drawer__actions">
+    <app-button variant="outline" size="md" (clicked)="drawer.set(false)">Cancelar</app-button>
+    <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
+      {{ guardando() ? 'Registrando…' : 'Registrar pago' }}
+    </app-button>
+  </div>
+</app-side-drawer>

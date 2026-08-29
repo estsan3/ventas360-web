@@ -47,6 +47,19 @@ export interface ImportarListaResultado {
   previewRows: string[][];
 }
 
+export interface ListaProveedorItem {
+  id: string;
+  proveedorId: string;
+  codigoProveedor: string;
+  nombre: string;
+  costo: number;
+  precioLista: number;
+  marca: string;
+  rubro: string;
+  articuloId: string;
+  enCatalogo: boolean;
+}
+
 export interface CrearProveedorLista {
   nombre: string;
   cuit: string;

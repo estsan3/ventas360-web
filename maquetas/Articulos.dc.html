@@ -1,0 +1,2568 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <meta name="design_doc_mode" content="canvas" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: oklch(0.955 0.008 80);
+            font-family: 'Instrument Sans', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+          }
+          a {
+            color: oklch(0.52 0.15 255);
+            text-decoration: none;
+          }
+          a:hover {
+            color: oklch(0.42 0.15 255);
+            text-decoration: underline;
+          }
+          input,
+          select,
+          button {
+            font-family: inherit;
+          }
+          input:focus,
+          select:focus {
+            outline: 2px solid oklch(0.52 0.15 255);
+            outline-offset: -1px;
+          }
+          ::placeholder {
+            color: oklch(0.65 0.01 60);
+          }
+        </style>
+      </helmet>
+
+      <section style="display: flex; flex-direction: column; gap: 28px; padding: 56px 56px 90px">
+        <div style="display: flex; flex-direction: column; gap: 6px; max-width: 800px">
+          <div
+            style="
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              color: oklch(0.55 0.01 60);
+            "
+          >
+            Turno 5 · módulo nuevo
+          </div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 30px;
+              font-weight: 600;
+              letter-spacing: -0.02em;
+              color: oklch(0.25 0.01 60);
+            "
+          >
+            Artículos
+          </h1>
+          <p
+            style="
+              margin: 4px 0 0;
+              font-size: 15px;
+              line-height: 1.55;
+              color: oklch(0.48 0.01 60);
+              text-wrap: pretty;
+            "
+          >
+            Catálogo propio con ficha completa, e importación de listas de precios de proveedores:
+            subís el Excel, mapeás cada columna a su significado, definís cómo se arma tu SKU y el
+            margen, y confirmás. Las tres pestañas son navegables.
+          </p>
+        </div>
+
+        <div id="5a" style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <span
+              style="
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                font-weight: 600;
+                color: oklch(0.99 0 0);
+                background: oklch(0.3 0.01 60);
+                padding: 4px 9px;
+                border-radius: 5px;
+              "
+              >5a</span
+            >
+            <span style="font-size: 15px; font-weight: 600; color: oklch(0.3 0.01 60)"
+              >Artículos — catálogo, ficha e importación con mapeo de columnas</span
+            >
+          </div>
+
+          <div
+            style="
+              width: 1600px;
+              height: 1000px;
+              background: oklch(0.985 0.006 80);
+              border: 1px solid oklch(0.885 0.01 80);
+              border-radius: 12px;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              position: relative;
+              box-shadow:
+                0 1px 2px oklch(0.3 0.02 60 / 0.05),
+                0 12px 32px oklch(0.3 0.02 60 / 0.07);
+            "
+          >
+            <div
+              style="
+                height: 54px;
+                flex: none;
+                background: oklch(0.995 0.004 80);
+                border-bottom: 1px solid oklch(0.9 0.01 80);
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                padding: 0 18px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 9px">
+                <div
+                  style="
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 6px;
+                    background: oklch(0.52 0.15 255);
+                  "
+                ></div>
+                <span style="font-size: 14px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                  >Ventas</span
+                >
+              </div>
+              <div style="display: flex; gap: 2px">
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Mostrador</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    color: oklch(0.36 0.13 255);
+                    background: oklch(0.955 0.028 255);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Artículos</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Stock</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Compras</span
+                >
+              </div>
+              <div style="flex: 1"></div>
+              <div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: oklch(0.55 0.01 60);
+                "
+              >
+                {{ headerTxt }}
+              </div>
+              <div
+                style="
+                  width: 28px;
+                  height: 28px;
+                  border-radius: 50%;
+                  background: oklch(0.88 0.03 255);
+                  color: oklch(0.36 0.13 255);
+                  font-size: 11.5px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                EA
+              </div>
+            </div>
+
+            <div
+              style="
+                flex: none;
+                padding: 16px 22px 0;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  gap: 2px;
+                  background: oklch(0.94 0.008 80);
+                  padding: 3px;
+                  border-radius: 9px;
+                "
+              >
+                <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+                  <div
+                    onClick="{{ t.pick }}"
+                    style="display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 7px; cursor: pointer; color: {{
+                      t.color
+                    }}; background: {{ t.bg }}; box-shadow: {{ t.shadow }};"
+                  >
+                    <span>{{ t.label }}</span>
+                    <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}">
+                      <span
+                        style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; color: {{
+                          t.badgeColor
+                        }}; background: {{ t.badgeBg }}; padding: 1px 5px; border-radius: 4px;"
+                        >{{ t.badgeTxt }}</span
+                      >
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="flex: 1"></div>
+              <div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 11.5px;
+                  color: oklch(0.55 0.01 60);
+                "
+              >
+                {{ contextoTxt }}
+              </div>
+            </div>
+
+            <!-- ============ CATÁLOGO ============ -->
+            <sc-if value="{{ esCatalogo }}" hint-placeholder-val="{{ true }}">
+              <div style="flex: 1; min-height: 0; display: flex; min-width: 0">
+                <div
+                  style="
+                    flex: 1;
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 14px 22px 20px;
+                  "
+                >
+                  <div
+                    style="
+                      flex: none;
+                      display: flex;
+                      align-items: center;
+                      gap: 9px;
+                      flex-wrap: wrap;
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        height: 36px;
+                        flex: 1 1 240px;
+                        min-width: 200px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.86 0.01 80);
+                        background: oklch(1 0 0);
+                        padding: 0 11px;
+                      "
+                    >
+                      <span style="font-size: 14px; color: oklch(0.6 0.01 60)">⌕</span>
+                      <input
+                        value="{{ query }}"
+                        onChange="{{ onQuery }}"
+                        placeholder="SKU, descripción, EAN, marca o cód. proveedor"
+                        style="
+                          flex: 1;
+                          border: none;
+                          outline: none;
+                          font-size: 13.5px;
+                          color: oklch(0.24 0.01 60);
+                          background: transparent;
+                        "
+                      />
+                    </div>
+                    <select
+                      value="{{ fRubro }}"
+                      onChange="{{ setRubro }}"
+                      style="
+                        height: 36px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-size: 13px;
+                        padding: 0 8px;
+                        color: oklch(0.28 0.01 60);
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ rubros }}" as="r" hint-placeholder-count="4"
+                        ><option value="{{ r }}">{{ r }}</option></sc-for
+                      >
+                    </select>
+                    <select
+                      value="{{ fProv }}"
+                      onChange="{{ setProv }}"
+                      style="
+                        height: 36px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        font-size: 13px;
+                        padding: 0 8px;
+                        color: oklch(0.28 0.01 60);
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ provs }}" as="p" hint-placeholder-count="4"
+                        ><option value="{{ p }}">{{ p }}</option></sc-for
+                      >
+                    </select>
+                    <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+                      <div
+                        onClick="{{ c.pick }}"
+                        style="font-size: 12.5px; font-weight: 500; padding: 6px 11px; border-radius: 20px; cursor: pointer; white-space: nowrap; color: {{
+                          c.color
+                        }}; background: {{ c.bg }}; border: 1px solid {{ c.border }};"
+                      >
+                        {{ c.label }}
+                      </div>
+                    </sc-for>
+                    <button
+                      style="
+                        flex: none;
+                        height: 36px;
+                        padding: 0 13px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: oklch(0.35 0.01 60);
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.97 0.006 80);"
+                    >
+                      Etiquetas
+                    </button>
+                    <button
+                      onClick="{{ nuevo }}"
+                      style="
+                        flex: none;
+                        height: 36px;
+                        padding: 0 14px;
+                        border-radius: 9px;
+                        border: none;
+                        background: oklch(0.52 0.15 255);
+                        color: oklch(1 0 0);
+                        font-size: 13px;
+                        font-weight: 600;
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.46 0.15 255);"
+                    >
+                      + Nuevo artículo
+                    </button>
+                  </div>
+
+                  <div
+                    style="
+                      flex: 1;
+                      min-height: 0;
+                      margin-top: 12px;
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 11px;
+                      background: oklch(1 0 0);
+                      display: flex;
+                      flex-direction: column;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        flex: none;
+                        display: grid;
+                        grid-template-columns: 34px 118px 1fr 128px 88px 112px 78px 112px 108px;
+                        padding: 10px 14px;
+                        background: oklch(0.972 0.005 80);
+                        border-bottom: 1px solid oklch(0.91 0.01 80);
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.05em;
+                        text-transform: uppercase;
+                        color: oklch(0.5 0.01 60);
+                      "
+                    >
+                      <div></div>
+                      <div>SKU</div>
+                      <div>Artículo</div>
+                      <div>Proveedor</div>
+                      <div style="text-align: right">Costo</div>
+                      <div style="text-align: right">Venta</div>
+                      <div style="text-align: right">Marg.</div>
+                      <div style="text-align: right">Actualizado</div>
+                      <div style="text-align: center">Estado</div>
+                    </div>
+                    <div style="flex: 1; overflow: auto">
+                      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+                        <div
+                          onClick="{{ r.open }}"
+                          style="display: grid; grid-template-columns: 34px 118px 1fr 128px 88px 112px 78px 112px 108px; align-items: center; padding: 10px 14px; border-bottom: 1px solid oklch(0.955 0.006 80); cursor: pointer; background: {{
+                            r.bg
+                          }}; box-shadow: {{ r.ring }};"
+                          style-hover="background: oklch(0.968 0.008 80);"
+                        >
+                          <div onClick="{{ r.toggle }}">
+                            <div
+                              style="width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid {{
+                                r.boxBorder
+                              }}; background: {{
+                                r.boxBg
+                              }}; color: oklch(1 0 0); font-size: 11px; display: flex; align-items: center; justify-content: center;"
+                            >
+                              {{ r.check }}
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 12.5px;
+                              font-weight: 600;
+                              color: oklch(0.24 0.01 60);
+                            "
+                          >
+                            {{ r.sku }}
+                          </div>
+                          <div style="min-width: 0; padding-right: 10px">
+                            <div
+                              style="
+                                font-size: 13.5px;
+                                color: oklch(0.25 0.01 60);
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                            >
+                              {{ r.nombre }}
+                            </div>
+                            <div
+                              style="
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 11px;
+                                color: oklch(0.58 0.01 60);
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                            >
+                              {{ r.sub }}
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font-size: 12.5px;
+                              color: oklch(0.45 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.prov }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 12.5px;
+                              color: oklch(0.45 0.01 60);
+                            "
+                          >
+                            {{ r.costo }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 14px;
+                              font-weight: 600;
+                              color: oklch(0.23 0.01 60);
+                            "
+                          >
+                            {{ r.venta }}
+                          </div>
+                          <div
+                            style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: {{
+                              r.margColor
+                            }};"
+                          >
+                            {{ r.marg }}
+                          </div>
+                          <div
+                            style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: {{
+                              r.actColor
+                            }};"
+                          >
+                            {{ r.act }}
+                          </div>
+                          <div style="display: flex; justify-content: center">
+                            <span
+                              style="font-size: 10.5px; font-weight: 600; white-space: nowrap; color: {{
+                                r.estColor
+                              }}; background: {{ r.estBg }}; padding: 3px 8px; border-radius: 5px;"
+                              >{{ r.estado }}</span
+                            >
+                          </div>
+                        </div>
+                      </sc-for>
+                      <sc-if value="{{ vacio }}" hint-placeholder-val="{{ false }}">
+                        <div style="padding: 60px 20px; text-align: center">
+                          <div
+                            style="font-size: 14.5px; font-weight: 500; color: oklch(0.35 0.01 60)"
+                          >
+                            Ningún artículo con estos filtros
+                          </div>
+                          <div style="margin-top: 5px; font-size: 13px; color: oklch(0.55 0.01 60)">
+                            Probá quitar el filtro de rubro o de proveedor.
+                          </div>
+                        </div>
+                      </sc-if>
+                    </div>
+                    <div
+                      style="
+                        flex: none;
+                        border-top: 1px solid oklch(0.93 0.01 80);
+                        background: oklch(0.978 0.005 80);
+                        padding: 10px 14px;
+                        display: flex;
+                        align-items: center;
+                        gap: 13px;
+                      "
+                    >
+                      <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">{{
+                        countTxt
+                      }}</span>
+                      <sc-if value="{{ haySel }}" hint-placeholder-val="{{ false }}">
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 7px;
+                            padding: 4px 6px 4px 11px;
+                            border-radius: 20px;
+                            background: oklch(0.955 0.028 255);
+                            border: 1px solid oklch(0.87 0.05 255);
+                          "
+                        >
+                          <span
+                            style="font-size: 12px; font-weight: 600; color: oklch(0.36 0.13 255)"
+                            >{{ selTxt }}</span
+                          >
+                          <sc-for list="{{ bulk }}" as="b" hint-placeholder-count="4">
+                            <div
+                              style="
+                                font-size: 12px;
+                                color: oklch(0.32 0.01 60);
+                                background: oklch(1 0 0);
+                                border: 1px solid oklch(0.88 0.02 255);
+                                padding: 3px 9px;
+                                border-radius: 15px;
+                                cursor: pointer;
+                                white-space: nowrap;
+                              "
+                              style-hover="border-color: oklch(0.6 0.12 255); color: oklch(0.36 0.13 255);"
+                            >
+                              {{ b }}
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <div style="flex: 1"></div>
+                      <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                        >Exportar catálogo</span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ficha -->
+                <div
+                  style="
+                    width: 430px;
+                    flex: none;
+                    border-left: 1px solid oklch(0.9 0.01 80);
+                    background: oklch(0.995 0.004 80);
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      flex: none;
+                      padding: 15px 18px 14px;
+                      border-bottom: 1px solid oklch(0.925 0.01 80);
+                    "
+                  >
+                    <div style="display: flex; align-items: flex-start; gap: 10px">
+                      <div style="flex: 1; min-width: 0">
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            color: oklch(0.5 0.01 60);
+                          "
+                        >
+                          {{ ficha.sku }}
+                        </div>
+                        <div
+                          style="
+                            margin-top: 2px;
+                            font-size: 16.5px;
+                            font-weight: 600;
+                            letter-spacing: -0.01em;
+                            color: oklch(0.22 0.01 60);
+                            line-height: 1.3;
+                          "
+                        >
+                          {{ ficha.nombre }}
+                        </div>
+                      </div>
+                      <span
+                        style="flex: none; font-size: 11px; font-weight: 600; color: {{
+                          ficha.estColor
+                        }}; background: {{ ficha.estBg }}; padding: 4px 9px; border-radius: 5px;"
+                        >{{ ficha.estado }}</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        margin-top: 10px;
+                        display: flex;
+                        gap: 2px;
+                        background: oklch(0.94 0.008 80);
+                        padding: 3px;
+                        border-radius: 8px;
+                      "
+                    >
+                      <sc-for list="{{ fichaTabs }}" as="f" hint-placeholder-count="3">
+                        <div
+                          onClick="{{ f.pick }}"
+                          style="flex: 1; text-align: center; font-size: 12px; font-weight: 600; padding: 5px 8px; border-radius: 6px; cursor: pointer; color: {{
+                            f.color
+                          }}; background: {{ f.bg }}; box-shadow: {{ f.shadow }};"
+                        >
+                          {{ f.label }}
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      flex: 1;
+                      overflow: auto;
+                      padding: 15px 18px 18px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 16px;
+                    "
+                  >
+                    <sc-for list="{{ ficha.secciones }}" as="s" hint-placeholder-count="3">
+                      <div>
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10px;
+                            letter-spacing: 0.07em;
+                            text-transform: uppercase;
+                            color: oklch(0.55 0.01 60);
+                            margin-bottom: 8px;
+                          "
+                        >
+                          {{ s.titulo }}
+                        </div>
+                        <div
+                          style="
+                            display: grid;
+                            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                            gap: 9px;
+                          "
+                        >
+                          <sc-for list="{{ s.campos }}" as="c" hint-placeholder-count="4">
+                            <div
+                              style="min-width: 0; display: flex; flex-direction: column; gap: 4px; grid-column: {{
+                                c.span
+                              }};"
+                            >
+                              <label style="font-size: 11px; color: oklch(0.55 0.01 60)">{{
+                                c.label
+                              }}</label>
+                              <sc-if value="{{ c.esSelect }}" hint-placeholder-val="{{ false }}">
+                                <select
+                                  style="
+                                    width: 100%;
+                                    min-width: 0;
+                                    box-sizing: border-box;
+                                    height: 33px;
+                                    border-radius: 8px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-size: 13px;
+                                    padding: 0 7px;
+                                    color: oklch(0.25 0.01 60);
+                                    background: oklch(1 0 0);
+                                  "
+                                >
+                                  <sc-for list="{{ c.opciones }}" as="o" hint-placeholder-count="3"
+                                    ><option>{{ o }}</option></sc-for
+                                  >
+                                </select>
+                              </sc-if>
+                              <sc-if value="{{ c.esInput }}" hint-placeholder-val="{{ true }}">
+                                <input
+                                  value="{{ c.valor }}"
+                                  style="width: 100%; min-width: 0; box-sizing: border-box; height: 33px; border-radius: 8px; border: 1px solid oklch(0.88 0.01 80); background: {{
+                                    c.bg
+                                  }}; font-family: {{ c.fuente }}; font-size: 13px; text-align: {{
+                                    c.align
+                                  }}; padding: 0 9px; color: oklch(0.25 0.01 60);"
+                                />
+                              </sc-if>
+                              <sc-if value="{{ c.ayuda }}" hint-placeholder-val="{{ false }}">
+                                <span
+                                  style="
+                                    font-size: 11px;
+                                    color: oklch(0.58 0.01 60);
+                                    line-height: 1.35;
+                                  "
+                                  >{{ c.ayudaTxt }}</span
+                                >
+                              </sc-if>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-for>
+
+                    <sc-if value="{{ ficha.hayCalculo }}" hint-placeholder-val="{{ false }}">
+                      <div
+                        style="
+                          border: 1px solid oklch(0.87 0.04 255);
+                          background: oklch(0.968 0.02 255);
+                          border-radius: 10px;
+                          padding: 11px 12px;
+                          display: flex;
+                          flex-direction: column;
+                          gap: 7px;
+                        "
+                      >
+                        <sc-for list="{{ ficha.calculo }}" as="c" hint-placeholder-count="4">
+                          <div
+                            style="
+                              display: flex;
+                              align-items: baseline;
+                              justify-content: space-between;
+                              gap: 12px;
+                            "
+                          >
+                            <span
+                              style="font-size: 12.5px; color: {{ c.labelColor }}; font-weight: {{
+                                c.peso
+                              }};"
+                              >{{ c.label }}</span
+                            >
+                            <span
+                              style="font-family: 'IBM Plex Mono', monospace; font-size: {{
+                                c.size
+                              }}; font-weight: 600; color: {{ c.color }};"
+                              >{{ c.value }}</span
+                            >
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.91 0.01 80);
+                      background: oklch(1 0 0);
+                      padding: 13px 18px 15px;
+                      display: flex;
+                      gap: 8px;
+                    "
+                  >
+                    <button
+                      style="
+                        height: 42px;
+                        padding: 0 13px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.87 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 13.5px;
+                        font-weight: 500;
+                        color: oklch(0.33 0.01 60);
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.97 0.006 80);"
+                    >
+                      Duplicar
+                    </button>
+                    <button
+                      style="
+                        height: 42px;
+                        padding: 0 13px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.87 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 13.5px;
+                        font-weight: 500;
+                        color: oklch(0.33 0.01 60);
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.97 0.006 80);"
+                    >
+                      Etiqueta
+                    </button>
+                    <button
+                      style="
+                        flex: 1;
+                        height: 42px;
+                        border-radius: 9px;
+                        border: none;
+                        background: oklch(0.52 0.15 255);
+                        color: oklch(1 0 0);
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.46 0.15 255);"
+                    >
+                      Guardar cambios
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- ============ IMPORTAR ============ -->
+            <sc-if value="{{ esImportar }}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  flex: 1;
+                  min-height: 0;
+                  display: flex;
+                  flex-direction: column;
+                  padding: 14px 22px 20px;
+                "
+              >
+                <!-- pasos -->
+                <div style="flex: none; display: flex; align-items: center; gap: 0">
+                  <sc-for list="{{ pasos }}" as="p" hint-placeholder-count="4">
+                    <div
+                      onClick="{{ p.pick }}"
+                      style="display: flex; align-items: center; gap: 9px; cursor: pointer; padding: 7px 14px 7px 10px; border-radius: 9px; background: {{
+                        p.bg
+                      }};"
+                      style-hover="background: oklch(0.965 0.012 255);"
+                    >
+                      <div
+                        style="width: 22px; height: 22px; flex: none; border-radius: 50%; background: {{
+                          p.dotBg
+                        }}; color: {{
+                          p.dotColor
+                        }}; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; justify-content: center;"
+                      >
+                        {{ p.n }}
+                      </div>
+                      <div>
+                        <div style="font-size: 13px; font-weight: 600; color: {{ p.color }};">
+                          {{ p.label }}
+                        </div>
+                        <div style="font-size: 11.5px; color: oklch(0.58 0.01 60)">{{ p.sub }}</div>
+                      </div>
+                    </div>
+                    <div
+                      style="width: 26px; height: 1px; background: oklch(0.88 0.01 80); flex: none"
+                    ></div>
+                  </sc-for>
+                  <div style="flex: 1"></div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      border: 1px solid oklch(0.9 0.01 80);
+                      background: oklch(1 0 0);
+                      border-radius: 9px;
+                      padding: 7px 11px;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                        font-weight: 600;
+                        color: oklch(0.26 0.01 60);
+                      "
+                      >{{ archivo }}</span
+                    >
+                    <span style="font-size: 12px; color: oklch(0.55 0.01 60)">{{
+                      archivoSub
+                    }}</span>
+                    <span style="font-size: 12px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Cambiar</span
+                    >
+                  </div>
+                </div>
+
+                <!-- paso 1: archivo -->
+                <sc-if value="{{ paso1 }}" hint-placeholder-val="{{ false }}">
+                  <div
+                    style="
+                      flex: 1;
+                      min-height: 0;
+                      margin-top: 14px;
+                      display: flex;
+                      gap: 14px;
+                      min-width: 0;
+                    "
+                  >
+                    <div
+                      style="
+                        flex: 1;
+                        min-width: 0;
+                        border: 1px dashed oklch(0.82 0.01 80);
+                        background: oklch(0.998 0.003 80);
+                        border-radius: 12px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 14px;
+                      "
+                    >
+                      <div
+                        style="
+                          width: 54px;
+                          height: 54px;
+                          border-radius: 14px;
+                          background: oklch(0.955 0.028 255);
+                          color: oklch(0.4 0.14 255);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          font-size: 22px;
+                        "
+                      >
+                        ↑
+                      </div>
+                      <div style="text-align: center">
+                        <div style="font-size: 16px; font-weight: 600; color: oklch(0.24 0.01 60)">
+                          Arrastrá la lista de precios del proveedor
+                        </div>
+                        <div
+                          style="
+                            margin-top: 5px;
+                            font-size: 13px;
+                            color: oklch(0.5 0.01 60);
+                            max-width: 460px;
+                            line-height: 1.5;
+                          "
+                        >
+                          Excel (.xlsx, .xls), CSV o PDF con tabla. Si el proveedor manda siempre el
+                          mismo formato, el mapeo queda guardado y la próxima vez se aplica solo.
+                        </div>
+                      </div>
+                      <div style="display: flex; gap: 8px">
+                        <button
+                          onClick="{{ irMapeo }}"
+                          style="
+                            height: 38px;
+                            padding: 0 16px;
+                            border-radius: 9px;
+                            border: none;
+                            background: oklch(0.52 0.15 255);
+                            color: oklch(1 0 0);
+                            font-size: 13.5px;
+                            font-weight: 600;
+                            cursor: pointer;
+                          "
+                          style-hover="background: oklch(0.46 0.15 255);"
+                        >
+                          Elegir archivo
+                        </button>
+                        <button
+                          style="
+                            height: 38px;
+                            padding: 0 14px;
+                            border-radius: 9px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 13.5px;
+                            font-weight: 500;
+                            color: oklch(0.35 0.01 60);
+                            cursor: pointer;
+                          "
+                          style-hover="background: oklch(0.97 0.006 80);"
+                        >
+                          Pegar desde el portapapeles
+                        </button>
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        width: 400px;
+                        flex: none;
+                        border: 1px solid oklch(0.9 0.01 80);
+                        background: oklch(1 0 0);
+                        border-radius: 12px;
+                        padding: 15px 16px;
+                        display: flex;
+                        flex-direction: column;
+                      "
+                    >
+                      <div
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10px;
+                          letter-spacing: 0.07em;
+                          text-transform: uppercase;
+                          color: oklch(0.55 0.01 60);
+                        "
+                      >
+                        Formatos guardados
+                      </div>
+                      <div
+                        style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px"
+                      >
+                        <sc-for list="{{ formatos }}" as="f" hint-placeholder-count="4">
+                          <div
+                            onClick="{{ f.pick }}"
+                            style="
+                              border: 1px solid oklch(0.91 0.01 80);
+                              border-radius: 10px;
+                              padding: 10px 11px;
+                              cursor: pointer;
+                              display: flex;
+                              align-items: center;
+                              gap: 11px;
+                            "
+                            style-hover="border-color: oklch(0.78 0.06 255); background: oklch(0.978 0.012 255);"
+                          >
+                            <div style="flex: 1; min-width: 0">
+                              <div
+                                style="
+                                  font-size: 13px;
+                                  font-weight: 500;
+                                  color: oklch(0.25 0.01 60);
+                                "
+                              >
+                                {{ f.prov }}
+                              </div>
+                              <div style="font-size: 11.5px; color: oklch(0.55 0.01 60)">
+                                {{ f.sub }}
+                              </div>
+                            </div>
+                            <span
+                              style="
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 11px;
+                                color: oklch(0.58 0.01 60);
+                              "
+                              >{{ f.cols }}</span
+                            >
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div
+                        style="
+                          margin-top: 16px;
+                          font-size: 12.5px;
+                          color: oklch(0.48 0.01 60);
+                          line-height: 1.5;
+                        "
+                      >
+                        Cada formato recuerda qué columna es cada cosa, el margen aplicado y cómo se
+                        arma el SKU. Elegí uno para saltear el paso de mapeo.
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <!-- paso 2: mapeo -->
+                <sc-if value="{{ paso2 }}" hint-placeholder-val="{{ false }}">
+                  <div
+                    style="
+                      flex: 1;
+                      min-height: 0;
+                      margin-top: 14px;
+                      display: flex;
+                      gap: 14px;
+                      min-width: 0;
+                    "
+                  >
+                    <div
+                      style="
+                        flex: 1;
+                        min-width: 0;
+                        border: 1px solid oklch(0.9 0.01 80);
+                        background: oklch(1 0 0);
+                        border-radius: 12px;
+                        display: flex;
+                        flex-direction: column;
+                        overflow: hidden;
+                      "
+                    >
+                      <div
+                        style="
+                          flex: none;
+                          padding: 11px 15px;
+                          background: oklch(0.972 0.005 80);
+                          border-bottom: 1px solid oklch(0.91 0.01 80);
+                          display: flex;
+                          align-items: center;
+                          gap: 12px;
+                        "
+                      >
+                        <span
+                          style="font-size: 13.5px; font-weight: 600; color: oklch(0.24 0.01 60)"
+                          >Mapeo de columnas</span
+                        >
+                        <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">{{
+                          mapeoResumen
+                        }}</span>
+                        <div style="flex: 1"></div>
+                        <span
+                          onClick="{{ autoMapear }}"
+                          style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                          >Sugerir automáticamente</span
+                        >
+                      </div>
+                      <div style="flex: 1; overflow: auto; padding: 4px 0">
+                        <sc-for list="{{ columnas }}" as="c" hint-placeholder-count="8">
+                          <div
+                            style="display: grid; grid-template-columns: 42px 1fr 250px 210px; align-items: center; gap: 12px; padding: 10px 15px; border-bottom: 1px solid oklch(0.958 0.006 80); background: {{
+                              c.bg
+                            }};"
+                          >
+                            <div
+                              style="
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 11.5px;
+                                font-weight: 600;
+                                color: oklch(0.55 0.01 60);
+                                text-align: center;
+                                background: oklch(0.96 0.006 80);
+                                border-radius: 5px;
+                                padding: 3px 0;
+                              "
+                            >
+                              {{ c.letra }}
+                            </div>
+                            <div style="min-width: 0">
+                              <div
+                                style="
+                                  font-size: 13px;
+                                  font-weight: 500;
+                                  color: oklch(0.25 0.01 60);
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
+                              >
+                                {{ c.encabezado }}
+                              </div>
+                              <div
+                                style="
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 11px;
+                                  color: oklch(0.58 0.01 60);
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
+                              >
+                                {{ c.muestra }}
+                              </div>
+                            </div>
+                            <select
+                              value="{{ c.destino }}"
+                              onChange="{{ c.set }}"
+                              style="height: 34px; border-radius: 8px; border: 1px solid {{
+                                c.selBorder
+                              }}; background: {{
+                                c.selBg
+                              }}; font-size: 13px; padding: 0 7px; color: {{ c.selColor }};"
+                            >
+                              <sc-for list="{{ destinos }}" as="d" hint-placeholder-count="6"
+                                ><option value="{{ d }}">{{ d }}</option></sc-for
+                              >
+                            </select>
+                            <div
+                              style="font-size: 11.5px; color: {{
+                                c.notaColor
+                              }}; line-height: 1.35;"
+                            >
+                              {{ c.nota }}
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        width: 430px;
+                        flex: none;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                        min-height: 0;
+                      "
+                    >
+                      <div
+                        style="
+                          flex: none;
+                          border: 1px solid oklch(0.9 0.01 80);
+                          background: oklch(1 0 0);
+                          border-radius: 12px;
+                          padding: 14px 15px;
+                        "
+                      >
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10px;
+                            letter-spacing: 0.07em;
+                            text-transform: uppercase;
+                            color: oklch(0.55 0.01 60);
+                          "
+                        >
+                          Tu SKU
+                        </div>
+                        <div
+                          style="margin-top: 10px; display: flex; flex-direction: column; gap: 9px"
+                        >
+                          <sc-for list="{{ skuModos }}" as="s" hint-placeholder-count="3">
+                            <div
+                              onClick="{{ s.pick }}"
+                              style="border: 1px solid {{ s.border }}; background: {{
+                                s.bg
+                              }}; border-radius: 10px; padding: 9px 11px; cursor: pointer; display: flex; align-items: center; gap: 11px;"
+                            >
+                              <div
+                                style="width: 15px; height: 15px; flex: none; border-radius: 50%; border: 1.5px solid {{
+                                  s.dotBorder
+                                }}; background: {{ s.dotBg }}; box-shadow: {{ s.dotInner }};"
+                              ></div>
+                              <div style="flex: 1; min-width: 0">
+                                <div
+                                  style="
+                                    font-size: 13px;
+                                    font-weight: 500;
+                                    color: oklch(0.25 0.01 60);
+                                  "
+                                >
+                                  {{ s.label }}
+                                </div>
+                                <div
+                                  style="
+                                    font-family: 'IBM Plex Mono', monospace;
+                                    font-size: 11.5px;
+                                    color: oklch(0.55 0.01 60);
+                                  "
+                                >
+                                  {{ s.ejemplo }}
+                                </div>
+                              </div>
+                            </div>
+                          </sc-for>
+                          <sc-if value="{{ skuConPrefijo }}" hint-placeholder-val="{{ false }}">
+                            <div
+                              style="
+                                display: grid;
+                                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+                                gap: 8px;
+                              "
+                            >
+                              <div
+                                style="
+                                  min-width: 0;
+                                  display: flex;
+                                  flex-direction: column;
+                                  gap: 4px;
+                                "
+                              >
+                                <label style="font-size: 11px; color: oklch(0.55 0.01 60)"
+                                  >Prefijo</label
+                                >
+                                <input
+                                  value="{{ skuPrefijo }}"
+                                  onChange="{{ setPrefijo }}"
+                                  style="
+                                    width: 100%;
+                                    min-width: 0;
+                                    box-sizing: border-box;
+                                    height: 32px;
+                                    border-radius: 7px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-family: 'IBM Plex Mono', monospace;
+                                    font-size: 13px;
+                                    padding: 0 8px;
+                                    color: oklch(0.25 0.01 60);
+                                  "
+                                />
+                              </div>
+                              <div
+                                style="
+                                  min-width: 0;
+                                  display: flex;
+                                  flex-direction: column;
+                                  gap: 4px;
+                                "
+                              >
+                                <label style="font-size: 11px; color: oklch(0.55 0.01 60)"
+                                  >Desde</label
+                                >
+                                <input
+                                  value="{{ skuDesde }}"
+                                  onChange="{{ setDesde }}"
+                                  style="
+                                    width: 100%;
+                                    min-width: 0;
+                                    box-sizing: border-box;
+                                    height: 32px;
+                                    border-radius: 7px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-family: 'IBM Plex Mono', monospace;
+                                    font-size: 13px;
+                                    text-align: right;
+                                    padding: 0 8px;
+                                    color: oklch(0.25 0.01 60);
+                                  "
+                                />
+                              </div>
+                              <div
+                                style="
+                                  min-width: 0;
+                                  display: flex;
+                                  flex-direction: column;
+                                  gap: 4px;
+                                "
+                              >
+                                <label style="font-size: 11px; color: oklch(0.55 0.01 60)"
+                                  >Dígitos</label
+                                >
+                                <input
+                                  value="{{ skuDigitos }}"
+                                  onChange="{{ setDigitos }}"
+                                  style="
+                                    width: 100%;
+                                    min-width: 0;
+                                    box-sizing: border-box;
+                                    height: 32px;
+                                    border-radius: 7px;
+                                    border: 1px solid oklch(0.88 0.01 80);
+                                    font-family: 'IBM Plex Mono', monospace;
+                                    font-size: 13px;
+                                    text-align: right;
+                                    padding: 0 8px;
+                                    color: oklch(0.25 0.01 60);
+                                  "
+                                />
+                              </div>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </div>
+
+                      <div
+                        style="
+                          flex: none;
+                          border: 1px solid oklch(0.9 0.01 80);
+                          background: oklch(1 0 0);
+                          border-radius: 12px;
+                          padding: 14px 15px;
+                        "
+                      >
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10px;
+                            letter-spacing: 0.07em;
+                            text-transform: uppercase;
+                            color: oklch(0.55 0.01 60);
+                          "
+                        >
+                          Precio de venta
+                        </div>
+                        <div
+                          style="
+                            margin-top: 10px;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            flex-wrap: wrap;
+                          "
+                        >
+                          <span style="font-size: 13px; color: oklch(0.4 0.01 60)"
+                            >Margen sobre el costo</span
+                          >
+                          <input
+                            value="{{ margen }}"
+                            onChange="{{ setMargen }}"
+                            style="
+                              width: 62px;
+                              height: 32px;
+                              border-radius: 8px;
+                              border: 1px solid oklch(0.85 0.01 80);
+                              text-align: center;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 14px;
+                              font-weight: 600;
+                              color: oklch(0.22 0.01 60);
+                            "
+                          />
+                          <span style="font-size: 13px; color: oklch(0.45 0.01 60)">%</span>
+                          <div style="flex: 1"></div>
+                          <select
+                            value="{{ redondeo }}"
+                            onChange="{{ setRedondeo }}"
+                            style="
+                              height: 32px;
+                              border-radius: 8px;
+                              border: 1px solid oklch(0.88 0.01 80);
+                              font-size: 12.5px;
+                              padding: 0 7px;
+                              color: oklch(0.28 0.01 60);
+                              background: oklch(1 0 0);
+                            "
+                          >
+                            <sc-for list="{{ redondeos }}" as="r" hint-placeholder-count="3"
+                              ><option value="{{ r }}">{{ r }}</option></sc-for
+                            >
+                          </select>
+                        </div>
+                        <div
+                          style="margin-top: 10px; display: flex; flex-direction: column; gap: 7px"
+                        >
+                          <sc-for list="{{ opciones }}" as="o" hint-placeholder-count="3">
+                            <div
+                              onClick="{{ o.toggle }}"
+                              style="display: flex; align-items: center; gap: 10px; cursor: pointer"
+                            >
+                              <div
+                                style="width: 16px; height: 16px; flex: none; border-radius: 4px; border: 1.5px solid {{
+                                  o.boxBorder
+                                }}; background: {{
+                                  o.boxBg
+                                }}; color: oklch(1 0 0); font-size: 11px; display: flex; align-items: center; justify-content: center;"
+                              >
+                                {{ o.check }}
+                              </div>
+                              <span
+                                style="
+                                  font-size: 12.5px;
+                                  color: oklch(0.38 0.01 60);
+                                  line-height: 1.35;
+                                "
+                                >{{ o.label }}</span
+                              >
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+
+                      <div style="flex: 1"></div>
+                      <button
+                        onClick="{{ irPreview }}"
+                        style="flex: none; height: 46px; border-radius: 10px; border: none; background: {{
+                          mapCtaBg
+                        }}; color: oklch(1 0 0); font-size: 14.5px; font-weight: 600; cursor: {{
+                          mapCtaCursor
+                        }};"
+                        style-hover="filter: brightness(0.93);"
+                      >
+                        {{ mapCtaLabel }}
+                      </button>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <!-- paso 3: preview -->
+                <sc-if value="{{ paso3 }}" hint-placeholder-val="{{ false }}">
+                  <div
+                    style="
+                      flex: none;
+                      margin-top: 14px;
+                      display: flex;
+                      gap: 1px;
+                      background: oklch(0.9 0.01 80);
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 10px;
+                      overflow: hidden;
+                    "
+                  >
+                    <sc-for list="{{ prevKpis }}" as="k" hint-placeholder-count="4">
+                      <div
+                        onClick="{{ k.pick }}"
+                        style="flex: 1; background: {{
+                          k.bg
+                        }}; padding: 11px 14px; cursor: pointer;"
+                        style-hover="filter: brightness(0.985);"
+                      >
+                        <div
+                          style="
+                            font-size: 10.5px;
+                            letter-spacing: 0.04em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                          "
+                        >
+                          {{ k.label }}
+                        </div>
+                        <div
+                          style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 600; color: {{
+                            k.color
+                          }};"
+                        >
+                          {{ k.value }}
+                        </div>
+                        <div style="margin-top: 1px; font-size: 11.5px; color: oklch(0.58 0.01 60)">
+                          {{ k.hint }}
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div
+                    style="
+                      flex: 1;
+                      min-height: 0;
+                      margin-top: 12px;
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 11px;
+                      background: oklch(1 0 0);
+                      display: flex;
+                      flex-direction: column;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        flex: none;
+                        display: grid;
+                        grid-template-columns: 118px 1fr 118px 104px 104px 104px 112px 176px;
+                        padding: 10px 14px;
+                        background: oklch(0.972 0.005 80);
+                        border-bottom: 1px solid oklch(0.91 0.01 80);
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.05em;
+                        text-transform: uppercase;
+                        color: oklch(0.5 0.01 60);
+                      "
+                    >
+                      <div>SKU</div>
+                      <div>Descripción</div>
+                      <div>Cód. prov.</div>
+                      <div style="text-align: right">Costo</div>
+                      <div style="text-align: right">Costo ant.</div>
+                      <div style="text-align: right">Venta</div>
+                      <div style="text-align: right">Variación</div>
+                      <div style="text-align: right">Acción</div>
+                    </div>
+                    <div style="flex: 1; overflow: auto">
+                      <sc-for list="{{ prevRows }}" as="r" hint-placeholder-count="9">
+                        <div
+                          style="display: grid; grid-template-columns: 118px 1fr 118px 104px 104px 104px 112px 176px; align-items: center; padding: 9px 14px; border-bottom: 1px solid oklch(0.955 0.006 80); background: {{
+                            r.bg
+                          }};"
+                          style-hover="background: oklch(0.968 0.008 80);"
+                        >
+                          <div
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; color: {{
+                              r.skuColor
+                            }};"
+                          >
+                            {{ r.sku }}
+                          </div>
+                          <div style="min-width: 0; padding-right: 10px">
+                            <div
+                              style="
+                                font-size: 13px;
+                                color: oklch(0.25 0.01 60);
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                            >
+                              {{ r.nombre }}
+                            </div>
+                            <sc-if value="{{ r.nota }}" hint-placeholder-val="{{ false }}">
+                              <div
+                                style="font-size: 11.5px; color: {{
+                                  r.notaColor
+                                }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                              >
+                                {{ r.notaTxt }}
+                              </div>
+                            </sc-if>
+                          </div>
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 11.5px;
+                              color: oklch(0.52 0.01 60);
+                            "
+                          >
+                            {{ r.codProv }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 13px;
+                              font-weight: 600;
+                              color: oklch(0.24 0.01 60);
+                            "
+                          >
+                            {{ r.costo }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 12.5px;
+                              color: oklch(0.55 0.01 60);
+                            "
+                          >
+                            {{ r.costoAnt }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 13px;
+                              color: oklch(0.3 0.01 60);
+                            "
+                          >
+                            {{ r.venta }}
+                          </div>
+                          <div
+                            style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; color: {{
+                              r.varColor
+                            }};"
+                          >
+                            {{ r.variacion }}
+                          </div>
+                          <div
+                            style="
+                              display: flex;
+                              justify-content: flex-end;
+                              align-items: center;
+                              gap: 8px;
+                            "
+                          >
+                            <span
+                              style="font-size: 10.5px; font-weight: 600; white-space: nowrap; color: {{
+                                r.accColor
+                              }}; background: {{ r.accBg }}; padding: 3px 8px; border-radius: 5px;"
+                              >{{ r.accion }}</span
+                            >
+                            <span
+                              onClick="{{ r.omitir }}"
+                              style="
+                                font-size: 12px;
+                                color: oklch(0.52 0.15 255);
+                                cursor: pointer;
+                                white-space: nowrap;
+                              "
+                              >{{ r.omitirTxt }}</span
+                            >
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div
+                      style="
+                        flex: none;
+                        border-top: 1px solid oklch(0.93 0.01 80);
+                        background: oklch(0.978 0.005 80);
+                        padding: 11px 14px;
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                      "
+                    >
+                      <div
+                        style="flex: 1; font-size: 12px; color: {{ resColor }}; background: {{
+                          resBg
+                        }}; border-radius: 8px; padding: 8px 11px; line-height: 1.4;"
+                      >
+                        {{ resTxt }}
+                      </div>
+                      <div
+                        onClick="{{ toggleGuardar }}"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          gap: 9px;
+                          cursor: pointer;
+                          flex: none;
+                        "
+                      >
+                        <div
+                          style="width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid {{
+                            guardarBorder
+                          }}; background: {{
+                            guardarBg
+                          }}; color: oklch(1 0 0); font-size: 11px; display: flex; align-items: center; justify-content: center;"
+                        >
+                          {{ guardarCheck }}
+                        </div>
+                        <span
+                          style="font-size: 12.5px; color: oklch(0.38 0.01 60); white-space: nowrap"
+                          >Guardar este mapeo para el proveedor</span
+                        >
+                      </div>
+                      <button
+                        onClick="{{ volverMapeo }}"
+                        style="
+                          flex: none;
+                          height: 42px;
+                          padding: 0 14px;
+                          border-radius: 9px;
+                          border: 1px solid oklch(0.87 0.01 80);
+                          background: oklch(1 0 0);
+                          font-size: 13.5px;
+                          font-weight: 500;
+                          color: oklch(0.33 0.01 60);
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.97 0.006 80);"
+                      >
+                        Volver al mapeo
+                      </button>
+                      <button
+                        onClick="{{ importar }}"
+                        style="
+                          flex: none;
+                          height: 42px;
+                          padding: 0 20px;
+                          border-radius: 9px;
+                          border: none;
+                          background: oklch(0.52 0.15 255);
+                          color: oklch(1 0 0);
+                          font-size: 14px;
+                          font-weight: 600;
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.46 0.15 255);"
+                      >
+                        {{ importarLabel }}
+                      </button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- ============ LISTAS DE PRECIOS ============ -->
+            <sc-if value="{{ esListas }}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  flex: 1;
+                  min-height: 0;
+                  display: flex;
+                  flex-direction: column;
+                  padding: 14px 22px 20px;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    display: flex;
+                    align-items: flex-end;
+                    justify-content: space-between;
+                    gap: 14px;
+                  "
+                >
+                  <div>
+                    <h2
+                      style="
+                        margin: 0;
+                        font-size: 20px;
+                        font-weight: 600;
+                        letter-spacing: -0.01em;
+                        color: oklch(0.22 0.01 60);
+                      "
+                    >
+                      Listas de precios
+                    </h2>
+                    <div style="margin-top: 4px; font-size: 13px; color: oklch(0.5 0.01 60)">
+                      Cada lista aplica su propio margen sobre el costo. El mostrador toma la lista
+                      según el cliente.
+                    </div>
+                  </div>
+                  <button
+                    style="
+                      height: 38px;
+                      padding: 0 15px;
+                      border-radius: 9px;
+                      border: none;
+                      background: oklch(0.52 0.15 255);
+                      color: oklch(1 0 0);
+                      font-size: 13.5px;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    style-hover="background: oklch(0.46 0.15 255);"
+                  >
+                    + Nueva lista
+                  </button>
+                </div>
+
+                <div
+                  style="
+                    flex: none;
+                    margin-top: 14px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                  "
+                >
+                  <sc-for list="{{ listas }}" as="l" hint-placeholder-count="4">
+                    <div
+                      style="
+                        flex: none;
+                        border: 1px solid oklch(0.9 0.01 80);
+                        background: oklch(1 0 0);
+                        border-radius: 12px;
+                        padding: 14px 16px;
+                        display: grid;
+                        grid-template-columns: 260px 1fr 150px 150px 130px;
+                        align-items: center;
+                        gap: 18px;
+                      "
+                    >
+                      <div style="min-width: 0">
+                        <div style="display: flex; align-items: center; gap: 9px">
+                          <span
+                            style="font-size: 15.5px; font-weight: 600; color: oklch(0.22 0.01 60)"
+                            >{{ l.nombre }}</span
+                          >
+                          <sc-if value="{{ l.esDefault }}" hint-placeholder-val="{{ false }}">
+                            <span
+                              style="
+                                font-size: 10.5px;
+                                font-weight: 600;
+                                text-transform: uppercase;
+                                letter-spacing: 0.02em;
+                                color: oklch(0.36 0.13 255);
+                                background: oklch(0.955 0.028 255);
+                                padding: 3px 7px;
+                                border-radius: 5px;
+                              "
+                              >Por defecto</span
+                            >
+                          </sc-if>
+                        </div>
+                        <div style="margin-top: 3px; font-size: 12.5px; color: oklch(0.52 0.01 60)">
+                          {{ l.detalle }}
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: baseline; gap: 8px">
+                        <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">Margen</span>
+                        <input
+                          value="{{ l.margen }}"
+                          onChange="{{ l.setMargen }}"
+                          style="
+                            width: 62px;
+                            height: 32px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.85 0.01 80);
+                            text-align: center;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: oklch(0.22 0.01 60);
+                          "
+                        />
+                        <span style="font-size: 13px; color: oklch(0.45 0.01 60)">%</span>
+                      </div>
+                      <div>
+                        <div
+                          style="
+                            font-size: 10.5px;
+                            letter-spacing: 0.04em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                          "
+                        >
+                          Artículos
+                        </div>
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 16px;
+                            font-weight: 600;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        >
+                          {{ l.arts }}
+                        </div>
+                      </div>
+                      <div>
+                        <div
+                          style="
+                            font-size: 10.5px;
+                            letter-spacing: 0.04em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                          "
+                        >
+                          Ejemplo
+                        </div>
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 15px;
+                            font-weight: 600;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        >
+                          {{ l.ejemplo }}
+                        </div>
+                      </div>
+                      <div style="display: flex; justify-content: flex-end; gap: 7px">
+                        <span
+                          style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                          >Recalcular</span
+                        >
+                        <span
+                          style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                          >Editar</span
+                        >
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="flex: 1; min-height: 0; margin-top: 18px; display: flex; gap: 14px">
+                  <div
+                    style="
+                      flex: 1;
+                      border: 1px solid oklch(0.9 0.01 80);
+                      background: oklch(1 0 0);
+                      border-radius: 12px;
+                      padding: 15px 16px;
+                      display: flex;
+                      flex-direction: column;
+                    "
+                  >
+                    <div
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10px;
+                        letter-spacing: 0.07em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                      "
+                    >
+                      Últimas actualizaciones de costo
+                    </div>
+                    <div style="margin-top: 11px; display: flex; flex-direction: column; gap: 1px">
+                      <sc-for list="{{ historial }}" as="h" hint-placeholder-count="5">
+                        <div
+                          style="
+                            padding: 10px 0;
+                            border-bottom: 1px solid oklch(0.958 0.006 80);
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                          "
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div style="font-size: 13px; color: oklch(0.25 0.01 60)">
+                              {{ h.prov }}
+                            </div>
+                            <div
+                              style="
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 11.5px;
+                                color: oklch(0.55 0.01 60);
+                              "
+                            >
+                              {{ h.detalle }}
+                            </div>
+                          </div>
+                          <span
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: {{
+                              h.color
+                            }};"
+                            >{{ h.variacion }}</span
+                          >
+                          <span
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 11.5px;
+                              color: oklch(0.55 0.01 60);
+                              width: 62px;
+                              text-align: right;
+                            "
+                            >{{ h.fecha }}</span
+                          >
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      width: 400px;
+                      flex: none;
+                      border: 1px solid oklch(0.9 0.01 80);
+                      background: oklch(1 0 0);
+                      border-radius: 12px;
+                      padding: 15px 16px;
+                    "
+                  >
+                    <div
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10px;
+                        letter-spacing: 0.07em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                      "
+                    >
+                      Reglas de actualización
+                    </div>
+                    <div style="margin-top: 11px; display: flex; flex-direction: column; gap: 9px">
+                      <sc-for list="{{ reglasPrecio }}" as="r" hint-placeholder-count="3">
+                        <div
+                          onClick="{{ r.toggle }}"
+                          style="border: 1px solid {{
+                            r.border
+                          }}; border-radius: 10px; padding: 10px 11px; cursor: pointer; display: flex; align-items: flex-start; gap: 11px;"
+                          style-hover="background: oklch(0.985 0.006 80);"
+                        >
+                          <div
+                            style="width: 16px; height: 16px; flex: none; margin-top: 1px; border-radius: 4px; border: 1.5px solid {{
+                              r.boxBorder
+                            }}; background: {{
+                              r.boxBg
+                            }}; color: oklch(1 0 0); font-size: 11px; display: flex; align-items: center; justify-content: center;"
+                          >
+                            {{ r.check }}
+                          </div>
+                          <div style="min-width: 0">
+                            <div
+                              style="font-size: 13px; font-weight: 500; color: oklch(0.25 0.01 60)"
+                            >
+                              {{ r.label }}
+                            </div>
+                            <div
+                              style="
+                                margin-top: 2px;
+                                font-size: 11.5px;
+                                color: oklch(0.55 0.01 60);
+                                line-height: 1.4;
+                              "
+                            >
+                              {{ r.sub }}
+                            </div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"margenPorDefecto":{"editor":"int","default":58,"min":0,"max":200,"unit":"%","tsType":"number","section":"Precios"},"prefijoPorRubro":{"editor":"boolean","default":true,"tsType":"boolean","section":"SKU"}}'
+    >
+      const ACCENT = "oklch(0.52 0.15 255)";
+      const RED = "oklch(0.5 0.17 25)";
+      const RED_BG = "oklch(0.955 0.03 25)";
+      const AMBER = "oklch(0.52 0.12 70)";
+      const AMBER_BG = "oklch(0.96 0.035 80)";
+      const GREEN = "oklch(0.44 0.11 155)";
+      const GREEN_BG = "oklch(0.955 0.03 155)";
+      const PURPLE = "oklch(0.45 0.16 300)";
+      const PURPLE_BG = "oklch(0.96 0.03 300)";
+      const GREY = "oklch(0.48 0.01 60)";
+      const GREY_BG = "oklch(0.955 0.006 80)";
+
+      const ART = [
+        { sku: "FER-000142", nom: "Caja de tornillos autoperforantes 8x1 (x100)", ean: "7790000184000", marca: "Bulonex", rubro: "Ferretería", prov: "Insumos del Sur SRL", codProv: "TAP-8X1-100", costo: 6100, venta: 9800, iva: 21, act: "28/08/26", estado: "Activo" },
+        { sku: "ELE-000318", nom: "Mouse inalámbrico Logitech M170", ean: "7790000197731", marca: "Logitech", rubro: "Electrónica", prov: "Tecno Pampa SA", codProv: "910-004640", costo: 11800, venta: 18900, iva: 21, act: "27/08/26", estado: "Activo" },
+        { sku: "ELE-000319", nom: "Mouse inalámbrico Genius NX-7000", ean: "7790000211462", marca: "Genius", rubro: "Electrónica", prov: "Tecno Pampa SA", codProv: "31030109117", costo: 7900, venta: 12400, iva: 21, act: "27/08/26", estado: "Activo" },
+        { sku: "ELE-000402", nom: "Teclado USB Redragon Kumara", ean: "7790000225193", marca: "Redragon", rubro: "Electrónica", prov: "Tecno Pampa SA", codProv: "K552-RGB", costo: 31200, venta: 46700, iva: 21, act: "12/08/26", estado: "Activo" },
+        { sku: "ELE-000455", nom: "Cable HDMI 2.0 · 1,5 m", ean: "7790000238924", marca: "Nisuta", rubro: "Electrónica", prov: "Tecno Pampa SA", codProv: "NSCAHD215", costo: 4600, venta: 7600, iva: 21, act: "27/08/26", estado: "Activo" },
+        { sku: "ILU-000077", nom: "Lámpara LED 12W luz cálida", ean: "7790000252655", marca: "Luz Norte", rubro: "Iluminación", prov: "Luz Norte SRL", codProv: "LN-12W-C", costo: 3100, venta: 5300, iva: 21, act: "20/08/26", estado: "Activo" },
+        { sku: "ELE-000501", nom: "Pilas AA alcalinas (blister x4)", ean: "7790000266386", marca: "Duracell", rubro: "Electrónica", prov: "Tecno Pampa SA", codProv: "MN1500B4", costo: 2500, venta: 4200, iva: 21, act: "27/08/26", estado: "Activo" },
+        { sku: "LIB-000210", nom: "Resma A4 75 g (500 hojas)", ean: "7790000280117", marca: "Autor", rubro: "Librería", prov: "Papelera Central SRL", codProv: "RES-A4-75", costo: 9200, venta: 14300, iva: 21, act: "26/08/26", estado: "Activo" },
+        { sku: "KIO-000012", nom: "Agua mineral 500 ml", ean: "7790000293848", marca: "Villavicencio", rubro: "Kiosco", prov: "Bebidas Alvear", codProv: "AGU-500", costo: 700, venta: 1200, iva: 10.5, act: "26/08/26", estado: "Activo" },
+        { sku: "FER-000390", nom: "Pintura látex interior 20 l blanco", ean: "7790000321200", marca: "Alba", rubro: "Ferretería", prov: "Insumos del Sur SRL", codProv: "ALB-LAT-20", costo: 42800, venta: 64900, iva: 21, act: "28/08/26", estado: "Activo" },
+        { sku: "FER-000411", nom: "Manguera reforzada 1/2\" x 25 m", ean: "7790000334931", marca: "Rehau", rubro: "Ferretería", prov: "Insumos del Sur SRL", codProv: "MAN-12-25", costo: 18600, venta: 27900, iva: 21, act: "15/07/26", estado: "Sin stock" },
+        { sku: "FER-000502", nom: "Cerradura doble paleta reforzada", ean: "7790000376124", marca: "Trabex", rubro: "Ferretería", prov: "Insumos del Sur SRL", codProv: "CER-DP-R", costo: 27400, venta: 43900, iva: 21, act: "02/06/26", estado: "Descontinuado" },
+        { sku: "KIO-000044", nom: "Alfajor Guaymallén simple", ean: "7790000362393", marca: "Guaymallén", rubro: "Kiosco", prov: "Bebidas Alvear", codProv: "GUAY-S", costo: 380, venta: 620, iva: 21, act: "26/08/26", estado: "Activo" },
+        { sku: "", nom: "Buloneria surtida x kg", ean: "", marca: "", rubro: "Ferretería", prov: "Insumos del Sur SRL", codProv: "BUL-SURT-KG", costo: 8400, venta: 0, iva: 21, act: "28/08/26", estado: "Sin SKU" }
+      ];
+
+      const COLS = [
+        { letra: "A", enc: "CODIGO", muestra: "TAP-8X1-100 · ALB-LAT-20 · MAN-12-25", sugerido: "Código del proveedor" },
+        { letra: "B", enc: "DETALLE", muestra: "TORNILLO AUTOPERF. 8X1 CAJA X100", sugerido: "Descripción" },
+        { letra: "C", enc: "MARCA", muestra: "BULONEX · ALBA · REHAU", sugerido: "Marca" },
+        { letra: "D", enc: "RUBRO", muestra: "FIJACIONES · PINTURAS · JARDIN", sugerido: "Rubro" },
+        { letra: "E", enc: "P. LISTA", muestra: "7.320,00 · 51.360,00 · 22.320,00", sugerido: "Precio de lista" },
+        { letra: "F", enc: "DTO", muestra: "16,67 · 16,67 · 16,67", sugerido: "Descuento %" },
+        { letra: "G", enc: "IVA", muestra: "21 · 21 · 21", sugerido: "IVA %" },
+        { letra: "H", enc: "EAN13", muestra: "7790000184000 · 7790000321200", sugerido: "Código de barras" },
+        { letra: "I", enc: "BULTO", muestra: "12 · 1 · 6", sugerido: "Unidades por bulto" },
+        { letra: "J", enc: "OBS", muestra: "REPOSICION · NUEVO · —", sugerido: "Ignorar" },
+        { letra: "K", enc: "VIGENCIA", muestra: "01/09/2026", sugerido: "Ignorar" }
+      ];
+
+      const DESTINOS = [ "Ignorar", "Código del proveedor", "Descripción", "Marca", "Rubro", "Precio de lista", "Descuento %", "Costo neto", "IVA %", "Código de barras", "Unidades por bulto", "Precio de venta sugerido" ];
+
+      const PREV = [
+        { nom: "Tornillo autoperf. 8x1 caja x100", codProv: "TAP-8X1-100", costo: 6100, ant: 5400, sku: "FER-000142", accion: "Actualiza costo" },
+        { nom: "Pintura látex interior 20 l blanco", codProv: "ALB-LAT-20", costo: 42800, ant: 38900, sku: "FER-000390", accion: "Actualiza costo" },
+        { nom: "Manguera reforzada 1/2\" x 25 m", codProv: "MAN-12-25", costo: 18600, ant: 18600, sku: "FER-000411", accion: "Sin cambios" },
+        { nom: "Cerradura doble paleta reforzada", codProv: "CER-DP-R", costo: 29900, ant: 27400, sku: "FER-000502", accion: "Actualiza costo" },
+        { nom: "Amoladora angular 4,5\" 900W", codProv: "AMO-45-900", costo: 96400, ant: 0, sku: "", accion: "Alta nueva" },
+        { nom: "Disco de corte metal 4,5\" (x10)", codProv: "DIS-45-MET", costo: 12300, ant: 0, sku: "", accion: "Alta nueva" },
+        { nom: "Candado bronce 40 mm", codProv: "CAN-BR-40", costo: 8900, ant: 0, sku: "", accion: "Alta nueva" },
+        { nom: "Bulonería surtida x kg", codProv: "BUL-SURT-KG", costo: 8400, ant: 8400, sku: "", accion: "Sin SKU propio" },
+        { nom: "Silicona neutra 280 ml", codProv: "SIL-NEU-280", costo: 6700, ant: 7900, sku: "", accion: "Alta nueva" },
+        { nom: "Cinta métrica 5 m", codProv: "CIN-MET-5", costo: 5200, ant: 4100, sku: "FER-000601", accion: "Actualiza costo" }
+      ];
+
+      const ACC = {
+        "Actualiza costo": [ ACCENT, "oklch(0.955 0.028 255)" ],
+        "Alta nueva": [ GREEN, GREEN_BG ],
+        "Sin cambios": [ GREY, GREY_BG ],
+        "Sin SKU propio": [ PURPLE, PURPLE_BG ],
+        "Omitida": [ GREY, GREY_BG ]
+      };
+
+      const EST = {
+        "Activo": [ GREEN, GREEN_BG ],
+        "Sin stock": [ AMBER, AMBER_BG ],
+        "Descontinuado": [ GREY, GREY_BG ],
+        "Sin SKU": [ PURPLE, PURPLE_BG ]
+      };
+
+      function money(n) { return "$ " + Math.round(Math.abs(n)).toLocaleString("es-AR"); }
+      function parseNum(v) { const n = Number(String(v).replace(/[^0-9]/g, "")); return isNaN(n) ? 0 : n; }
+      function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+
+      class Component extends DCLogic {
+        state = {
+          tab: "catalogo",
+          query: "", fRubro: "Todos los rubros", fProv: "Todos los proveedores", fEstado: "Todos",
+          sel: [], detSku: "FER-000142", fichaTab: "General",
+          paso: 2, mapeo: null, skuModo: "propio", skuPrefijo: "FER", skuDesde: "600", skuDigitos: "6",
+          margen: "58", redondeo: "Redondear a $ 100", opciones: [ "actualizar", "ean" ],
+          omitidas: [], guardarMapeo: true, prevF: "Todos",
+          reglasPrecio: [ "avisar", "historial" ], listaMargen: {}
+        };
+        set(k, v) { this.setState({ [k]: v }); }
+
+        mapeoActual() {
+          if (this.state.mapeo) return this.state.mapeo;
+          const m = {};
+          COLS.forEach(c => { m[c.letra] = c.sugerido; });
+          return m;
+        }
+
+        renderVals() {
+          const st = this.state;
+          const tab = st.tab;
+
+          // ---------- catálogo ----------
+          const q = norm(st.query.trim());
+          const filtradas = ART.filter(a =>
+            (!q || norm(a.nom).includes(q) || norm(a.sku).includes(q) || a.ean.includes(q) || norm(a.marca).includes(q) || norm(a.codProv).includes(q)) &&
+            (st.fRubro === "Todos los rubros" || a.rubro === st.fRubro) &&
+            (st.fProv === "Todos los proveedores" || a.prov === st.fProv) &&
+            (st.fEstado === "Todos"
+              || (st.fEstado === "sinsku" && !a.sku)
+              || (st.fEstado === "sinean" && !a.ean)
+              || (st.fEstado === "margen" && a.venta > 0 && (a.venta / a.costo - 1) < 0.45)
+              || (st.fEstado === "viejo" && [ "15/07/26", "02/06/26", "12/08/26" ].includes(a.act)))
+          );
+
+          const rows = filtradas.map(a => {
+            const marg = a.venta > 0 ? Math.round((a.venta / a.costo - 1) * 100) : null;
+            const [ ec, eb ] = EST[a.estado] || [ GREY, GREY_BG ];
+            const on = st.sel.includes(a.codProv);
+            const sel = st.detSku === a.sku && !!a.sku;
+            const viejo = [ "15/07/26", "02/06/26", "12/08/26" ].includes(a.act);
+            return { sku: a.sku || "— sin SKU —", nombre: a.nom,
+              sub: (a.ean || "sin EAN") + " · " + a.marca + " · " + a.codProv,
+              prov: a.prov, costo: money(a.costo), venta: a.venta ? money(a.venta) : "—",
+              marg: marg === null ? "—" : marg + " %",
+              margColor: marg === null ? "oklch(0.6 0.01 60)" : marg < 45 ? AMBER : "oklch(0.45 0.01 60)",
+              act: a.act, actColor: viejo ? AMBER : "oklch(0.55 0.01 60)",
+              estado: a.estado, estColor: ec, estBg: eb,
+              check: on ? "✓" : "", boxBorder: on ? ACCENT : "oklch(0.8 0.01 80)", boxBg: on ? ACCENT : "oklch(1 0 0)",
+              bg: sel ? "oklch(0.972 0.02 255)" : on ? "oklch(0.985 0.012 255)" : a.sku ? "oklch(1 0 0)" : "oklch(0.994 0.008 300)",
+              ring: sel ? "inset 2px 0 0 " + ACCENT : "none",
+              toggle: e => { e.stopPropagation(); this.setState(s => ({ sel: s.sel.includes(a.codProv) ? s.sel.filter(x => x !== a.codProv) : s.sel.concat(a.codProv) })); },
+              open: () => { if (a.sku) this.set("detSku", a.sku); } };
+          });
+
+          const chipDefs = [ [ "Todos", "Todos" ], [ "sinsku", "Sin SKU propio" ], [ "sinean", "Sin código de barras" ], [ "margen", "Margen bajo" ], [ "viejo", "Costo desactualizado" ] ];
+          const chips = chipDefs.map(([ id, label ]) => {
+            const on = st.fEstado === id;
+            return { label, pick: () => this.set("fEstado", id),
+              color: on ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: on ? "oklch(0.955 0.028 255)" : "oklch(1 0 0)",
+              border: on ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          const art = ART.find(a => a.sku === st.detSku) || ART[0];
+          const [ fec, feb ] = EST[art.estado] || [ GREY, GREY_BG ];
+          const margenArt = art.venta > 0 ? (art.venta / art.costo - 1) * 100 : 0;
+          const neto = art.venta / (1 + art.iva / 100);
+
+          const seccionesPorTab = {
+            General: [
+              { titulo: "Identificación", campos: [
+                { label: "SKU propio", valor: art.sku, esInput: true, fuente: "'IBM Plex Mono', monospace", align: "left", bg: "oklch(0.978 0.005 80)", span: "auto", ayuda: true, ayudaTxt: "Generado por el prefijo del rubro" },
+                { label: "Código de barras (EAN)", valor: art.ean || "", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "left", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Descripción", valor: art.nom, esInput: true, fuente: "inherit", align: "left", bg: "oklch(1 0 0)", span: "span 2" },
+                { label: "Marca", valor: art.marca, esInput: true, fuente: "inherit", align: "left", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Rubro", esSelect: true, opciones: [ art.rubro, "Ferretería", "Electrónica", "Iluminación", "Librería", "Kiosco" ], span: "auto" },
+                { label: "Unidad de medida", esSelect: true, opciones: [ "Unidad", "Kg", "Litro", "Metro", "Caja" ], span: "auto" },
+                { label: "Estado", esSelect: true, opciones: [ art.estado, "Activo", "Sin stock", "Descontinuado" ], span: "auto" }
+              ] },
+              { titulo: "Proveedor", campos: [
+                { label: "Proveedor principal", esSelect: true, opciones: [ art.prov, "Insumos del Sur SRL", "Tecno Pampa SA", "Luz Norte SRL" ], span: "span 2" },
+                { label: "Código del proveedor", valor: art.codProv, esInput: true, fuente: "'IBM Plex Mono', monospace", align: "left", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Unidades por bulto", valor: "12", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" }
+              ] }
+            ],
+            Precios: [
+              { titulo: "Costo e impuestos", campos: [
+                { label: "Costo neto", valor: money(art.costo), esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "IVA", esSelect: true, opciones: [ art.iva + " %", "21 %", "10,5 %", "27 %", "Exento" ], span: "auto" },
+                { label: "Margen", valor: Math.round(margenArt) + " %", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Precio de venta", valor: money(art.venta), esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(0.968 0.02 255)", span: "auto" }
+              ] },
+              { titulo: "Otras listas", campos: [
+                { label: "Mostrador", valor: money(art.venta), esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Mayorista (-12 %)", valor: money(art.venta * 0.88), esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(0.978 0.005 80)", span: "auto" },
+                { label: "Contado efectivo (-5 %)", valor: money(art.venta * 0.95), esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(0.978 0.005 80)", span: "auto" },
+                { label: "Precio promocional", valor: "", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" }
+              ] }
+            ],
+            Stock: [
+              { titulo: "Parámetros de stock", campos: [
+                { label: "Mínimo", valor: "20", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Máximo", valor: "120", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Punto de pedido", valor: "35", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Lote de compra", valor: "24", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(1 0 0)", span: "auto" },
+                { label: "Depósito principal", esSelect: true, opciones: [ "Salón", "Depósito central", "Sucursal Pico" ], span: "span 2" }
+              ] },
+              { titulo: "Existencias por depósito", campos: [
+                { label: "Salón", valor: "42 u", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(0.978 0.005 80)", span: "auto" },
+                { label: "Depósito central", valor: "0 u", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(0.978 0.005 80)", span: "auto" },
+                { label: "Sucursal Pico", valor: "8 u", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "right", bg: "oklch(0.978 0.005 80)", span: "auto" },
+                { label: "Ubicación en góndola", valor: "P3-E2", esInput: true, fuente: "'IBM Plex Mono', monospace", align: "left", bg: "oklch(1 0 0)", span: "auto" }
+              ] }
+            ]
+          };
+
+          const fichaTabs = [ "General", "Precios", "Stock" ].map(label => ({
+            label, pick: () => this.set("fichaTab", label),
+            color: st.fichaTab === label ? "oklch(0.24 0.01 60)" : "oklch(0.5 0.01 60)",
+            bg: st.fichaTab === label ? "oklch(1 0 0)" : "transparent",
+            shadow: st.fichaTab === label ? "0 1px 2px oklch(0.3 0.02 60 / 0.12)" : "none" }));
+
+          // ---------- importar ----------
+          const mapeo = this.mapeoActual();
+          const usados = Object.keys(mapeo).map(k => mapeo[k]).filter(v => v !== "Ignorar");
+          const columnas = COLS.map(c => {
+            const dest = mapeo[c.letra];
+            const dup = dest !== "Ignorar" && usados.filter(v => v === dest).length > 1;
+            const ignorado = dest === "Ignorar";
+            return { letra: c.letra, encabezado: c.enc, muestra: c.muestra, destino: dest,
+              selBorder: dup ? "oklch(0.8 0.09 25)" : ignorado ? "oklch(0.91 0.01 80)" : "oklch(0.82 0.06 255)",
+              selBg: dup ? "oklch(0.985 0.012 25)" : ignorado ? "oklch(0.975 0.005 80)" : "oklch(0.978 0.014 255)",
+              selColor: ignorado ? "oklch(0.6 0.01 60)" : "oklch(0.24 0.01 60)",
+              bg: dup ? "oklch(0.995 0.006 25)" : "oklch(1 0 0)",
+              nota: dup ? "Ya asignaste este campo a otra columna" : dest === "Precio de lista" ? "Se le aplica el descuento de la columna F para obtener el costo" : dest === "Descuento %" ? "Se usa junto al precio de lista" : ignorado ? "No se importa" : "",
+              notaColor: dup ? RED : "oklch(0.58 0.01 60)",
+              set: e => { const v = e.target.value; this.setState(s => ({ mapeo: Object.assign({}, s.mapeo || mapeo, { [c.letra]: v }) })); } };
+          });
+
+          const faltaCosto = !usados.includes("Costo neto") && !usados.includes("Precio de lista");
+          const faltaDesc = !usados.includes("Descripción");
+          const hayDup = columnas.some(c => c.nota.indexOf("Ya asignaste") === 0);
+          const mapeoOk = !faltaCosto && !faltaDesc && !hayDup;
+
+          const skuModos = [
+            { id: "propio", label: "Generar SKU propio", ejemplo: st.skuPrefijo + "-" + String(parseNum(st.skuDesde)).padStart(parseNum(st.skuDigitos), "0") + " · " + st.skuPrefijo + "-" + String(parseNum(st.skuDesde) + 1).padStart(parseNum(st.skuDigitos), "0") },
+            { id: "prov", label: "Usar el código del proveedor", ejemplo: "TAP-8X1-100 · ALB-LAT-20" },
+            { id: "ean", label: "Usar el código de barras", ejemplo: "7790000184000 · 7790000321200" }
+          ].map(m => {
+            const on = st.skuModo === m.id;
+            return { label: m.label, ejemplo: m.ejemplo, pick: () => this.set("skuModo", m.id),
+              border: on ? "oklch(0.82 0.06 255)" : "oklch(0.91 0.01 80)",
+              bg: on ? "oklch(0.972 0.018 255)" : "oklch(1 0 0)",
+              dotBorder: on ? ACCENT : "oklch(0.78 0.01 80)", dotBg: on ? ACCENT : "oklch(1 0 0)",
+              dotInner: on ? "inset 0 0 0 2.5px oklch(1 0 0)" : "none" };
+          });
+
+          const opcDefs = [
+            { id: "actualizar", label: "Actualizar el costo de los artículos que ya existen (match por código de proveedor)" },
+            { id: "ean", label: "Completar el código de barras si el artículo no lo tiene cargado" },
+            { id: "recalcular", label: "Recalcular el precio de venta con el margen, incluso si fue editado a mano" },
+            { id: "altas", label: "Dar de alta los artículos nuevos en estado inactivo hasta revisarlos" }
+          ];
+          const opciones = opcDefs.map(o => {
+            const on = st.opciones.includes(o.id);
+            return { label: o.label, check: on ? "✓" : "",
+              boxBorder: on ? ACCENT : "oklch(0.8 0.01 80)", boxBg: on ? ACCENT : "oklch(1 0 0)",
+              toggle: () => this.setState(s => ({ opciones: s.opciones.includes(o.id) ? s.opciones.filter(x => x !== o.id) : s.opciones.concat(o.id) })) };
+          });
+
+          const margenPct = parseNum(st.margen);
+          const redondear = v => {
+            if (st.redondeo === "Redondear a $ 100") return Math.round(v / 100) * 100;
+            if (st.redondeo === "Redondear a $ 10") return Math.round(v / 10) * 10;
+            if (st.redondeo === "Terminar en 900") return Math.floor(v / 1000) * 1000 + 900;
+            return Math.round(v);
+          };
+
+          const prevAll = PREV.map((p, i) => {
+            const omitida = st.omitidas.includes(i);
+            const accion = omitida ? "Omitida" : p.accion;
+            const sku = p.sku || (st.skuModo === "prov" ? p.codProv : st.skuModo === "ean" ? "—" : st.skuPrefijo + "-" + String(parseNum(st.skuDesde) + i).padStart(parseNum(st.skuDigitos), "0"));
+            const venta = redondear(p.costo * (1 + margenPct / 100));
+            const varPct = p.ant > 0 ? Math.round((p.costo / p.ant - 1) * 100) : null;
+            return { i, p, omitida, accion, sku, venta, varPct };
+          });
+
+          const prevFiltrada = prevAll.filter(x =>
+            st.prevF === "Todos" ||
+            (st.prevF === "alta" && x.p.accion === "Alta nueva") ||
+            (st.prevF === "act" && x.p.accion === "Actualiza costo") ||
+            (st.prevF === "rev" && (x.p.accion === "Sin SKU propio" || (x.varPct !== null && x.varPct >= 10))));
+
+          const prevRows = prevFiltrada.map(x => {
+            const [ ac, ab ] = ACC[x.accion] || [ GREY, GREY_BG ];
+            const nuevo = x.p.accion === "Alta nueva";
+            const subeMucho = x.varPct !== null && x.varPct >= 10;
+            return { sku: x.sku, skuColor: x.p.sku ? "oklch(0.24 0.01 60)" : nuevo ? GREEN : PURPLE,
+              nombre: x.p.nom, codProv: x.p.codProv,
+              costo: money(x.p.costo), costoAnt: x.p.ant ? money(x.p.ant) : "—",
+              venta: money(x.venta),
+              variacion: x.varPct === null ? "nuevo" : x.varPct === 0 ? "—" : (x.varPct > 0 ? "+" : "") + x.varPct + " %",
+              varColor: x.varPct === null ? GREEN : x.varPct >= 10 ? RED : x.varPct > 0 ? AMBER : x.varPct < 0 ? GREEN : "oklch(0.6 0.01 60)",
+              accion: x.accion, accColor: ac, accBg: ab,
+              nota: nuevo || subeMucho || x.p.accion === "Sin SKU propio",
+              notaTxt: x.p.accion === "Sin SKU propio" ? "no matchea y no se le puede generar SKU: revisar a mano"
+                : nuevo ? "artículo nuevo · rubro y margen del formato"
+                : subeMucho ? "el costo sube " + x.varPct + " %: revisar antes de aplicar" : "",
+              notaColor: x.p.accion === "Sin SKU propio" ? PURPLE : subeMucho ? RED : GREEN,
+              bg: x.omitida ? "oklch(0.975 0.005 80)" : subeMucho ? "oklch(0.99 0.008 30)" : nuevo ? "oklch(0.992 0.008 155)" : "oklch(1 0 0)",
+              omitirTxt: x.omitida ? "Incluir" : "Omitir",
+              omitir: () => this.setState(s => ({ omitidas: s.omitidas.includes(x.i) ? s.omitidas.filter(y => y !== x.i) : s.omitidas.concat(x.i) })) };
+          });
+
+          const nAltas = prevAll.filter(x => !x.omitida && x.p.accion === "Alta nueva").length;
+          const nAct = prevAll.filter(x => !x.omitida && x.p.accion === "Actualiza costo").length;
+          const nRev = prevAll.filter(x => x.p.accion === "Sin SKU propio" || (x.varPct !== null && x.varPct >= 10)).length;
+          const nAplicar = prevAll.filter(x => !x.omitida && x.accion !== "Sin cambios" && x.accion !== "Sin SKU propio").length;
+
+          const prevKpiDefs = [
+            { label: "Líneas leídas", value: String(PREV.length), hint: "de la hoja Lista", color: "oklch(0.24 0.01 60)", f: "Todos" },
+            { label: "Altas nuevas", value: String(nAltas), hint: "con SKU generado", color: GREEN, f: "alta" },
+            { label: "Actualizan costo", value: String(nAct), hint: "match por cód. proveedor", color: ACCENT, f: "act" },
+            { label: "A revisar", value: String(nRev), hint: "suben +10 % o sin match", color: nRev ? RED : GREEN, f: "rev" }
+          ];
+          const prevKpis = prevKpiDefs.map(k => ({ label: k.label, value: k.value, hint: k.hint, color: k.color,
+            bg: st.prevF === k.f ? "oklch(0.972 0.02 255)" : "oklch(1 0 0)", pick: () => this.set("prevF", k.f) }));
+
+          const pasoDefs = [
+            [ 1, "Archivo", "Excel del proveedor" ],
+            [ 2, "Mapeo", "columnas y SKU" ],
+            [ 3, "Revisión", "altas y cambios" ]
+          ];
+          const pasos = pasoDefs.map(([ n, label, sub ]) => {
+            const on = st.paso === n;
+            const hecho = st.paso > n;
+            return { n: hecho ? "✓" : String(n), label, sub, pick: () => this.set("paso", n),
+              bg: on ? "oklch(0.955 0.028 255)" : "transparent",
+              color: on ? "oklch(0.36 0.13 255)" : hecho ? "oklch(0.35 0.01 60)" : "oklch(0.55 0.01 60)",
+              dotBg: on ? ACCENT : hecho ? GREEN : "oklch(0.9 0.01 80)",
+              dotColor: on || hecho ? "oklch(1 0 0)" : "oklch(0.5 0.01 60)" };
+          });
+
+          // ---------- listas ----------
+          const listaDefs = [
+            { id: "most", nombre: "Mostrador", detalle: "Precio de venta al público · la que usa la caja por defecto", margen: "58", arts: "1.284", def: true },
+            { id: "may", nombre: "Mayorista", detalle: "Clientes con cuenta corriente y compra mínima", margen: "34", arts: "1.284", def: false },
+            { id: "efe", nombre: "Contado efectivo", detalle: "Descuento por pago en efectivo o transferencia", margen: "50", arts: "1.284", def: false },
+            { id: "obra", nombre: "Corralón y obra", detalle: "Solo rubro Ferretería · requiere autorización del vendedor", margen: "28", arts: "412", def: false }
+          ];
+          const listas = listaDefs.map(l => {
+            const m = st.listaMargen[l.id] === undefined ? l.margen : st.listaMargen[l.id];
+            return { nombre: l.nombre, detalle: l.detalle, esDefault: l.def, margen: m, arts: l.arts,
+              ejemplo: money(redondear(6100 * (1 + parseNum(m) / 100))),
+              setMargen: e => { const v = e.target.value; this.setState(s => ({ listaMargen: Object.assign({}, s.listaMargen, { [l.id]: v }) })); } };
+          });
+
+          const reglaDefs = [
+            { id: "avisar", label: "Avisar si un costo sube más de 10 %", sub: "No se aplica automáticamente: queda para revisión manual." },
+            { id: "historial", label: "Guardar historial de costos y precios", sub: "Permite ver la evolución y volver atrás una importación." },
+            { id: "auto", label: "Recalcular todas las listas al cambiar un costo", sub: "Mantiene el margen de cada lista sin tocar nada a mano." },
+            { id: "congelar", label: "Respetar precios editados a mano", sub: "Los precios marcados como fijos no se recalculan." }
+          ];
+          const reglasPrecio = reglaDefs.map(r => {
+            const on = st.reglasPrecio.includes(r.id);
+            return { label: r.label, sub: r.sub, check: on ? "✓" : "",
+              boxBorder: on ? ACCENT : "oklch(0.8 0.01 80)", boxBg: on ? ACCENT : "oklch(1 0 0)",
+              border: on ? "oklch(0.88 0.03 255)" : "oklch(0.91 0.01 80)",
+              toggle: () => this.setState(s => ({ reglasPrecio: s.reglasPrecio.includes(r.id) ? s.reglasPrecio.filter(x => x !== r.id) : s.reglasPrecio.concat(r.id) })) };
+          });
+
+          const tabDefs = [ [ "catalogo", "Catálogo", 0 ], [ "importar", "Importar lista de precios", nRev ], [ "listas", "Listas de precios", 0 ] ];
+          const tabs = tabDefs.map(([ k, label, badge ]) => ({
+            label, badge: badge > 0, badgeTxt: String(badge),
+            badgeColor: k === st.tab ? "oklch(0.36 0.13 255)" : "oklch(0.45 0.01 60)",
+            badgeBg: k === st.tab ? "oklch(0.93 0.04 255)" : "oklch(0.93 0.008 80)",
+            pick: () => this.set("tab", k),
+            color: st.tab === k ? "oklch(0.24 0.01 60)" : "oklch(0.5 0.01 60)",
+            bg: st.tab === k ? "oklch(1 0 0)" : "transparent",
+            shadow: st.tab === k ? "0 1px 2px oklch(0.3 0.02 60 / 0.12)" : "none" }));
+
+          return {
+            tabs, esCatalogo: tab === "catalogo", esImportar: tab === "importar", esListas: tab === "listas",
+            headerTxt: "1.284 artículos · 5 proveedores · 4 listas",
+            contextoTxt: {
+              catalogo: "SKU propio con prefijo por rubro · costos al 28/08/26",
+              importar: "Insumos del Sur SRL · lista vigente desde 01/09/26",
+              listas: "Los márgenes se aplican sobre el costo neto"
+            }[tab],
+
+            query: st.query, onQuery: e => this.set("query", e.target.value),
+            rubros: [ "Todos los rubros", "Ferretería", "Electrónica", "Iluminación", "Librería", "Kiosco" ],
+            provs: [ "Todos los proveedores", "Insumos del Sur SRL", "Tecno Pampa SA", "Luz Norte SRL", "Papelera Central SRL", "Bebidas Alvear" ],
+            fRubro: st.fRubro, setRubro: e => this.set("fRubro", e.target.value),
+            fProv: st.fProv, setProv: e => this.set("fProv", e.target.value),
+            chips, rows, vacio: rows.length === 0,
+            countTxt: rows.length + " artículos",
+            haySel: st.sel.length > 0, selTxt: st.sel.length + " seleccionados",
+            bulk: [ "Cambiar rubro", "Aplicar margen", "Cambiar proveedor", "Imprimir etiquetas", "Desactivar" ],
+            nuevo: () => {},
+            ficha: {
+              sku: art.sku || "— sin SKU —", nombre: art.nom, estado: art.estado, estColor: fec, estBg: feb,
+              secciones: seccionesPorTab[st.fichaTab],
+              hayCalculo: st.fichaTab === "Precios",
+              calculo: [
+                { label: "Costo neto", value: money(art.costo), color: "oklch(0.35 0.01 60)", labelColor: "oklch(0.45 0.01 60)", peso: "400", size: "13px" },
+                { label: "Margen aplicado", value: Math.round(margenArt) + " %", color: "oklch(0.35 0.01 60)", labelColor: "oklch(0.45 0.01 60)", peso: "400", size: "13px" },
+                { label: "Neto de venta", value: money(neto), color: "oklch(0.35 0.01 60)", labelColor: "oklch(0.45 0.01 60)", peso: "400", size: "13px" },
+                { label: "IVA " + art.iva + " %", value: money(art.venta - neto), color: "oklch(0.35 0.01 60)", labelColor: "oklch(0.45 0.01 60)", peso: "400", size: "13px" },
+                { label: "Precio final", value: money(art.venta), color: "oklch(0.36 0.13 255)", labelColor: "oklch(0.24 0.01 60)", peso: "600", size: "19px" }
+              ]
+            },
+            fichaTabs,
+
+            pasos, paso1: st.paso === 1, paso2: st.paso === 2, paso3: st.paso === 3,
+            archivo: "Lista_InsumosDelSur_09-2026.xlsx",
+            archivoSub: "hoja «Lista» · 11 columnas · 412 filas",
+            irMapeo: () => this.set("paso", 2),
+            irPreview: () => { if (mapeoOk) this.set("paso", 3); },
+            volverMapeo: () => this.set("paso", 2),
+            formatos: [
+              { prov: "Insumos del Sur SRL", sub: "usado 6 veces · última 12/07/26", cols: "11 col", pick: () => this.set("paso", 3) },
+              { prov: "Tecno Pampa SA", sub: "usado 11 veces · última 27/08/26", cols: "8 col", pick: () => this.set("paso", 3) },
+              { prov: "Luz Norte SRL", sub: "usado 2 veces · última 20/08/26", cols: "6 col", pick: () => this.set("paso", 3) },
+              { prov: "Papelera Central SRL", sub: "usado 4 veces · última 26/08/26", cols: "9 col", pick: () => this.set("paso", 3) }
+            ],
+
+            columnas, destinos: DESTINOS,
+            mapeoResumen: usados.length + " de 11 columnas asignadas",
+            autoMapear: () => this.set("mapeo", null),
+            skuModos, skuConPrefijo: st.skuModo === "propio",
+            skuPrefijo: st.skuPrefijo, setPrefijo: e => this.set("skuPrefijo", e.target.value),
+            skuDesde: st.skuDesde, setDesde: e => this.set("skuDesde", e.target.value),
+            skuDigitos: st.skuDigitos, setDigitos: e => this.set("skuDigitos", e.target.value),
+            margen: st.margen, setMargen: e => this.set("margen", e.target.value),
+            redondeos: [ "Redondear a $ 100", "Redondear a $ 10", "Terminar en 900", "Sin redondeo" ],
+            redondeo: st.redondeo, setRedondeo: e => this.set("redondeo", e.target.value),
+            opciones,
+            mapCtaLabel: hayDup ? "Hay campos duplicados" : faltaCosto ? "Falta asignar el costo" : faltaDesc ? "Falta asignar la descripción" : "Previsualizar 412 filas",
+            mapCtaBg: mapeoOk ? ACCENT : "oklch(0.78 0.03 255)",
+            mapCtaCursor: mapeoOk ? "pointer" : "not-allowed",
+
+            prevKpis, prevRows,
+            resTxt: nRev > 0
+              ? nRev + " líneas necesitan tu revisión: " + nAltas + " altas nuevas y costos que suben más de 10 %."
+              : "Todo listo: " + nAltas + " altas y " + nAct + " actualizaciones de costo.",
+            resColor: nRev > 0 ? AMBER : GREEN, resBg: nRev > 0 ? AMBER_BG : GREEN_BG,
+            guardarMapeo: st.guardarMapeo,
+            guardarCheck: st.guardarMapeo ? "✓" : "",
+            guardarBorder: st.guardarMapeo ? ACCENT : "oklch(0.8 0.01 80)",
+            guardarBg: st.guardarMapeo ? ACCENT : "oklch(1 0 0)",
+            toggleGuardar: () => this.set("guardarMapeo", !st.guardarMapeo),
+            importarLabel: "Importar " + nAplicar + " líneas",
+            importar: () => {},
+
+            listas, reglasPrecio,
+            historial: [
+              { prov: "Insumos del Sur SRL", detalle: "412 artículos · lista 09/2026", variacion: "+8,4 %", color: RED, fecha: "28/08" },
+              { prov: "Tecno Pampa SA", detalle: "186 artículos · lista agosto", variacion: "+3,1 %", color: AMBER, fecha: "27/08" },
+              { prov: "Bebidas Alvear", detalle: "94 artículos · planilla semanal", variacion: "+1,2 %", color: AMBER, fecha: "26/08" },
+              { prov: "Papelera Central SRL", detalle: "58 artículos · lista mensual", variacion: "−2,0 %", color: GREEN, fecha: "26/08" },
+              { prov: "Luz Norte SRL", detalle: "37 artículos · lista trimestral", variacion: "+6,7 %", color: AMBER, fecha: "20/08" }
+            ]
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

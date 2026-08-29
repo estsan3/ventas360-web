@@ -12,7 +12,9 @@
         </button>
       }
       @if (tab() !== 'listas') {
-        <button type="button" class="lst__cta" (click)="abrirAlta()">+ Remito / factura</button>
+        <button type="button" class="lst__cta" (click)="abrirAlta()">
+          {{ tab() === 'pedidos' ? '+ Pedido de compra' : '+ Remito / factura' }}
+        </button>
       }
       <button type="button" class="lst__btn lst__btn--ghost" (click)="buscar()">Buscar</button>
     </div>
@@ -133,10 +135,79 @@
 
   @if (tab() === 'pedidos') {
     <div class="lst__card">
-      <div class="lst__empty">
-        Aún no hay pedidos de compra. Usá remitos de mercadería para ingresar stock con el costo de
-        la lista del proveedor.
-      </div>
+      @if (estado().status === 'error') {
+        <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
+      } @else if (!buscado()) {
+        <div class="lst__empty">Buscá para listar pedidos de compra</div>
+      } @else if (filasPedidos().length === 0) {
+        <div class="lst__empty">
+          {{
+            estado().status === 'loading'
+              ? 'Cargando pedidos…'
+              : 'No hay pedidos. Creá una OC: no mueve stock hasta que recibas el remito.'
+          }}
+        </div>
+      } @else {
+        <table class="lst__table">
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th class="lst__th-right">Total</th>
+              <th>Recibido</th>
+              <th>Estado</th>
+              <th class="lst__th-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filasPedidos(); track row.id) {
+              <tr>
+                <td>{{ row.comprobante }}</td>
+                <td>{{ row.fecha }}</td>
+                <td>{{ row.proveedor }}</td>
+                <td class="lst__td-right">{{ row.total }}</td>
+                <td>{{ row.avance }}</td>
+                <td>
+                  <span
+                    class="lst__badge"
+                    [class.lst__badge--warn]="row.estadoTone === 'warn'"
+                    [class.lst__badge--ok]="row.estadoTone === 'ok'"
+                    [class.lst__badge--info]="row.estadoTone === 'info'"
+                    [class.lst__badge--neutral]="row.estadoTone === 'neutral'"
+                    >{{ row.estadoLabel }}</span
+                  >
+                </td>
+                <td class="lst__td-right">
+                  <div class="lst__acciones">
+                    @if (row.puedeEmitir) {
+                      <button
+                        type="button"
+                        class="lst__accion lst__accion--primary"
+                        (click)="emitir(row.id)"
+                      >
+                        Emitir
+                      </button>
+                    }
+                    @if (row.puedeRecibir) {
+                      <button
+                        type="button"
+                        class="lst__accion lst__accion--primary"
+                        (click)="recibir(row.id)"
+                      >
+                        Recibir
+                      </button>
+                    }
+                    @if (!row.puedeEmitir && !row.puedeRecibir) {
+                      <span class="lst__muted">—</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
   }
 
@@ -178,7 +249,7 @@
   @if (tab() === 'listas') {
     @let lp = listaActiva();
     <div class="lst__lista-bar">
-      <div class="lst__lista-label">Actualizar precios del proveedor</div>
+      <div class="lst__lista-label">Lista del proveedor (no es tu catálogo)</div>
       <select
         class="lst__select"
         [ngModel]="listaProvId()"
@@ -258,15 +329,15 @@
                 <b class="lst__ok">{{
                   preview()?.actualizados ?? lp.ultimaImportacionActualizados
                 }}</b>
-                precios actualizados
+                en catálogo
               </span>
               <span>
                 <b class="lst__warn">{{ preview()?.nuevos ?? lp.ultimaImportacionNuevos }}</b>
-                artículos nuevos
+                ítems de lista
               </span>
               <span>
                 <b class="lst__danger">{{ preview()?.sinMatch ?? lp.ultimaImportacionSinMatch }}</b>
-                códigos sin coincidencia
+                sin SKU propio
               </span>
             </div>
           </div>
@@ -339,6 +410,69 @@
           </button>
         </div>
       </div>
+      @if (itemsLista().length > 0) {
+        <div class="lst__card lst__card--scroll" style="margin-top: 16px">
+          <div class="lst__card-head">
+            <div class="lst__card-title">Lista persistida · no es tu catálogo</div>
+            <div class="lst__card-sub">
+              Solo los ítems con SKU propio existen en Artículos. El resto queda acá hasta que los
+              des de alta.
+            </div>
+          </div>
+          <table class="lst__table">
+            <thead>
+              <tr>
+                <th>Código proveedor</th>
+                <th>Descripción</th>
+                <th class="lst__th-right">Costo</th>
+                <th>Catálogo</th>
+                <th class="lst__th-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (it of itemsLista(); track it.id) {
+                <tr>
+                  <td>{{ it.codigoProveedor }}</td>
+                  <td>{{ it.nombre }}</td>
+                  <td class="lst__td-right">{{ it.costo }}</td>
+                  <td>{{ it.enCatalogo ? 'En Artículos' : 'Solo lista' }}</td>
+                  <td class="lst__td-right">
+                    @if (!it.enCatalogo) {
+                      <div class="lst__acciones">
+                        @if (altaItemId() === it.id) {
+                          <input
+                            class="lst__input"
+                            placeholder="SKU propio"
+                            [ngModel]="altaSku()"
+                            (ngModelChange)="altaSku.set($event)"
+                          />
+                          <button
+                            type="button"
+                            class="lst__accion lst__accion--primary"
+                            (click)="confirmarAlta()"
+                          >
+                            Crear
+                          </button>
+                        } @else {
+                          <button
+                            type="button"
+                            class="lst__accion lst__accion--primary"
+                            (click)="empezarAlta(it.id)"
+                          >
+                            Dar de alta
+                          </button>
+                        }
+                      </div>
+                    } @else {
+                      <span class="lst__muted">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     }
   }
 </section>
@@ -461,7 +595,13 @@
 
 <app-side-drawer
   [abierto]="drawerAbierto()"
-  titulo="Nueva compra"
+  [titulo]="
+    form.controls.tipo.value === 'pedido_compra'
+      ? 'Pedido de compra'
+      : origenId()
+        ? 'Recibir remito'
+        : 'Nueva compra'
+  "
   (cerrar)="drawerAbierto.set(false)"
 >
   <form class="form-drawer" [formGroup]="form">
@@ -472,8 +612,65 @@
       formControlName="proveedorId"
     />
     <app-select-input label="Depósito" [options]="depositosOpts()" formControlName="depositoId" />
-    <app-select-input label="Producto" [options]="productosOpts()" formControlName="productoId" />
-    <app-text-input label="Cantidad" type="number" formControlName="cantidad" />
+    @if (form.controls.tipo.value === 'remito_compra' && pedidosEmitidosOpts().length > 0) {
+      <div class="form-drawer__label">Pedido de origen (opcional)</div>
+      <select
+        class="lst__select"
+        [ngModel]="origenId()"
+        (ngModelChange)="origenId.set($event)"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <option value="">Sin pedido</option>
+        @for (o of pedidosEmitidosOpts(); track o.value) {
+          <option [value]="o.value">{{ o.label }}</option>
+        }
+      </select>
+    }
+    <div class="lst__card-sub">
+      @if (form.controls.tipo.value === 'pedido_compra') {
+        El pedido no mueve stock. En cada línea usá tu artículo y/o el código de la lista del
+        proveedor.
+      } @else {
+        Líneas: artículo de tu catálogo y/o código de la lista del proveedor. El remito ingresa
+        stock al confirmar.
+      }
+    </div>
+    @for (linea of lineasDraft(); track $index) {
+      <div class="lst__mapeo-row lst__mapeo-row--wrap">
+        <select
+          class="lst__select lst__select--flex"
+          [ngModel]="linea.productoId"
+          (ngModelChange)="actualizarLineaDraft($index, 'productoId', $event)"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option value="">Artículo (catálogo)</option>
+          @for (p of productosOpts(); track p.value) {
+            <option [value]="p.value">{{ p.label }}</option>
+          }
+        </select>
+        <select
+          class="lst__select lst__select--flex"
+          [ngModel]="linea.codigoProveedor"
+          (ngModelChange)="actualizarLineaDraft($index, 'codigoProveedor', $event)"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option value="">Código proveedor</option>
+          @for (p of itemsListaOpts(); track p.value) {
+            <option [value]="p.value">{{ p.label }}</option>
+          }
+        </select>
+        <input
+          class="lst__input lst__input--qty"
+          type="number"
+          min="1"
+          [ngModel]="linea.cantidad"
+          (ngModelChange)="actualizarLineaDraft($index, 'cantidad', $event)"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <button type="button" class="comp-modal__del" (click)="quitarLineaDraft($index)">✕</button>
+      </div>
+    }
+    <button type="button" class="comp-modal__add" (click)="agregarLineaDraft()">+ Línea</button>
   </form>
   <div class="form-drawer__actions">
     <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">

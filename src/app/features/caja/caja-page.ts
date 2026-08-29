@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { catchError, of } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+import { catchError, filter, map, of, startWith } from 'rxjs';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Button } from '../../shared/ui/button/button';
@@ -13,6 +14,7 @@ import {
   CuentaBancariaDto,
   ValorBancarioDto,
 } from '../bancos/data-access/bancos.service';
+import { estaEnTesoreria } from '../tesoreria/tesoreria.util';
 import {
   CajaService,
   EstadoCaja,
@@ -107,6 +109,17 @@ export class CajaPage {
   private readonly notifications = inject(NotificationStore);
   private readonly confirm = inject(ConfirmDialogService);
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  protected readonly enTesoreria = computed(() => estaEnTesoreria(this.url()));
 
   protected readonly saldo = signal<SaldoCajaDto | null>(null);
   protected readonly movimientosRaw = signal<MovimientoCajaDto[]>([]);
@@ -309,6 +322,9 @@ export class CajaPage {
     });
     this.cargar();
     this.cargarCuentas();
+    if (this.enTesoreria()) {
+      this.vista.set('movimientos');
+    }
   }
 
   protected setVista(next: VistaCaja): void {

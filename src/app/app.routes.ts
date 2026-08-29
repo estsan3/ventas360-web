@@ -40,23 +40,14 @@ export const routes: Routes = [
         loadChildren: () => import('./features/ventas/ventas.routes').then((m) => m.VENTAS_ROUTES),
       },
       {
-        path: 'presupuestos',
+        path: 'comprobantes',
         canActivate: [permisoGuard('ventas')],
         loadChildren: () =>
-          import('./features/presupuestos/presupuestos.routes').then((m) => m.PRESUPUESTOS_ROUTES),
+          import('./features/comprobantes/comprobantes.routes').then((m) => m.COMPROBANTES_ROUTES),
       },
-      {
-        path: 'pedidos',
-        canActivate: [permisoGuard('ventas')],
-        loadChildren: () =>
-          import('./features/pedidos/pedidos.routes').then((m) => m.PEDIDOS_ROUTES),
-      },
-      {
-        path: 'remitos',
-        canActivate: [permisoGuard('ventas')],
-        loadChildren: () =>
-          import('./features/remitos/remitos.routes').then((m) => m.REMITOS_ROUTES),
-      },
+      { path: 'presupuestos', redirectTo: '/comprobantes/presupuestos', pathMatch: 'full' },
+      { path: 'pedidos', redirectTo: '/comprobantes/pedidos', pathMatch: 'full' },
+      { path: 'remitos', redirectTo: '/comprobantes/remitos', pathMatch: 'full' },
       {
         path: 'cuenta-corriente',
         canActivate: [permisoGuard('cta_cte')],
@@ -84,15 +75,13 @@ export const routes: Routes = [
           import('./features/compras/compras.routes').then((m) => m.COMPRAS_ROUTES),
       },
       {
-        path: 'caja',
+        path: 'tesoreria',
         canActivate: [permisoGuard('compras')],
-        loadChildren: () => import('./features/caja/caja.routes').then((m) => m.CAJA_ROUTES),
+        loadChildren: () =>
+          import('./features/tesoreria/tesoreria.routes').then((m) => m.TESORERIA_ROUTES),
       },
-      {
-        path: 'bancos',
-        canActivate: [permisoGuard('compras')],
-        loadChildren: () => import('./features/bancos/bancos.routes').then((m) => m.BANCOS_ROUTES),
-      },
+      { path: 'caja', redirectTo: '/tesoreria/caja', pathMatch: 'full' },
+      { path: 'bancos', redirectTo: '/tesoreria/cheques', pathMatch: 'full' },
       {
         path: 'configuracion',
         canActivate: [permisoGuard('configuracion')],

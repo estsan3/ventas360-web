@@ -1,0 +1,21 @@
+<section class="tes">
+  <header class="tes__bar">
+    <span class="tes__label">Tesorería</span>
+    <div class="tes__tabs">
+      <a
+        routerLink="caja"
+        routerLinkActive="tes__tab--on"
+        class="tes__tab"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Caja
+      </a>
+      <a routerLink="cheques" routerLinkActive="tes__tab--on" class="tes__tab">Cheques</a>
+      <a routerLink="pagos" routerLinkActive="tes__tab--on" class="tes__tab">Pagos</a>
+    </div>
+  </header>
+
+  <div class="tes__outlet">
+    <router-outlet />
+  </div>
+</section>

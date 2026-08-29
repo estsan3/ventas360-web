@@ -5,6 +5,8 @@ export interface ProductoDto {
   marca: string;
   rubro: string;
   codigo_barras: string;
+  codigo_proveedor: string;
+  proveedor: string;
   costo: number;
   precio: number;
   stock: number;
@@ -17,6 +19,8 @@ export interface CrearProductoDto {
   marca?: string;
   rubro?: string;
   codigo_barras?: string;
+  codigo_proveedor?: string;
+  proveedor?: string;
   costo?: number;
   precio: number;
   stock: number;

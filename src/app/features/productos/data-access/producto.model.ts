@@ -5,6 +5,8 @@ export interface Producto {
   marca: string;
   rubro: string;
   codigoBarras: string;
+  codigoProveedor: string;
+  proveedor: string;
   costo: number;
   precio: number;
   stock: number;
@@ -17,6 +19,8 @@ export interface CrearProducto {
   marca?: string;
   rubro?: string;
   codigoBarras?: string;
+  codigoProveedor?: string;
+  proveedor?: string;
   costo?: number;
   precio: number;
   stock: number;

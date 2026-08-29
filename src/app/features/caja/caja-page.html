@@ -1,4 +1,4 @@
-<section class="page caja">
+<section class="page caja" [class.caja--nest]="enTesoreria()">
   <header class="caja__header">
     <div>
       <h1 class="caja__title">Caja y bancos</h1>
@@ -61,24 +61,26 @@
     </div>
   </div>
 
-  <div class="caja__tabs">
-    <button
-      type="button"
-      class="caja__tab"
-      [class.caja__tab--on]="vista() === 'movimientos'"
-      (click)="setVista('movimientos')"
-    >
-      Movimientos
-    </button>
-    <button
-      type="button"
-      class="caja__tab"
-      [class.caja__tab--on]="vista() === 'cheques'"
-      (click)="setVista('cheques')"
-    >
-      Cartera de cheques
-    </button>
-  </div>
+  @if (!enTesoreria()) {
+    <div class="caja__tabs">
+      <button
+        type="button"
+        class="caja__tab"
+        [class.caja__tab--on]="vista() === 'movimientos'"
+        (click)="setVista('movimientos')"
+      >
+        Movimientos
+      </button>
+      <button
+        type="button"
+        class="caja__tab"
+        [class.caja__tab--on]="vista() === 'cheques'"
+        (click)="setVista('cheques')"
+      >
+        Cartera de cheques
+      </button>
+    </div>
+  }
 
   @if (vista() === 'movimientos') {
     <div class="caja__card">

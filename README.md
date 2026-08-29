@@ -33,13 +33,14 @@ cd ../ventas360-api && poetry run uvicorn app.main:app --reload --port 8001
 
 ## Rutas
 
-| Ruta             | Descripción               |
-| ---------------- | ------------------------- |
-| `/login`         | Autenticación (cookie)    |
-| `/dashboard`     | Inicio                    |
-| `/ventas`        | Mostrador                 |
-| `/configuracion` | Negocio, usuarios, matriz |
-| `/comercios`     | Plataforma (`admin.*`)    |
+| Ruta             | Descripción                        |
+| ---------------- | ---------------------------------- |
+| `/login`         | Autenticación (cookie)             |
+| `/dashboard`     | Inicio                             |
+| `/ventas`        | Mostrador                          |
+| `/compras`       | Pedidos, remitos, facturas, listas |
+| `/configuracion` | Negocio, usuarios, matriz          |
+| `/comercios`     | Plataforma (`admin.*`)             |
 
 ## Scripts
 

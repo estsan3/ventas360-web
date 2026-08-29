@@ -5,17 +5,18 @@ import { environment } from '../../../../environments/environment';
 import { CompraDto } from './compra.dto';
 import { compraToModel, crearCompraToDto } from './compra.mapper';
 import { Compra, CrearCompra } from './compra.model';
-import { ImportarListaDto, ProveedorListaDto } from './lista-proveedor.dto';
 import {
   CrearProveedorLista,
   ImportarListaResultado,
+  ListaProveedorItem,
   MapeoColumna,
   PoliticaPrecioVenta,
   ProveedorLista,
 } from './lista-proveedor.model';
+import { ImportarListaDto, ListaItemDto, ProveedorListaDto } from './lista-proveedor.dto';
 
 interface PaginaRef {
-  items: { id: string; nombre: string; precio?: number; costo?: number }[];
+  items: { id: string; nombre: string; sku?: string; precio?: number; costo?: number }[];
 }
 
 interface PaginaProveedores {
@@ -52,6 +53,10 @@ export class ComprasService {
 
   confirmar(id: string): Observable<Compra> {
     return this.http.post<CompraDto>(`${this.base}/${id}/confirmar`, {}).pipe(map(compraToModel));
+  }
+
+  emitir(id: string): Observable<Compra> {
+    return this.http.post<CompraDto>(`${this.base}/${id}/emitir`, {}).pipe(map(compraToModel));
   }
 
   facturar(id: string): Observable<Compra> {
@@ -118,7 +123,7 @@ export class ComprasService {
   }
 
   listarProductosRef(): Observable<
-    { id: string; nombre: string; precio: number; costo: number }[]
+    { id: string; nombre: string; sku: string; precio: number; costo: number }[]
   > {
     return this.http
       .get<PaginaRef>(`${this.api}/productos`, {
@@ -129,6 +134,7 @@ export class ComprasService {
           p.items.map((i) => ({
             id: i.id,
             nombre: i.nombre,
+            sku: i.sku ?? '',
             precio: i.precio ?? 0,
             costo: i.costo ?? 0,
           })),
@@ -140,6 +146,38 @@ export class ComprasService {
     return this.http
       .get<{ id: string; nombre: string; codigo: string }[]>(`${this.api}/stock/depositos`)
       .pipe(map((items) => items.map((d) => ({ id: d.id, nombre: `${d.codigo} · ${d.nombre}` }))));
+  }
+
+  listarItemsLista(
+    proveedorId: string,
+    opts?: { q?: string; soloSinMatch?: boolean; pageSize?: number },
+  ): Observable<ListaProveedorItem[]> {
+    let params = new HttpParams().set('page_size', String(opts?.pageSize ?? 100));
+    if (opts?.q) {
+      params = params.set('q', opts.q);
+    }
+    if (opts?.soloSinMatch) {
+      params = params.set('solo_sin_match', 'true');
+    }
+    return this.http
+      .get<{ items: ListaItemDto[] }>(`${this.api}/proveedores/${proveedorId}/listas/items`, {
+        params,
+      })
+      .pipe(map((p) => p.items.map(listaItemToModel)));
+  }
+
+  altaArticuloDesdeLista(
+    proveedorId: string,
+    itemId: string,
+    sku: string,
+    codigoBarras = '',
+  ): Observable<ListaProveedorItem> {
+    return this.http
+      .post<ListaItemDto>(`${this.api}/proveedores/${proveedorId}/listas/items/${itemId}/alta`, {
+        sku,
+        codigo_barras: codigoBarras,
+      })
+      .pipe(map(listaItemToModel));
   }
 }
 
@@ -183,5 +221,20 @@ function importarToModel(dto: ImportarListaDto): ImportarListaResultado {
     sinMatchCodigos: dto.sin_match_codigos ?? [],
     previewCols: dto.preview_cols ?? [],
     previewRows: dto.preview_rows ?? [],
+  };
+}
+
+function listaItemToModel(dto: ListaItemDto): ListaProveedorItem {
+  return {
+    id: dto.id,
+    proveedorId: dto.proveedor_id,
+    codigoProveedor: dto.codigo_proveedor,
+    nombre: dto.nombre,
+    costo: dto.costo,
+    precioLista: dto.precio_lista,
+    marca: dto.marca,
+    rubro: dto.rubro,
+    articuloId: dto.articulo_id,
+    enCatalogo: dto.en_catalogo,
   };
 }

@@ -10,16 +10,13 @@ import { AuthStore } from '../state/auth.store';
 const NAV_COMERCIO: SidebarItem[] = [
   { id: 'dashboard', label: 'Inicio', icon: 'grid' },
   { id: 'ventas', label: 'Mostrador', icon: 'file-text' },
-  { id: 'presupuestos', label: 'Presup.', icon: 'ticket' },
-  { id: 'pedidos', label: 'Pedidos', icon: 'list' },
-  { id: 'remitos', label: 'Remitos', icon: 'truck' },
+  { id: 'comprobantes', label: 'Ventas', icon: 'list' },
   { id: 'clientes', label: 'Clientes', icon: 'user' },
   { id: 'cuenta-corriente', label: 'Cta. cte.', icon: 'dollar' },
   { id: 'productos', label: 'Artículos', icon: 'package' },
   { id: 'inventario', label: 'Stock', icon: 'package' },
   { id: 'compras', label: 'Compras', icon: 'truck' },
-  { id: 'caja', label: 'Caja', icon: 'dollar' },
-  { id: 'bancos', label: 'Cheques', icon: 'file-text' },
+  { id: 'tesoreria', label: 'Tesorería', icon: 'dollar' },
   { id: 'configuracion', label: 'Config.', icon: 'settings', section: 'bottom' },
 ];
 

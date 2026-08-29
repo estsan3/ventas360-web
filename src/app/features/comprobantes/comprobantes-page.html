@@ -1,0 +1,21 @@
+<section class="cmp">
+  <header class="cmp__bar">
+    <span class="cmp__label">Ventas</span>
+    <div class="cmp__tabs">
+      <a
+        routerLink="presupuestos"
+        routerLinkActive="cmp__tab--on"
+        class="cmp__tab"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Presupuestos
+      </a>
+      <a routerLink="pedidos" routerLinkActive="cmp__tab--on" class="cmp__tab">Pedidos</a>
+      <a routerLink="remitos" routerLinkActive="cmp__tab--on" class="cmp__tab">Remitos</a>
+    </div>
+  </header>
+
+  <div class="cmp__outlet">
+    <router-outlet />
+  </div>
+</section>

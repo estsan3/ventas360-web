@@ -16,6 +16,7 @@ export type UserRol = 'administrador' | 'encargado' | 'vendedor' | 'superadmin';
 export const MODULO_POR_RUTA: Record<string, ModuloPermiso> = {
   dashboard: 'inicio',
   ventas: 'mostrador',
+  comprobantes: 'ventas',
   presupuestos: 'ventas',
   pedidos: 'ventas',
   remitos: 'ventas',
@@ -25,6 +26,7 @@ export const MODULO_POR_RUTA: Record<string, ModuloPermiso> = {
   inventario: 'stock',
   compras: 'compras',
   proveedores: 'compras',
+  tesoreria: 'compras',
   caja: 'compras',
   bancos: 'compras',
   configuracion: 'configuracion',
@@ -38,7 +40,7 @@ export const RUTA_INICIAL_POR_MODULO: { modulo: ModuloPermiso; ruta: string }[] 
   { modulo: 'articulos', ruta: '/productos' },
   { modulo: 'stock', ruta: '/inventario' },
   { modulo: 'clientes', ruta: '/clientes' },
-  { modulo: 'ventas', ruta: '/presupuestos' },
+  { modulo: 'ventas', ruta: '/comprobantes' },
   { modulo: 'compras', ruta: '/compras' },
   { modulo: 'configuracion', ruta: '/configuracion' },
 ];

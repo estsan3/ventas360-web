@@ -35,4 +35,8 @@ export class ComprasStore {
   facturar(id: string) {
     return this.api.facturar(id);
   }
+
+  emitir(id: string) {
+    return this.api.emitir(id);
+  }
 }

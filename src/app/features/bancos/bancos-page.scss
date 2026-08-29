@@ -1,5 +1,13 @@
 @use 'dc-list' as dc;
 
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .chq {
   @include dc.dc-list-page;
   max-width: none;
@@ -992,6 +1000,13 @@
     display: flex;
     justify-content: flex-end;
     gap: 9px;
+  }
+
+  &--nest {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
   }
 }
 

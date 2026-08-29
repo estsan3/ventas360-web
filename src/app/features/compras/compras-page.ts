@@ -1,10 +1,10 @@
 import { SlicePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Button } from '../../shared/ui/button/button';
-import { TextInput } from '../../shared/ui/input/text-input';
 import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { TipoCompra } from './data-access/compra.model';
@@ -14,6 +14,7 @@ import {
   CAMPOS_MAPEO_OPTS,
   COLUMNAS_EXCEL,
   ImportarListaResultado,
+  ListaProveedorItem,
   MapeoColumna,
   PoliticaPrecioVenta,
   ProveedorLista,
@@ -55,7 +56,35 @@ function formatearFechaCorta(iso: string): string {
   return `${dd}/${mm}/${yy}`;
 }
 
+interface FilaPedidoVista {
+  id: string;
+  comprobante: string;
+  fecha: string;
+  proveedor: string;
+  total: string;
+  estadoLabel: string;
+  estadoTone: BadgeTone;
+  avance: string;
+  puedeEmitir: boolean;
+  puedeRecibir: boolean;
+}
+
 function etiquetaEstado(tipo: TipoCompra, estado: string): { label: string; tone: BadgeTone } {
+  if (tipo === 'pedido_compra') {
+    if (estado === 'borrador') {
+      return { label: 'Borrador', tone: 'neutral' };
+    }
+    if (estado === 'emitido') {
+      return { label: 'Emitido', tone: 'info' };
+    }
+    if (estado === 'parcial') {
+      return { label: 'Recepción parcial', tone: 'warn' };
+    }
+    if (estado === 'recibido') {
+      return { label: 'Recibido', tone: 'ok' };
+    }
+    return { label: estado, tone: 'neutral' };
+  }
   if (estado === 'borrador') {
     return { label: 'Borrador', tone: 'neutral' };
   }
@@ -76,20 +105,18 @@ function comprobanteLabel(tipo: TipoCompra, numero: string | null, id: string): 
     return numero.trim();
   }
   const corto = id.replace(/-/g, '').slice(0, 8).toUpperCase();
-  return tipo === 'factura_compra' ? `FC ${corto}` : `REM ${corto}`;
+  if (tipo === 'factura_compra') {
+    return `FC ${corto}`;
+  }
+  if (tipo === 'pedido_compra') {
+    return `OC ${corto}`;
+  }
+  return `REM ${corto}`;
 }
 
 @Component({
   selector: 'app-compras-page',
-  imports: [
-    Button,
-    FormsModule,
-    ReactiveFormsModule,
-    TextInput,
-    SelectInput,
-    SideDrawer,
-    SlicePipe,
-  ],
+  imports: [Button, FormsModule, ReactiveFormsModule, SelectInput, SideDrawer, SlicePipe],
   templateUrl: './compras-page.html',
   styleUrl: './compras-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -121,6 +148,14 @@ export class ComprasPage {
   protected readonly margenPct = signal(30);
   protected readonly archivoSeleccionado = signal<File | null>(null);
   protected readonly preview = signal<ImportarListaResultado | null>(null);
+  protected readonly itemsLista = signal<ListaProveedorItem[]>([]);
+  protected readonly itemsListaPedido = signal<ListaProveedorItem[]>([]);
+  protected readonly altaItemId = signal<string | null>(null);
+  protected readonly altaSku = signal('');
+  protected readonly origenId = signal('');
+  protected readonly lineasDraft = signal<
+    { productoId: string; codigoProveedor: string; cantidad: string }[]
+  >([{ productoId: '', codigoProveedor: '', cantidad: '1' }]);
 
   protected readonly nuevoNombre = signal('');
   protected readonly nuevoCuit = signal('');
@@ -137,6 +172,7 @@ export class ComprasPage {
   protected readonly etiquetaCampo = etiquetaCampo;
 
   protected readonly tipoOptions: SelectOption[] = [
+    { value: 'pedido_compra', label: 'Pedido de compra' },
     { value: 'remito_compra', label: 'Remito de mercadería' },
     { value: 'factura_compra', label: 'Factura de compra' },
   ];
@@ -153,6 +189,44 @@ export class ComprasPage {
     const id = this.listaProvId();
     return this.proveedores().find((p) => p.id === id) ?? null;
   });
+
+  protected readonly filasPedidos = computed((): FilaPedidoVista[] =>
+    (this.estado().data ?? [])
+      .filter((c) => c.tipo === 'pedido_compra')
+      .map((c) => {
+        const est = etiquetaEstado(c.tipo, c.estado);
+        return {
+          id: c.id,
+          comprobante: comprobanteLabel(c.tipo, c.numero, c.id),
+          fecha: formatearFechaCorta(c.fecha),
+          proveedor: this.nombresProv()[c.proveedorId] ?? c.proveedorId,
+          total: this.formatear(c.total),
+          estadoLabel: est.label,
+          estadoTone: est.tone,
+          avance: `${c.cantidadRecibida} / ${c.cantidadPedida}`,
+          puedeEmitir: c.estado === 'borrador',
+          puedeRecibir: c.estado === 'emitido' || c.estado === 'parcial',
+        };
+      }),
+  );
+
+  protected readonly pedidosEmitidosOpts = computed((): SelectOption[] =>
+    (this.estado().data ?? [])
+      .filter(
+        (c) => c.tipo === 'pedido_compra' && (c.estado === 'emitido' || c.estado === 'parcial'),
+      )
+      .map((c) => ({
+        value: c.id,
+        label: `${comprobanteLabel(c.tipo, c.numero, c.id)} · ${this.nombresProv()[c.proveedorId] ?? ''}`,
+      })),
+  );
+
+  protected readonly itemsListaOpts = computed((): SelectOption[] =>
+    this.itemsListaPedido().map((i) => ({
+      value: i.codigoProveedor,
+      label: `${i.codigoProveedor} · ${i.nombre}${i.enCatalogo ? '' : ' (sin catálogo)'}`,
+    })),
+  );
 
   protected readonly filasFacturas = computed((): FilaFacturaVista[] =>
     (this.estado().data ?? [])
@@ -191,8 +265,6 @@ export class ComprasPage {
     tipo: ['remito_compra' as TipoCompra, Validators.required],
     proveedorId: ['', Validators.required],
     depositoId: ['', Validators.required],
-    productoId: ['', Validators.required],
-    cantidad: ['1', [Validators.required, Validators.min(1)]],
   });
 
   constructor() {
@@ -200,18 +272,35 @@ export class ComprasPage {
     if (tab === 'listas' || tab === 'proveedores' || tab === 'pedidos' || tab === 'facturas') {
       this.tab.set(tab);
     }
+    this.form.controls.tipo.valueChanges.pipe(takeUntilDestroyed()).subscribe((tipo) => {
+      const dep = this.form.controls.depositoId;
+      if (tipo === 'pedido_compra') {
+        dep.clearValidators();
+      } else {
+        dep.setValidators(Validators.required);
+      }
+      dep.updateValueAndValidity({ emitEvent: false });
+    });
+    this.form.controls.proveedorId.valueChanges.pipe(takeUntilDestroyed()).subscribe((id) => {
+      if (this.drawerAbierto() && id) {
+        this.cargarItemsListaPedido(id);
+      }
+    });
+    this.buscar();
   }
 
   protected buscar(): void {
     this.buscado.set(true);
     this.store.cargar();
-    if (this.tab() === 'proveedores' || this.tab() === 'listas') {
-      this.recargarProveedores();
-    }
+    this.recargarProveedores();
+    this.api.listarSaldosCxp().subscribe({ next: (s) => this.saldosCxp.set(s) });
   }
 
   protected setTab(next: TabCompras): void {
     this.tab.set(next);
+    if (next === 'listas' && this.listaProvId()) {
+      this.cargarItemsLista();
+    }
   }
 
   protected recargarProveedores(): void {
@@ -219,6 +308,9 @@ export class ComprasPage {
       this.proveedores.set(items);
       this.proveedoresOpts.set(items.map((p) => ({ value: p.id, label: p.nombre })));
       this.nombresProv.set(Object.fromEntries(items.map((p) => [p.id, p.nombre])));
+      if (this.drawerAbierto() && !this.form.controls.proveedorId.value && items[0]) {
+        this.form.patchValue({ proveedorId: items[0].id });
+      }
       const actual = this.listaProvId();
       if (!actual || !items.some((p) => p.id === actual)) {
         this.seleccionarProveedorLista(items[0]?.id ?? '');
@@ -235,6 +327,7 @@ export class ComprasPage {
       this.mapeoImport.set([]);
       this.preview.set(null);
       this.archivoSeleccionado.set(null);
+      this.itemsLista.set([]);
       return;
     }
     this.mapeoImport.set(prov.mapeoExcel.map((m) => ({ ...m })));
@@ -243,6 +336,26 @@ export class ComprasPage {
     this.margenPct.set(prov.margenVentaPct);
     this.preview.set(null);
     this.archivoSeleccionado.set(null);
+    this.cargarItemsLista();
+  }
+
+  protected cargarItemsLista(): void {
+    const id = this.listaProvId();
+    if (!id) {
+      this.itemsLista.set([]);
+      return;
+    }
+    this.api.listarItemsLista(id, { pageSize: 200 }).subscribe({
+      next: (items) => this.itemsLista.set(items),
+      error: () => this.itemsLista.set([]),
+    });
+  }
+
+  private cargarItemsListaPedido(proveedorId: string): void {
+    this.api.listarItemsLista(proveedorId, { pageSize: 200 }).subscribe({
+      next: (items) => this.itemsListaPedido.set(items),
+      error: () => this.itemsListaPedido.set([]),
+    });
   }
 
   protected onArchivo(event: Event): void {
@@ -301,12 +414,11 @@ export class ComprasPage {
           this.importando.set(false);
           this.notifications.success(
             'Lista importada',
-            `${res.actualizados} actualizados · ${res.nuevos} nuevos · ${res.sinMatch} sin match`,
+            `${res.actualizados} en catálogo · ${res.sinMatch} solo en lista (sin SKU propio)`,
           );
           this.recargarProveedores();
-          this.api.listarProductosRef().subscribe((items) => {
-            this.productosOpts.set(items.map((p) => ({ value: p.id, label: p.nombre })));
-          });
+          this.cargarItemsLista();
+          this.recargarProductosOpts();
         },
         error: () => this.importando.set(false),
       });
@@ -321,31 +433,55 @@ export class ComprasPage {
   }
 
   protected abrirAlta(): void {
-    this.tab.set('facturas');
+    const tipoDefault: TipoCompra = this.tab() === 'pedidos' ? 'pedido_compra' : 'remito_compra';
     if (this.proveedoresOpts().length === 0) {
       this.recargarProveedores();
     }
     if (this.productosOpts().length === 0) {
-      this.api.listarProductosRef().subscribe((items) => {
-        this.productosOpts.set(items.map((p) => ({ value: p.id, label: p.nombre })));
-      });
+      this.recargarProductosOpts();
     }
     if (this.depositosOpts().length === 0) {
       this.api.listarDepositosRef().subscribe((items) => {
         this.depositosOpts.set(items.map((d) => ({ value: d.id, label: d.nombre })));
+        if (!this.form.controls.depositoId.value && items[0]) {
+          this.form.patchValue({ depositoId: items[0].id });
+        }
       });
     }
     const dep = this.depositosOpts()[0]?.value ?? '';
     const prov = this.proveedoresOpts()[0]?.value ?? '';
-    const prod = this.productosOpts()[0]?.value ?? '';
     this.form.reset({
-      tipo: 'remito_compra',
+      tipo: tipoDefault,
       proveedorId: prov,
       depositoId: dep,
-      productoId: prod,
-      cantidad: '1',
     });
+    this.origenId.set('');
+    this.lineasDraft.set([{ productoId: '', codigoProveedor: '', cantidad: '1' }]);
+    if (prov) {
+      this.cargarItemsListaPedido(prov);
+    } else {
+      this.itemsListaPedido.set([]);
+    }
     this.drawerAbierto.set(true);
+  }
+
+  protected agregarLineaDraft(): void {
+    this.lineasDraft.update((rows) => [
+      ...rows,
+      { productoId: '', codigoProveedor: '', cantidad: '1' },
+    ]);
+  }
+
+  protected quitarLineaDraft(idx: number): void {
+    this.lineasDraft.update((rows) => rows.filter((_, i) => i !== idx));
+  }
+
+  protected actualizarLineaDraft(
+    idx: number,
+    key: 'productoId' | 'codigoProveedor' | 'cantidad',
+    value: string,
+  ): void {
+    this.lineasDraft.update((rows) => rows.map((r, i) => (i === idx ? { ...r, [key]: value } : r)));
   }
 
   protected agregarFilaMapeoNuevo(): void {
@@ -401,9 +537,18 @@ export class ComprasPage {
       return;
     }
     const raw = this.form.getRawValue();
-    const cantidad = Number(raw.cantidad);
-    if (!Number.isInteger(cantidad) || cantidad < 1) {
-      this.notifications.error('Cantidad inválida', 'Debe ser un entero ≥ 1');
+    const lineas = this.lineasDraft()
+      .map((l) => ({
+        productoId: l.productoId || undefined,
+        codigoProveedor: l.codigoProveedor || undefined,
+        cantidad: Number(l.cantidad),
+      }))
+      .filter(
+        (l) =>
+          (l.productoId || l.codigoProveedor) && Number.isInteger(l.cantidad) && l.cantidad >= 1,
+      );
+    if (lineas.length === 0) {
+      this.notifications.error('Sin líneas', 'Agregá al menos un artículo o código de proveedor');
       return;
     }
     this.guardando.set(true);
@@ -412,32 +557,71 @@ export class ComprasPage {
         tipo: raw.tipo,
         proveedorId: raw.proveedorId,
         depositoId: raw.depositoId,
-        lineas: [
-          {
-            productoId: raw.productoId,
-            cantidad,
-            // Sin precio: la API usa producto.costo (lista del proveedor).
-          },
-        ],
+        origenId: this.origenId() || undefined,
+        lineas,
       })
       .subscribe({
         next: () => {
+          const msg =
+            raw.tipo === 'pedido_compra'
+              ? 'Pedido creado en borrador. Emitilo para poder recibir.'
+              : 'Quedó en borrador — confirmá para impactar stock';
           this.notifications.success(
-            raw.tipo === 'remito_compra' ? 'Remito creado' : 'Factura creada',
-            'Quedó en borrador — confirmá para impactar stock',
+            raw.tipo === 'pedido_compra'
+              ? 'Pedido creado'
+              : raw.tipo === 'remito_compra'
+                ? 'Remito creado'
+                : 'Factura creada',
+            msg,
           );
           this.drawerAbierto.set(false);
           this.guardando.set(false);
+          this.tab.set(raw.tipo === 'pedido_compra' ? 'pedidos' : 'facturas');
           this.store.cargar();
         },
         error: () => this.guardando.set(false),
       });
   }
 
+  protected emitir(id: string): void {
+    this.store.emitir(id).subscribe({
+      next: () => {
+        this.notifications.success('Pedido emitido', 'Ya podés recibir mercadería contra esta OC');
+        this.store.cargar();
+      },
+    });
+  }
+
+  protected recibir(id: string): void {
+    const pedido = (this.estado().data ?? []).find((c) => c.id === id);
+    if (!pedido) {
+      return;
+    }
+    this.form.reset({
+      tipo: 'remito_compra',
+      proveedorId: pedido.proveedorId,
+      depositoId: pedido.depositoId ?? '',
+    });
+    this.origenId.set(pedido.id);
+    this.lineasDraft.set(
+      pedido.lineas.map((l) => ({
+        productoId: l.productoId,
+        codigoProveedor: l.codigoProveedor,
+        cantidad: String(l.cantidad),
+      })),
+    );
+    this.cargarItemsListaPedido(pedido.proveedorId);
+    this.drawerAbierto.set(true);
+  }
+
   protected confirmar(id: string): void {
     this.store.confirmar(id).subscribe({
-      next: () => {
-        this.notifications.success('Compra confirmada', 'Stock ingresado al depósito');
+      next: (c) => {
+        const msg =
+          c.tipo === 'factura_compra'
+            ? 'Imputada en cuenta corriente del proveedor'
+            : 'Stock ingresado al depósito';
+        this.notifications.success('Compra confirmada', msg);
         this.store.cargar();
         this.api.listarSaldosCxp().subscribe({ next: (s) => this.saldosCxp.set(s) });
       },
@@ -451,6 +635,41 @@ export class ComprasPage {
         this.store.cargar();
         this.api.listarSaldosCxp().subscribe({ next: (s) => this.saldosCxp.set(s) });
       },
+    });
+  }
+
+  protected empezarAlta(itemId: string): void {
+    this.altaItemId.set(itemId);
+    this.altaSku.set('');
+  }
+
+  protected confirmarAlta(): void {
+    const itemId = this.altaItemId();
+    const provId = this.listaProvId();
+    const sku = this.altaSku().trim();
+    if (!itemId || !provId || !sku) {
+      this.notifications.error('SKU requerido', 'Definí el código de tu catálogo');
+      return;
+    }
+    this.api.altaArticuloDesdeLista(provId, itemId, sku).subscribe({
+      next: (item) => {
+        this.notifications.success('Artículo creado', `${sku} · ${item.nombre}`);
+        this.altaItemId.set(null);
+        this.altaSku.set('');
+        this.cargarItemsLista();
+        this.recargarProductosOpts();
+      },
+    });
+  }
+
+  private recargarProductosOpts(): void {
+    this.api.listarProductosRef().subscribe((items) => {
+      this.productosOpts.set(
+        items.map((p) => ({
+          value: p.id,
+          label: p.sku ? `${p.sku} · ${p.nombre}` : p.nombre,
+        })),
+      );
     });
   }
 

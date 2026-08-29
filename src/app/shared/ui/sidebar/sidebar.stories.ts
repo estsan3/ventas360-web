@@ -4,9 +4,7 @@ import { Sidebar, SidebarItem } from './sidebar';
 const ITEMS: SidebarItem[] = [
   { id: 'dashboard', icon: 'grid', label: 'Inicio' },
   { id: 'ventas', icon: 'file-text', label: 'Mostrador' },
-  { id: 'presupuestos', icon: 'ticket', label: 'Presup.' },
-  { id: 'pedidos', icon: 'list', label: 'Pedidos' },
-  { id: 'remitos', icon: 'truck', label: 'Remitos' },
+  { id: 'comprobantes', icon: 'list', label: 'Ventas' },
   { id: 'clientes', icon: 'user', label: 'Clientes' },
   { id: 'cuenta-corriente', icon: 'dollar', label: 'Cta. cte.' },
   { id: 'productos', icon: 'package', label: 'Artículos' },

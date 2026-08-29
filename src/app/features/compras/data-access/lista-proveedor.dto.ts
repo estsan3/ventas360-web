@@ -35,3 +35,16 @@ export interface ProveedorListaDto {
   ultima_importacion_nuevos: number;
   ultima_importacion_sin_match: number;
 }
+
+export interface ListaItemDto {
+  id: string;
+  proveedor_id: string;
+  codigo_proveedor: string;
+  nombre: string;
+  costo: number;
+  precio_lista: number;
+  marca: string;
+  rubro: string;
+  articulo_id: string;
+  en_catalogo: boolean;
+}

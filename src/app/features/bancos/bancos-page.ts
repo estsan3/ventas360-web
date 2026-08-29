@@ -7,7 +7,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, map, startWith } from 'rxjs';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Button } from '../../shared/ui/button/button';
 import { TextInput } from '../../shared/ui/input/text-input';
@@ -15,6 +18,7 @@ import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
 import { SideDrawer } from '../../shared/ui/side-drawer/side-drawer';
 import { MIN_CHARS_BUSQUEDA } from '../../core/utils/busqueda';
 import { BANCOS_EMISORES_AR } from '../cuenta-corriente/data-access/bancos-argentina';
+import { estaEnTesoreria } from '../tesoreria/tesoreria.util';
 import {
   BancosService,
   CuentaBancariaDto,
@@ -94,6 +98,17 @@ export class BancosPage {
   private readonly api = inject(BancosService);
   private readonly fb = inject(FormBuilder);
   private readonly notifications = inject(NotificationStore);
+  private readonly router = inject(Router);
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  protected readonly enTesoreria = computed(() => estaEnTesoreria(this.url()));
 
   private readonly buscaInput = viewChild<ElementRef<HTMLInputElement>>('buscaInput');
 

@@ -390,11 +390,11 @@ export class VentasPage {
   protected readonly listadoTrasGuardar = computed(() => {
     switch (this.tipo()) {
       case 'presupuesto':
-        return '/presupuestos';
+        return '/comprobantes/presupuestos';
       case 'pedido':
-        return '/pedidos';
+        return '/comprobantes/pedidos';
       case 'remito':
-        return '/remitos';
+        return '/comprobantes/remitos';
       default:
         return '/ventas';
     }
@@ -1653,7 +1653,7 @@ export class VentasPage {
 
   /** En Mostrador: guarda un presupuesto con las líneas actuales. */
   protected guardarPresupuesto(): void {
-    this.persistir('presupuesto', '/presupuestos');
+    this.persistir('presupuesto', '/comprobantes/presupuestos');
   }
 
   /** CTA principal según el tipo de pantalla. */
