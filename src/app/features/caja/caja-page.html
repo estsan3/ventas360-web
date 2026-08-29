@@ -1,372 +1,379 @@
-<section class="page caja" [class.caja--nest]="enTesoreria()">
-  <header class="caja__header">
-    <div>
-      <h1 class="caja__title">Caja y bancos</h1>
-      <p class="caja__subtitle">Caja del día · {{ etiquetaEstado() }}</p>
-    </div>
-    <div class="caja__actions">
-      @if (estadoCaja() === 'sin_abrir' || estadoCaja() === 'cerrada') {
-        <button type="button" class="caja__btn caja__btn--dark" (click)="abrirDrawer('abrir')">
-          Abrir caja
-        </button>
-      }
-      @if (estadoCaja() === 'abierta') {
-        <button type="button" class="caja__btn caja__btn--ghost" (click)="abrirDrawer('egreso')">
-          Registrar egreso
-        </button>
-        <button type="button" class="caja__btn caja__btn--dark" (click)="abrirDrawer('cerrar')">
-          Cerrar caja
-        </button>
-      }
-    </div>
-  </header>
-
-  @if (estadoCaja() === 'sin_abrir') {
-    <div class="caja__banner">
-      Abrí la caja con el fondo inicial para registrar egresos y cerrar el día con arqueo.
-    </div>
-  }
-  @if (estadoCaja() === 'cerrada') {
-    <div class="caja__banner caja__banner--cerrada">
-      Cerrada
-      @if (saldo()?.cerrada_por) {
-        por {{ saldo()!.cerrada_por }}
-      }
-      · efectivo {{ formatearMoneda(saldo()?.efectivo_contado ?? 0) }} · cheques
-      {{ formatearMoneda(saldo()?.cheques_contado ?? 0) }} · tarjetas
-      {{ formatearMoneda(saldo()?.tarjetas_contado ?? 0) }}. Podés abrir otro turno.
-    </div>
-  }
-
-  <div class="caja__kpis">
-    <div class="caja__kpi caja__kpi--dark">
-      <div class="caja__kpi-label">Efectivo en caja</div>
-      <div class="caja__kpi-val">{{ kpiEfectivo().valor }}</div>
-      <div class="caja__kpi-meta">{{ kpiEfectivo().meta }}</div>
-    </div>
-    <div class="caja__kpi">
-      <div class="caja__kpi-label">Cheques en cartera</div>
-      <div class="caja__kpi-val">{{ kpiCheques().valor }}</div>
-      <div class="caja__kpi-meta">{{ kpiCheques().meta }}</div>
-    </div>
-    <div class="caja__kpi">
-      <div class="caja__kpi-label">{{ kpiBanco().label }}</div>
-      <div class="caja__kpi-val">{{ kpiBanco().valor }}</div>
-      <div class="caja__kpi-meta">{{ kpiBanco().meta }}</div>
-    </div>
-    <div class="caja__kpi">
-      <div class="caja__kpi-label">Tarjetas</div>
-      <div class="caja__kpi-val">{{ kpiTarjetas().valor }}</div>
-      <div class="caja__kpi-meta">{{ kpiTarjetas().meta }}</div>
-    </div>
-  </div>
-
-  @if (!enTesoreria()) {
-    <div class="caja__tabs">
-      <button
-        type="button"
-        class="caja__tab"
-        [class.caja__tab--on]="vista() === 'movimientos'"
-        (click)="setVista('movimientos')"
-      >
-        Movimientos
-      </button>
-      <button
-        type="button"
-        class="caja__tab"
-        [class.caja__tab--on]="vista() === 'cheques'"
-        (click)="setVista('cheques')"
-      >
-        Cartera de cheques
-      </button>
-    </div>
-  }
-
-  @if (vista() === 'movimientos') {
-    <div class="caja__card">
-      <div class="caja__card-title">Movimientos de hoy</div>
-      @if (movimientos().length === 0) {
-        <div class="caja__empty">
-          {{ cargando() ? 'Cargando movimientos…' : 'No hay movimientos para hoy' }}
+<section class="cja">
+  <div class="cja__split">
+    <div class="cja__main">
+      <div class="cja__turno" [attr.data-tono]="turno().tone">
+        <div>
+          <div class="cja__turno-tit">
+            <span class="cja__mono cja__strong">{{ turno().numero }}</span>
+            <span class="cja__pill" [attr.data-tono]="turno().tone">{{ turno().estado }}</span>
+          </div>
+          <div class="cja__muted">{{ turno().meta }}</div>
         </div>
-      } @else {
-        <table class="caja__table">
-          <thead>
-            <tr>
-              <th>Hora</th>
-              <th>Concepto</th>
-              <th>Medio</th>
-              <th class="caja__th-right">Ingreso</th>
-              <th class="caja__th-right">Egreso</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of movimientos(); track row.id) {
-              <tr>
-                <td>{{ row.hora }}</td>
-                <td class="caja__concepto">{{ row.concepto }}</td>
-                <td>{{ row.medio }}</td>
-                <td
-                  class="caja__td-right"
-                  [class.caja__ingreso]="row.ingreso !== '—'"
-                  [class.caja__dash]="row.ingreso === '—'"
-                >
-                  {{ row.ingreso }}
-                </td>
-                <td
-                  class="caja__td-right"
-                  [class.caja__egreso]="row.egreso !== '—'"
-                  [class.caja__dash]="row.egreso === '—'"
-                >
-                  {{ row.egreso }}
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-  } @else {
-    <div class="caja__card">
-      <div class="caja__card-title">Cheques</div>
-      @if (valores().length === 0) {
-        <div class="caja__empty">No hay cheques cargados</div>
-      } @else {
-        <table class="caja__table">
-          <thead>
-            <tr>
-              <th>Nº</th>
-              <th>Banco</th>
-              <th>Tipo</th>
-              <th>De / a</th>
-              <th class="caja__th-right">Monto</th>
-              <th>Estado</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (v of valores(); track v.id) {
-              <tr>
-                <td>{{ v.numero || '—' }}</td>
-                <td>{{ v.banco_emisor || '—' }}</td>
-                <td>{{ etiquetaTipoCheque(v.tipo) }}</td>
-                <td>
-                  @if (v.entregado_a) {
-                    Entregado a {{ v.entregado_a }}
-                  } @else {
-                    {{ v.recibido_de || v.librador || '—' }}
-                  }
-                </td>
-                <td class="caja__td-right">{{ formatearMoneda(v.monto) }}</td>
-                <td>{{ etiquetaEstadoValor(v.estado) }}</td>
-                <td class="caja__td-right">
-                  @if (v.estado === 'en_cartera') {
-                    <button type="button" class="caja__link" (click)="abrirEntregar(v.id)">
-                      Entregar
-                    </button>
-                    <button type="button" class="caja__link" (click)="depositarCheque(v.id)">
-                      Depositar
-                    </button>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-  }
-</section>
-
-<app-side-drawer
-  [abierto]="drawer() !== null"
-  [titulo]="tituloDrawer()"
-  ancho="480px"
-  (cerrar)="cerrarDrawer()"
->
-  @if (drawer() === 'abrir') {
-    <form class="form-drawer" [formGroup]="formAbrir">
-      <p class="caja__hint">El fondo es el efectivo con el que arranca la caja. Puede ser cero.</p>
-      <app-text-input
-        label="Fondo inicial"
-        type="number"
-        formControlName="fondoInicial"
-        placeholder="0"
-      />
-      <footer class="form-drawer__footer">
-        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
-          Cancelar
-        </app-button>
-        <app-button
-          variant="primary"
-          size="md"
-          [disabled]="guardando()"
-          (clicked)="confirmarAbrir()"
-        >
-          {{ guardando() ? 'Abriendo…' : 'Abrir caja' }}
-        </app-button>
-      </footer>
-    </form>
-  }
-
-  @if (drawer() === 'egreso') {
-    <form class="form-drawer" [formGroup]="formEgreso">
-      <p class="caja__hint">Sale de la caja. En efectivo no puede superar lo que hay.</p>
-      <app-select-input label="Medio" [options]="mediosEgreso" formControlName="medio" />
-      @if (medioEgreso() === 'cheque') {
-        <app-select-input
-          label="Origen del cheque"
-          [options]="modosCheque"
-          formControlName="modoCheque"
-        />
-        @if (modoCheque() === 'cartera') {
-          @if (opcionesChequesCartera().length === 0) {
-            <p class="caja__hint">No hay cheques en cartera para entregar.</p>
-          } @else {
-            <app-select-input
-              label="Cheque en cartera"
-              [options]="opcionesChequesCartera()"
-              formControlName="chequeId"
-            />
-          }
+        <div class="cja__spacer"></div>
+        @if (!abierta()) {
+          <button type="button" class="cja__cta" (click)="abrirCaja()">
+            {{ estadoCaja() === 'cerrada' ? 'Abrir otro turno' : 'Abrir caja' }}
+          </button>
         } @else {
-          <app-text-input label="Número" formControlName="numero" />
-          <app-text-input label="Banco" formControlName="bancoEmisor" />
-          <app-text-input label="Vencimiento" type="date" formControlName="fechaVto" />
+          <button type="button" class="cja__btn" (click)="abrirMov('transferencia')">
+            Transferir / depositar
+          </button>
+          <button type="button" class="cja__cta" (click)="abrirMov('egreso')">
+            + Movimiento manual
+          </button>
         }
-        <app-text-input
-          label="Entregado a"
-          formControlName="entregadoA"
-          placeholder="Proveedor, persona, etc."
-        />
-      }
-      <app-text-input label="Monto" type="number" formControlName="monto" placeholder="0" />
-      <app-text-input
-        label="Concepto"
-        formControlName="concepto"
-        placeholder="Flete, retiro, etc."
-      />
-      <footer class="form-drawer__footer">
-        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
-          Cancelar
-        </app-button>
-        <app-button
-          variant="primary"
-          size="md"
-          [disabled]="guardando()"
-          (clicked)="confirmarEgreso()"
-        >
-          {{ guardando() ? 'Guardando…' : 'Registrar egreso' }}
-        </app-button>
-      </footer>
-    </form>
-  }
+      </div>
 
-  @if (drawer() === 'cerrar') {
-    <form class="form-drawer" [formGroup]="formCerrar">
-      <div class="caja__arqueo">
-        <div class="caja__arqueo-row">
-          <span>Efectivo esperado</span>
-          <strong>{{ formatearMoneda(saldo()?.efectivo_esperado ?? 0) }}</strong>
+      <div class="cja__kpis">
+        @for (k of kpis(); track k.label) {
+          <button type="button" class="cja__kpi" [class.cja__kpi--on]="k.on" (click)="setKpi(k.id)">
+            <div class="cja__kpi-lab">{{ k.label }}</div>
+            <div class="cja__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+            <div class="cja__kpi-hint">{{ k.hint }}</div>
+          </button>
+        }
+      </div>
+
+      <div class="cja__toolbar">
+        <div class="cja__search">
+          <span>⌕</span>
+          <input
+            type="search"
+            [ngModel]="q()"
+            (ngModelChange)="q.set($event)"
+            placeholder="Comprobante, cliente, concepto o importe"
+          />
         </div>
-        <div class="caja__arqueo-row">
-          <span>Cheques del turno</span>
-          <strong>{{ formatearMoneda(saldo()?.cheques_esperado ?? 0) }}</strong>
+        @for (c of chips; track c.id) {
+          <button
+            type="button"
+            class="cja__chip"
+            [class.cja__chip--on]="chip() === c.id"
+            (click)="setChip(c.id)"
+          >
+            {{ c.label }}
+          </button>
+        }
+        <div class="cja__spacer"></div>
+        <button type="button" class="cja__link" (click)="imprimir()">Imprimir movimientos</button>
+      </div>
+
+      <div class="cja__card">
+        <div class="cja__thead">
+          <div>Hora</div>
+          <div>Tipo</div>
+          <div>Comprobante</div>
+          <div>Concepto</div>
+          <div>Medio</div>
+          <div class="cja__right">Importe</div>
+          <div class="cja__right">Saldo efectivo</div>
+          <div class="cja__center">Usuario</div>
         </div>
-        <div class="caja__arqueo-row">
-          <span>Tarjetas del turno</span>
-          <strong>{{ formatearMoneda(saldo()?.tarjetas_esperado ?? 0) }}</strong>
+        <div class="cja__body">
+          @for (r of filas(); track r.id) {
+            <div class="cja__row" [class.cja__row--aviso]="!!r.aviso">
+              <div class="cja__mono cja__muted">{{ r.hora }}</div>
+              <div>
+                <span class="cja__pill" [attr.data-tono]="r.tone">{{ r.codigo }}</span>
+              </div>
+              <div class="cja__mono cja__clip">{{ r.comp }}</div>
+              <div class="cja__clip">
+                <div>{{ r.concepto }}</div>
+                @if (r.aviso) {
+                  <div class="cja__muted">{{ r.aviso }}</div>
+                }
+              </div>
+              <div class="cja__clip cja__muted">{{ r.medio }}</div>
+              <div class="cja__right cja__mono cja__strong" [attr.data-tono]="r.impTone">
+                {{ r.importe }}
+              </div>
+              <div class="cja__right cja__mono cja__muted">{{ r.acum }}</div>
+              <div class="cja__center cja__muted">{{ r.user }}</div>
+            </div>
+          } @empty {
+            <div class="cja__empty">
+              @if (cargando()) {
+                Cargando movimientos…
+              } @else if (!abierta()) {
+                <div>La caja no está abierta</div>
+                <div class="cja__muted">Abrí el turno para ver y cargar movimientos.</div>
+              } @else {
+                <div>Ningún movimiento con estos filtros</div>
+                <div class="cja__muted">Probá el chip “Todos” o buscá por comprobante.</div>
+              }
+            </div>
+          }
         </div>
-        <div class="caja__arqueo-row">
-          <span>Fondo inicial</span>
-          <strong>{{ formatearMoneda(saldo()?.fondo_inicial ?? 0) }}</strong>
+        <div class="cja__foot">
+          <span>{{ countTxt() }}</span>
+          <div class="cja__spacer"></div>
+          <div class="cja__foot-tot">
+            <div class="cja__muted">
+              Ingresos {{ pieIngresos().ingresos }} · egresos {{ pieIngresos().egresos }}
+            </div>
+            <div class="cja__foot-efe">
+              <span>Efectivo que debe haber en caja</span>
+              <strong class="cja__mono">{{ efectivoTeoricoFmt() }}</strong>
+            </div>
+          </div>
         </div>
       </div>
-      <app-text-input
-        label="Efectivo contado"
-        type="number"
-        formControlName="efectivoContado"
-        placeholder="0"
-      />
-      @if (diferenciaCierre() !== null) {
-        <p
-          class="caja__dif"
-          [class.caja__dif--ok]="tonoDif(diferenciaCierre()) === 'ok'"
-          [class.caja__dif--neg]="tonoDif(diferenciaCierre()) === 'neg'"
-          [class.caja__dif--pos]="tonoDif(diferenciaCierre()) === 'pos'"
-        >
-          Efectivo · {{ textoDif(diferenciaCierre()) }}
-        </p>
-      }
-      <app-text-input
-        label="Cheques contados"
-        type="number"
-        formControlName="chequesContado"
-        placeholder="0"
-      />
-      @if (diferenciaCheques() !== null) {
-        <p
-          class="caja__dif"
-          [class.caja__dif--ok]="tonoDif(diferenciaCheques()) === 'ok'"
-          [class.caja__dif--neg]="tonoDif(diferenciaCheques()) === 'neg'"
-          [class.caja__dif--pos]="tonoDif(diferenciaCheques()) === 'pos'"
-        >
-          Cheques · {{ textoDif(diferenciaCheques()) }}
-        </p>
-      }
-      <app-text-input
-        label="Tarjetas contadas"
-        type="number"
-        formControlName="tarjetasContado"
-        placeholder="0"
-      />
-      @if (diferenciaTarjetas() !== null) {
-        <p
-          class="caja__dif"
-          [class.caja__dif--ok]="tonoDif(diferenciaTarjetas()) === 'ok'"
-          [class.caja__dif--neg]="tonoDif(diferenciaTarjetas()) === 'neg'"
-          [class.caja__dif--pos]="tonoDif(diferenciaTarjetas()) === 'pos'"
-        >
-          Tarjetas · {{ textoDif(diferenciaTarjetas()) }}
-        </p>
-      }
-      <footer class="form-drawer__footer">
-        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
-          Seguir contando
-        </app-button>
-        <app-button
-          variant="primary"
-          size="md"
-          [disabled]="guardando()"
-          (clicked)="confirmarCerrar()"
-        >
-          {{ guardando() ? 'Cerrando…' : 'Cerrar caja' }}
-        </app-button>
-      </footer>
-    </form>
-  }
+    </div>
 
-  @if (drawer() === 'entregar') {
-    <form class="form-drawer" [formGroup]="formEntregar">
-      <p class="caja__hint">Registrá a quién le das el cheque (propio o de tercero).</p>
-      <app-text-input
-        label="Entregado a"
-        formControlName="destinatario"
-        placeholder="Nombre o razón social"
-      />
-      <footer class="form-drawer__footer">
-        <app-button variant="outline" size="md" (clicked)="cerrarDrawer()" [disabled]="guardando()">
-          Cancelar
-        </app-button>
-        <app-button
-          variant="primary"
-          size="md"
+    <aside class="cja__side">
+      <div class="cja__side-h">
+        <div>
+          <div class="cja__side-tit">Arqueo de caja</div>
+          <div class="cja__muted">Contá el cajón y compará contra el sistema</div>
+        </div>
+      </div>
+      <div class="cja__side-b">
+        <div>
+          <div class="cja__sec-lab">Conteo de efectivo</div>
+          <div class="cja__mini">
+            <div class="cja__mini-h">
+              <div>Denominación</div>
+              <div class="cja__center">Cantidad</div>
+              <div class="cja__right">Subtotal</div>
+            </div>
+            @for (b of billetes(); track b.v) {
+              <div class="cja__mini-r">
+                <div class="cja__mono">{{ b.label }}</div>
+                <div class="cja__center">
+                  <input
+                    class="cja__qty"
+                    [ngModel]="b.cant"
+                    (ngModelChange)="setDenom(b.v, $event)"
+                    placeholder="0"
+                    [disabled]="!abierta()"
+                  />
+                </div>
+                <div class="cja__right cja__mono" [class.cja__muted]="!b.tiene">{{ b.sub }}</div>
+              </div>
+            }
+            <div class="cja__mini-f">
+              <div class="cja__strong">Contado</div>
+              <div class="cja__center cja__muted">{{ cantBilletes() }} unid.</div>
+              <div class="cja__right cja__mono cja__strong">{{ contadoFmt() }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cja__dif" [attr.data-tono]="difVista().tone">
+          <div class="cja__tot">
+            <span>Según el sistema</span>
+            <span class="cja__mono">{{ efectivoTeoricoFmt() }}</span>
+          </div>
+          <div class="cja__tot">
+            <span>Contado en el cajón</span>
+            <span class="cja__mono">{{ contadoFmt() }}</span>
+          </div>
+          <div class="cja__tot cja__tot--strong" [attr.data-tono]="difVista().tone">
+            <span>{{ difVista().label }}</span>
+            <span class="cja__mono">{{ difVista().fmt }}</span>
+          </div>
+          <div>{{ difVista().txt }}</div>
+        </div>
+
+        @if (pedirMotivo()) {
+          <div>
+            <div class="cja__sec-lab">Motivo de la diferencia</div>
+            <div class="cja__motivos">
+              @for (m of motivos; track m) {
+                <button
+                  type="button"
+                  class="cja__chip"
+                  [class.cja__chip--on]="motivo() === m"
+                  (click)="motivo.set(m)"
+                >
+                  {{ m }}
+                </button>
+              }
+            </div>
+            <input
+              class="cja__input"
+              [ngModel]="aclaracion()"
+              (ngModelChange)="aclaracion.set($event)"
+              placeholder="Aclaración para el cierre (queda en el historial)"
+            />
+          </div>
+        }
+
+        <div>
+          <div class="cja__sec-lab">Otros medios · se rinden aparte</div>
+          <div class="cja__traza">
+            @for (o of otrosMedios(); track o.label) {
+              <div class="cja__traza-r">
+                <span class="cja__dot" [class.cja__dot--on]="o.on"></span>
+                <div>
+                  <div>{{ o.label }}</div>
+                  <div class="cja__muted">{{ o.destino }}</div>
+                </div>
+                <span class="cja__mono">{{ o.valor }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div>
+          <div class="cja__sec-lab">Al cerrar el turno</div>
+          <div class="cja__traza">
+            @for (p of cierrePasos(); track p.titulo) {
+              <div class="cja__impacto">
+                <span class="cja__dot" [class.cja__dot--on]="p.on"></span>
+                <div>
+                  <div>{{ p.titulo }}</div>
+                  <div class="cja__muted">{{ p.detalle }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="cja__side-f">
+        <div class="cja__fondo-row">
+          <label>
+            Deja para el próximo turno
+            <input
+              class="cja__input"
+              [ngModel]="fondoProximo()"
+              (ngModelChange)="fondoProximo.set($event)"
+            />
+          </label>
+          <label>
+            A depositar / rendir
+            <div class="cja__rendir">{{ aRendirFmt() }}</div>
+          </label>
+        </div>
+        <div class="cja__side-acts">
+          <button type="button" class="cja__btn" [disabled]="!abierta()" (click)="guardarArqueo()">
+            Guardar arqueo
+          </button>
+          <button
+            type="button"
+            class="cja__cta cja__cta--block"
+            [disabled]="!abierta() || guardando()"
+            (click)="confirmarCerrar()"
+          >
+            {{ guardando() ? 'Cerrando…' : cierreLabel() }}
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+@if (abrirOpen()) {
+  <div class="cja-ov" (click)="abrirOpen.set(false)">
+    <div class="cja-ov__panel cja-ov__panel--sm" (click)="$event.stopPropagation()">
+      <div class="cja-ov__h">
+        <div>
+          <h3>Abrir caja</h3>
+          <p>El fondo es el efectivo con el que arranca el turno. Puede ser cero.</p>
+        </div>
+        <button type="button" class="cja-ov__x" (click)="abrirOpen.set(false)">×</button>
+      </div>
+      <div class="cja-ov__b">
+        <label>
+          Fondo inicial
+          <input
+            class="cja__input cja__input--lg"
+            [ngModel]="fondoAbrir()"
+            (ngModelChange)="fondoAbrir.set($event)"
+          />
+        </label>
+      </div>
+      <div class="cja-ov__f">
+        <button type="button" class="cja__btn" (click)="abrirOpen.set(false)">Cancelar</button>
+        <button type="button" class="cja__cta" [disabled]="guardando()" (click)="confirmarAbrir()">
+          {{ guardando() ? 'Abriendo…' : 'Abrir caja' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (movOpen()) {
+  <div class="cja-ov" (click)="movOpen.set(false)">
+    <div class="cja-ov__panel" (click)="$event.stopPropagation()">
+      <div class="cja-ov__h">
+        <div>
+          <h3>{{ tituloMov() }}</h3>
+          <p>{{ turno().numero }} · queda registrado en el turno abierto</p>
+        </div>
+        <button type="button" class="cja-ov__x" (click)="movOpen.set(false)">×</button>
+      </div>
+      <div class="cja-ov__tipos">
+        @for (t of tiposMov; track t.id) {
+          <button
+            type="button"
+            class="cja__chip"
+            [class.cja__chip--on]="movTipo() === t.id"
+            (click)="setMovTipo(t.id)"
+          >
+            {{ t.label }}
+          </button>
+        }
+      </div>
+      <div class="cja-ov__b">
+        <div class="cja-ov__grid">
+          <label>
+            Importe
+            <input
+              class="cja__input cja__input--lg cja__right"
+              [ngModel]="movMonto()"
+              (ngModelChange)="movMonto.set($event)"
+            />
+          </label>
+          <label>
+            {{ movTipo() === 'ingreso' ? 'Ingresa por' : 'Paga con' }}
+            <select
+              class="cja__input"
+              [ngModel]="movMedio()"
+              (ngModelChange)="movMedio.set($any($event))"
+            >
+              <option value="efectivo">Efectivo</option>
+              <option value="otro">Transferencia bancaria</option>
+              <option value="cheque">Cheque</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <div class="cja__sec-lab">Concepto</div>
+          <div class="cja__motivos">
+            @for (c of conceptosMov(); track c) {
+              <button
+                type="button"
+                class="cja__chip"
+                [class.cja__chip--on]="movConcepto() === c"
+                (click)="movConcepto.set(c)"
+              >
+                {{ c }}
+              </button>
+            }
+          </div>
+          <input
+            class="cja__input"
+            [ngModel]="movDetalle()"
+            (ngModelChange)="movDetalle.set($event)"
+            placeholder="Detalle libre, por ejemplo “combustible de la camioneta”"
+          />
+        </div>
+        <div class="cja__note" [attr.data-tono]="notaMov().tone">{{ notaMov().txt }}</div>
+      </div>
+      <div class="cja-ov__f">
+        <span class="cja__muted">Saldo de efectivo después {{ saldoDespuesFmt() }}</span>
+        <div class="cja__spacer"></div>
+        <button type="button" class="cja__btn" (click)="movOpen.set(false)">Cancelar</button>
+        <button
+          type="button"
+          class="cja__cta"
           [disabled]="guardando()"
-          (clicked)="confirmarEntregar()"
+          (click)="confirmarMovimiento()"
         >
-          {{ guardando() ? 'Guardando…' : 'Entregar' }}
-        </app-button>
-      </footer>
-    </form>
-  }
-</app-side-drawer>
+          {{ guardando() ? 'Guardando…' : ctaMov() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

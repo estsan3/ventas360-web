@@ -1,0 +1,1944 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <meta name="design_doc_mode" content="canvas" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: oklch(0.955 0.008 80);
+            font-family: 'Instrument Sans', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+          }
+          a {
+            color: oklch(0.52 0.15 255);
+            text-decoration: none;
+          }
+          a:hover {
+            color: oklch(0.42 0.15 255);
+            text-decoration: underline;
+          }
+          input,
+          select,
+          button {
+            font-family: inherit;
+          }
+          input:focus,
+          select:focus {
+            outline: 2px solid oklch(0.52 0.15 255);
+            outline-offset: -1px;
+          }
+          ::placeholder {
+            color: oklch(0.65 0.01 60);
+          }
+        </style>
+      </helmet>
+
+      <section style="display: flex; flex-direction: column; gap: 28px; padding: 56px 56px 90px">
+        <div style="display: flex; flex-direction: column; gap: 6px; max-width: 840px">
+          <div
+            style="
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              color: oklch(0.55 0.01 60);
+            "
+          >
+            Turno 8 · módulo nuevo
+          </div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 30px;
+              font-weight: 600;
+              letter-spacing: -0.02em;
+              color: oklch(0.25 0.01 60);
+            "
+          >
+            Tesorería
+          </h1>
+          <p
+            style="
+              margin: 4px 0 0;
+              font-size: 15px;
+              line-height: 1.55;
+              color: oklch(0.48 0.01 60);
+              text-wrap: pretty;
+            "
+          >
+            Cheques y bancos entran acá como pestañas del mismo módulo, apoyadas en lo que ya está
+            hecho. El diseño nuevo es Caja: apertura y cierre de turno, movimientos del día, arqueo
+            contra el sistema y transferencias entre cajas.
+          </p>
+        </div>
+
+        <div id="8a" style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <span
+              style="
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                font-weight: 600;
+                color: oklch(0.99 0 0);
+                background: oklch(0.3 0.01 60);
+                padding: 4px 9px;
+                border-radius: 5px;
+              "
+              >8a</span
+            >
+            <span style="font-size: 15px; font-weight: 600; color: oklch(0.3 0.01 60)"
+              >Tesorería — Caja (turno, movimientos y arqueo)</span
+            >
+          </div>
+
+          <div
+            style="
+              width: 1600px;
+              height: 1000px;
+              background: oklch(0.985 0.006 80);
+              border: 1px solid oklch(0.885 0.01 80);
+              border-radius: 12px;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              position: relative;
+              box-shadow:
+                0 1px 2px oklch(0.3 0.02 60 / 0.05),
+                0 12px 32px oklch(0.3 0.02 60 / 0.07);
+            "
+          >
+            <div
+              style="
+                height: 54px;
+                flex: none;
+                background: oklch(0.995 0.004 80);
+                border-bottom: 1px solid oklch(0.9 0.01 80);
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                padding: 0 18px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 9px">
+                <div
+                  style="
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 6px;
+                    background: oklch(0.52 0.15 255);
+                  "
+                ></div>
+                <span style="font-size: 14px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                  >Tesorería</span
+                >
+              </div>
+              <div style="display: flex; gap: 2px">
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Mostrador</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Ventas</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    color: oklch(0.36 0.13 255);
+                    background: oklch(0.955 0.028 255);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Tesorería</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Cuentas corrientes</span
+                >
+              </div>
+              <div style="flex: 1"></div>
+              <div
+                style="display: flex; align-items: center; gap: 7px; border: 1px solid {{
+                  turnoBorde
+                }}; background: {{ turnoBg }}; border-radius: 8px; padding: 5px 10px;"
+              >
+                <div
+                  style="width: 7px; height: 7px; border-radius: 50%; background: {{ turnoDot }};"
+                ></div>
+                <span style="font-size: 12.5px; font-weight: 600; color: {{ turnoColor }};">{{
+                  turnoTxt
+                }}</span>
+              </div>
+              <div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: oklch(0.55 0.01 60);
+                "
+              >
+                29/08/26 · 18:42
+              </div>
+              <div
+                style="
+                  width: 28px;
+                  height: 28px;
+                  border-radius: 50%;
+                  background: oklch(0.88 0.03 255);
+                  color: oklch(0.36 0.13 255);
+                  font-size: 11.5px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                EA
+              </div>
+            </div>
+
+            <div
+              style="
+                flex: none;
+                padding: 16px 22px 0;
+                display: flex;
+                align-items: flex-end;
+                gap: 16px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  gap: 2px;
+                  background: oklch(0.94 0.008 80);
+                  padding: 3px;
+                  border-radius: 9px;
+                "
+              >
+                <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+                  <div
+                    onClick="{{ t.pick }}"
+                    style="display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 7px; cursor: pointer; color: {{
+                      t.color
+                    }}; background: {{ t.bg }}; box-shadow: {{ t.shadow }};"
+                  >
+                    <span>{{ t.label }}</span>
+                    <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}">
+                      <span
+                        style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; color: {{
+                          t.badgeColor
+                        }}; background: {{ t.badgeBg }}; padding: 1px 5px; border-radius: 4px;"
+                        >{{ t.badgeTxt }}</span
+                      >
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="flex: 1"></div>
+              <div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 11.5px;
+                  color: oklch(0.55 0.01 60);
+                "
+              >
+                {{ contextoTxt }}
+              </div>
+            </div>
+
+            <!-- ============ CAJA ============ -->
+            <sc-if value="{{ esCaja }}" hint-placeholder-val="{{ true }}">
+              <div style="flex: 1; min-height: 0; display: flex; min-width: 0">
+                <div
+                  style="
+                    flex: 1;
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 14px 22px 20px;
+                  "
+                >
+                  <!-- encabezado del turno -->
+                  <div
+                    style="flex: none; border: 1px solid {{ t.borde }}; background: {{
+                      t.cardBg
+                    }}; border-radius: 11px; padding: 13px 15px; display: flex; align-items: center; gap: 20px;"
+                  >
+                    <div style="min-width: 0">
+                      <div style="display: flex; align-items: center; gap: 9px">
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 17px;
+                            font-weight: 600;
+                            color: oklch(0.22 0.01 60);
+                          "
+                          >{{ t.numero }}</span
+                        >
+                        <span
+                          style="font-size: 11px; font-weight: 600; color: {{
+                            t.estColor
+                          }}; background: {{ t.estBg }}; padding: 3px 8px; border-radius: 5px;"
+                          >{{ t.estado }}</span
+                        >
+                      </div>
+                      <div style="margin-top: 3px; font-size: 12.5px; color: oklch(0.48 0.01 60)">
+                        {{ t.meta }}
+                      </div>
+                    </div>
+                    <div style="flex: 1"></div>
+                    <select
+                      value="{{ cajaSel }}"
+                      onChange="{{ setCaja }}"
+                      style="
+                        flex: none;
+                        height: 36px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 13px;
+                        color: oklch(0.28 0.01 60);
+                        padding: 0 8px;
+                      "
+                    >
+                      <sc-for list="{{ cajas }}" as="c" hint-placeholder-count="3"
+                        ><option value="{{ c }}">{{ c }}</option></sc-for
+                      >
+                    </select>
+                    <button
+                      onClick="{{ abrirTransfer }}"
+                      style="
+                        flex: none;
+                        height: 36px;
+                        padding: 0 12px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 12.5px;
+                        font-weight: 500;
+                        color: oklch(0.35 0.01 60);
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.97 0.006 80);"
+                    >
+                      Transferir a otra caja
+                    </button>
+                    <button
+                      onClick="{{ abrirMov }}"
+                      style="
+                        flex: none;
+                        height: 36px;
+                        padding: 0 14px;
+                        border-radius: 9px;
+                        border: none;
+                        background: oklch(0.52 0.15 255);
+                        color: oklch(1 0 0);
+                        font-size: 13px;
+                        font-weight: 600;
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.46 0.15 255);"
+                    >
+                      + Movimiento manual
+                    </button>
+                  </div>
+
+                  <!-- saldo por medio de pago -->
+                  <div
+                    style="
+                      flex: none;
+                      margin-top: 12px;
+                      display: flex;
+                      gap: 1px;
+                      background: oklch(0.9 0.01 80);
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 10px;
+                      overflow: hidden;
+                    "
+                  >
+                    <sc-for list="{{ medios }}" as="m" hint-placeholder-count="5">
+                      <div
+                        onClick="{{ m.pick }}"
+                        style="flex: 1; background: {{
+                          m.bg
+                        }}; padding: 11px 14px; cursor: pointer;"
+                        style-hover="filter: brightness(0.985);"
+                      >
+                        <div
+                          style="
+                            font-size: 10.5px;
+                            letter-spacing: 0.04em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                          "
+                        >
+                          {{ m.label }}
+                        </div>
+                        <div
+                          style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 600; color: {{
+                            m.color
+                          }};"
+                        >
+                          {{ m.value }}
+                        </div>
+                        <div style="margin-top: 1px; font-size: 11.5px; color: oklch(0.58 0.01 60)">
+                          {{ m.hint }}
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <!-- filtros -->
+                  <div
+                    style="
+                      flex: none;
+                      margin-top: 12px;
+                      display: flex;
+                      align-items: center;
+                      gap: 9px;
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        height: 36px;
+                        width: 300px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.86 0.01 80);
+                        background: oklch(1 0 0);
+                        padding: 0 11px;
+                      "
+                    >
+                      <span style="font-size: 14px; color: oklch(0.6 0.01 60)">⌕</span>
+                      <input
+                        value="{{ query }}"
+                        onChange="{{ onQuery }}"
+                        placeholder="Comprobante, cliente, concepto o importe"
+                        style="
+                          flex: 1;
+                          border: none;
+                          outline: none;
+                          font-size: 13.5px;
+                          color: oklch(0.24 0.01 60);
+                          background: transparent;
+                        "
+                      />
+                    </div>
+                    <sc-for list="{{ chips }}" as="c" hint-placeholder-count="5">
+                      <div
+                        onClick="{{ c.pick }}"
+                        style="font-size: 12.5px; font-weight: 500; padding: 6px 11px; border-radius: 20px; cursor: pointer; white-space: nowrap; color: {{
+                          c.color
+                        }}; background: {{ c.bg }}; border: 1px solid {{ c.border }};"
+                      >
+                        {{ c.label }}
+                      </div>
+                    </sc-for>
+                    <div style="flex: 1"></div>
+                    <span
+                      style="
+                        font-size: 12.5px;
+                        color: oklch(0.52 0.15 255);
+                        cursor: pointer;
+                        white-space: nowrap;
+                      "
+                      >Imprimir movimientos</span
+                    >
+                    <span
+                      style="
+                        font-size: 12.5px;
+                        color: oklch(0.52 0.15 255);
+                        cursor: pointer;
+                        white-space: nowrap;
+                      "
+                      >Exportar</span
+                    >
+                  </div>
+
+                  <!-- movimientos -->
+                  <div
+                    style="
+                      flex: 1;
+                      min-height: 0;
+                      margin-top: 12px;
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 11px;
+                      background: oklch(1 0 0);
+                      display: flex;
+                      flex-direction: column;
+                      overflow: hidden;
+                    "
+                  >
+                    <div
+                      style="
+                        flex: none;
+                        display: grid;
+                        grid-template-columns: 66px 78px 152px 1fr 124px 132px 132px 92px;
+                        padding: 10px 14px;
+                        background: oklch(0.972 0.005 80);
+                        border-bottom: 1px solid oklch(0.91 0.01 80);
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.05em;
+                        text-transform: uppercase;
+                        color: oklch(0.5 0.01 60);
+                      "
+                    >
+                      <div>Hora</div>
+                      <div>Tipo</div>
+                      <div>Comprobante</div>
+                      <div>Concepto</div>
+                      <div>Medio</div>
+                      <div style="text-align: right">Importe</div>
+                      <div style="text-align: right">Saldo efectivo</div>
+                      <div style="text-align: center">Usuario</div>
+                    </div>
+                    <div style="flex: 1; overflow: auto">
+                      <sc-for list="{{ movs }}" as="m" hint-placeholder-count="12">
+                        <div
+                          style="display: grid; grid-template-columns: 66px 78px 152px 1fr 124px 132px 132px 92px; align-items: center; padding: 9px 14px; border-bottom: 1px solid oklch(0.955 0.006 80); background: {{
+                            m.bg
+                          }};"
+                          style-hover="background: oklch(0.968 0.008 80);"
+                        >
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 12.5px;
+                              color: oklch(0.5 0.01 60);
+                            "
+                          >
+                            {{ m.hora }}
+                          </div>
+                          <div>
+                            <span
+                              style="font-size: 10.5px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; color: {{
+                                m.tipoColor
+                              }}; background: {{ m.tipoBg }}; padding: 2px 6px; border-radius: 4px;"
+                              >{{ m.tipo }}</span
+                            >
+                          </div>
+                          <div
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: {{
+                              m.compColor
+                            }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px;"
+                          >
+                            {{ m.comp }}
+                          </div>
+                          <div style="min-width: 0; padding-right: 10px">
+                            <div
+                              style="
+                                font-size: 13px;
+                                color: oklch(0.26 0.01 60);
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                            >
+                              {{ m.concepto }}
+                            </div>
+                            <sc-if value="{{ m.aviso }}" hint-placeholder-val="{{ false }}">
+                              <div
+                                style="margin-top: 2px; font-size: 11.5px; color: {{
+                                  m.avisoColor
+                                }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                              >
+                                {{ m.avisoTxt }}
+                              </div>
+                            </sc-if>
+                          </div>
+                          <div
+                            style="
+                              font-size: 12.5px;
+                              color: oklch(0.45 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ m.medio }}
+                          </div>
+                          <div
+                            style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13.5px; font-weight: 600; color: {{
+                              m.impColor
+                            }};"
+                          >
+                            {{ m.importe }}
+                          </div>
+                          <div
+                            style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: {{
+                              m.acumColor
+                            }};"
+                          >
+                            {{ m.acum }}
+                          </div>
+                          <div
+                            style="
+                              text-align: center;
+                              font-size: 11.5px;
+                              color: oklch(0.55 0.01 60);
+                            "
+                          >
+                            {{ m.user }}
+                          </div>
+                        </div>
+                      </sc-for>
+                      <sc-if value="{{ vacio }}" hint-placeholder-val="{{ false }}">
+                        <div style="padding: 60px 20px; text-align: center">
+                          <div
+                            style="font-size: 14.5px; font-weight: 500; color: oklch(0.35 0.01 60)"
+                          >
+                            Ningún movimiento con estos filtros
+                          </div>
+                          <div style="margin-top: 5px; font-size: 13px; color: oklch(0.55 0.01 60)">
+                            Probá el chip “Todos” o buscá por comprobante.
+                          </div>
+                        </div>
+                      </sc-if>
+                    </div>
+                    <div
+                      style="
+                        flex: none;
+                        border-top: 1px solid oklch(0.93 0.01 80);
+                        background: oklch(0.978 0.005 80);
+                        padding: 11px 14px;
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                      "
+                    >
+                      <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">{{
+                        countTxt
+                      }}</span>
+                      <div style="flex: 1"></div>
+                      <div style="text-align: right">
+                        <div style="font-size: 11.5px; color: oklch(0.52 0.01 60)">
+                          Ingresos {{ ingresosFmt }} · egresos {{ egresosFmt }}
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            align-items: baseline;
+                            gap: 9px;
+                            justify-content: flex-end;
+                          "
+                        >
+                          <span style="font-size: 12.5px; color: oklch(0.45 0.01 60)"
+                            >Efectivo que debe haber en caja</span
+                          >
+                          <span
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 21px;
+                              font-weight: 600;
+                              color: oklch(0.22 0.01 60);
+                            "
+                            >{{ efectivoTeorico }}</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- panel derecho: arqueo -->
+                <div
+                  style="
+                    width: 470px;
+                    flex: none;
+                    border-left: 1px solid oklch(0.9 0.01 80);
+                    background: oklch(0.995 0.004 80);
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      flex: none;
+                      padding: 15px 18px 13px;
+                      border-bottom: 1px solid oklch(0.925 0.01 80);
+                      background: oklch(1 0 0);
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                    "
+                  >
+                    <div style="min-width: 0">
+                      <div style="font-size: 15px; font-weight: 600; color: oklch(0.24 0.01 60)">
+                        Arqueo de caja
+                      </div>
+                      <div style="margin-top: 2px; font-size: 12px; color: oklch(0.55 0.01 60)">
+                        {{ arqueoSub }}
+                      </div>
+                    </div>
+                    <div style="flex: 1"></div>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        color: oklch(0.62 0.01 60);
+                        border: 1px solid oklch(0.88 0.01 80);
+                        border-radius: 4px;
+                        padding: 2px 5px;
+                      "
+                      >F8</span
+                    >
+                  </div>
+
+                  <div
+                    style="
+                      flex: 1;
+                      min-height: 0;
+                      overflow: auto;
+                      padding: 14px 18px 16px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 14px;
+                    "
+                  >
+                    <div>
+                      <div
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10.5px;
+                          letter-spacing: 0.06em;
+                          text-transform: uppercase;
+                          color: oklch(0.55 0.01 60);
+                          margin-bottom: 7px;
+                        "
+                      >
+                        Conteo de efectivo
+                      </div>
+                      <div
+                        style="
+                          border: 1px solid oklch(0.9 0.01 80);
+                          border-radius: 10px;
+                          overflow: hidden;
+                          background: oklch(1 0 0);
+                        "
+                      >
+                        <div
+                          style="
+                            display: grid;
+                            grid-template-columns: 96px 78px 1fr;
+                            padding: 8px 11px;
+                            background: oklch(0.972 0.005 80);
+                            border-bottom: 1px solid oklch(0.92 0.01 80);
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10px;
+                            letter-spacing: 0.05em;
+                            text-transform: uppercase;
+                            color: oklch(0.5 0.01 60);
+                          "
+                        >
+                          <div>Denominación</div>
+                          <div style="text-align: center">Cantidad</div>
+                          <div style="text-align: right">Subtotal</div>
+                        </div>
+                        <sc-for list="{{ billetes }}" as="b" hint-placeholder-count="7">
+                          <div
+                            style="
+                              display: grid;
+                              grid-template-columns: 96px 78px 1fr;
+                              align-items: center;
+                              padding: 6px 11px;
+                              border-bottom: 1px solid oklch(0.958 0.006 80);
+                            "
+                          >
+                            <div
+                              style="
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 13px;
+                                color: oklch(0.32 0.01 60);
+                              "
+                            >
+                              {{ b.label }}
+                            </div>
+                            <div style="display: flex; justify-content: center">
+                              <input
+                                value="{{ b.cantTxt }}"
+                                onChange="{{ b.set }}"
+                                placeholder="0"
+                                style="width: 58px; height: 30px; border-radius: 7px; border: 1px solid oklch(0.88 0.01 80); background: {{
+                                  b.inputBg
+                                }}; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: oklch(0.24 0.01 60); padding: 0 6px;"
+                              />
+                            </div>
+                            <div
+                              style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: {{
+                                b.subColor
+                              }};"
+                            >
+                              {{ b.sub }}
+                            </div>
+                          </div>
+                        </sc-for>
+                        <div
+                          style="
+                            display: grid;
+                            grid-template-columns: 96px 78px 1fr;
+                            align-items: center;
+                            padding: 9px 11px;
+                            background: oklch(0.978 0.005 80);
+                          "
+                        >
+                          <div
+                            style="font-size: 12.5px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                          >
+                            Contado
+                          </div>
+                          <div
+                            style="
+                              text-align: center;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 12px;
+                              color: oklch(0.55 0.01 60);
+                            "
+                          >
+                            {{ billetesTotalCant }}
+                          </div>
+                          <div
+                            style="
+                              text-align: right;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 15px;
+                              font-weight: 600;
+                              color: oklch(0.22 0.01 60);
+                            "
+                          >
+                            {{ contadoFmt }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style="border: 1px solid {{ difBorde }}; background: {{
+                        difBg
+                      }}; border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 9px;"
+                    >
+                      <div
+                        style="display: flex; align-items: baseline; justify-content: space-between"
+                      >
+                        <span style="font-size: 12.5px; color: oklch(0.52 0.01 60)"
+                          >Según el sistema</span
+                        >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13px;
+                            color: oklch(0.35 0.01 60);
+                          "
+                          >{{ efectivoTeorico }}</span
+                        >
+                      </div>
+                      <div
+                        style="display: flex; align-items: baseline; justify-content: space-between"
+                      >
+                        <span style="font-size: 12.5px; color: oklch(0.52 0.01 60)"
+                          >Contado en el cajón</span
+                        >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13px;
+                            color: oklch(0.35 0.01 60);
+                          "
+                          >{{ contadoFmt }}</span
+                        >
+                      </div>
+                      <div style="height: 1px; background: oklch(0.9 0.01 80)"></div>
+                      <div
+                        style="display: flex; align-items: baseline; justify-content: space-between"
+                      >
+                        <span style="font-size: 14px; font-weight: 600; color: {{ difColor }};">{{
+                          difLabel
+                        }}</span>
+                        <span
+                          style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: {{
+                            difColor
+                          }};"
+                          >{{ difFmt }}</span
+                        >
+                      </div>
+                      <div style="font-size: 12px; line-height: 1.45; color: {{ difColor }};">
+                        {{ difTxt }}
+                      </div>
+                    </div>
+
+                    <sc-if value="{{ pedirMotivo }}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; flex-direction: column; gap: 8px">
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 10.5px;
+                            letter-spacing: 0.06em;
+                            text-transform: uppercase;
+                            color: oklch(0.55 0.01 60);
+                          "
+                          >Motivo de la diferencia</span
+                        >
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                          <sc-for list="{{ motivos }}" as="m" hint-placeholder-count="4">
+                            <div
+                              onClick="{{ m.pick }}"
+                              style="font-size: 12.5px; font-weight: 500; padding: 6px 11px; border-radius: 20px; cursor: pointer; color: {{
+                                m.color
+                              }}; background: {{ m.bg }}; border: 1px solid {{ m.border }};"
+                            >
+                              {{ m.label }}
+                            </div>
+                          </sc-for>
+                        </div>
+                        <input
+                          placeholder="Aclaración para el cierre (queda en el historial)"
+                          style="
+                            height: 36px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 13px;
+                            padding: 0 10px;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        />
+                      </div>
+                    </sc-if>
+
+                    <div>
+                      <div
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10.5px;
+                          letter-spacing: 0.06em;
+                          text-transform: uppercase;
+                          color: oklch(0.55 0.01 60);
+                          margin-bottom: 7px;
+                        "
+                      >
+                        Otros medios · se rinden aparte
+                      </div>
+                      <div
+                        style="
+                          border: 1px solid oklch(0.9 0.01 80);
+                          border-radius: 10px;
+                          overflow: hidden;
+                          background: oklch(1 0 0);
+                        "
+                      >
+                        <sc-for list="{{ otrosMedios }}" as="o" hint-placeholder-count="4">
+                          <div
+                            style="
+                              display: flex;
+                              align-items: center;
+                              gap: 10px;
+                              padding: 10px 12px;
+                              border-bottom: 1px solid oklch(0.958 0.006 80);
+                            "
+                          >
+                            <div
+                              style="width: 8px; height: 8px; border-radius: 50%; flex: none; background: {{
+                                o.dot
+                              }};"
+                            ></div>
+                            <div style="flex: 1; min-width: 0">
+                              <div style="font-size: 12.5px; color: oklch(0.3 0.01 60)">
+                                {{ o.label }}
+                              </div>
+                              <div style="font-size: 11px; color: oklch(0.57 0.01 60)">
+                                {{ o.destino }}
+                              </div>
+                            </div>
+                            <span
+                              style="
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 13px;
+                                font-weight: 600;
+                                color: oklch(0.26 0.01 60);
+                              "
+                              >{{ o.valor }}</span
+                            >
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10.5px;
+                          letter-spacing: 0.06em;
+                          text-transform: uppercase;
+                          color: oklch(0.55 0.01 60);
+                          margin-bottom: 7px;
+                        "
+                      >
+                        Al cerrar el turno
+                      </div>
+                      <div
+                        style="
+                          border: 1px solid oklch(0.9 0.01 80);
+                          border-radius: 10px;
+                          overflow: hidden;
+                          background: oklch(1 0 0);
+                        "
+                      >
+                        <sc-for list="{{ cierrePasos }}" as="p" hint-placeholder-count="4">
+                          <div
+                            style="
+                              display: flex;
+                              align-items: flex-start;
+                              gap: 10px;
+                              padding: 10px 12px;
+                              border-bottom: 1px solid oklch(0.958 0.006 80);
+                            "
+                          >
+                            <div
+                              style="width: 8px; height: 8px; border-radius: 50%; flex: none; margin-top: 5px; background: {{
+                                p.dot
+                              }};"
+                            ></div>
+                            <div style="flex: 1; min-width: 0">
+                              <div
+                                style="
+                                  font-size: 12.5px;
+                                  font-weight: 500;
+                                  color: oklch(0.28 0.01 60);
+                                "
+                              >
+                                {{ p.titulo }}
+                              </div>
+                              <div
+                                style="
+                                  margin-top: 2px;
+                                  font-size: 11.5px;
+                                  line-height: 1.4;
+                                  color: oklch(0.55 0.01 60);
+                                "
+                              >
+                                {{ p.detalle }}
+                              </div>
+                            </div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.91 0.01 80);
+                      background: oklch(1 0 0);
+                      padding: 13px 18px 15px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                    "
+                  >
+                    <div style="display: flex; align-items: center; gap: 9px">
+                      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                          >Deja para el próximo turno</label
+                        >
+                        <input
+                          value="{{ fondoTxt }}"
+                          onChange="{{ setFondo }}"
+                          style="
+                            height: 34px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13.5px;
+                            font-weight: 600;
+                            padding: 0 10px;
+                            color: oklch(0.24 0.01 60);
+                          "
+                        />
+                      </div>
+                      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                          >A depositar / rendir</label
+                        >
+                        <div
+                          style="
+                            height: 34px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.92 0.01 80);
+                            background: oklch(0.978 0.005 80);
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            padding: 0 10px;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13.5px;
+                            font-weight: 600;
+                            color: oklch(0.24 0.01 60);
+                          "
+                        >
+                          {{ aRendirFmt }}
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 9px">
+                      <button
+                        style="
+                          flex: none;
+                          height: 42px;
+                          padding: 0 13px;
+                          border-radius: 9px;
+                          border: 1px solid oklch(0.87 0.01 80);
+                          background: oklch(1 0 0);
+                          font-size: 13px;
+                          font-weight: 500;
+                          color: oklch(0.33 0.01 60);
+                          cursor: pointer;
+                        "
+                        style-hover="background: oklch(0.97 0.006 80);"
+                      >
+                        Guardar arqueo
+                      </button>
+                      <button
+                        onClick="{{ cerrarTurno }}"
+                        style="flex: 1; height: 42px; border-radius: 9px; border: none; background: {{
+                          cierreBg
+                        }}; color: oklch(1 0 0); font-size: 14px; font-weight: 600; cursor: pointer;"
+                        style-hover="filter: brightness(0.93);"
+                      >
+                        {{ cierreLabel }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- ============ CHEQUES / BANCOS (enlace a lo existente) ============ -->
+            <sc-if value="{{ esOtro }}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  flex: 1;
+                  min-height: 0;
+                  display: flex;
+                  flex-direction: column;
+                  padding: 14px 22px 20px;
+                  gap: 14px;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 11px;
+                    background: oklch(1 0 0);
+                    padding: 15px 16px;
+                    display: flex;
+                    align-items: center;
+                    gap: 18px;
+                  "
+                >
+                  <div style="flex: 1; min-width: 0">
+                    <div style="font-size: 15px; font-weight: 600; color: oklch(0.24 0.01 60)">
+                      {{ otro.titulo }}
+                    </div>
+                    <div
+                      style="
+                        margin-top: 4px;
+                        font-size: 13px;
+                        line-height: 1.5;
+                        color: oklch(0.48 0.01 60);
+                      "
+                    >
+                      {{ otro.sub }}
+                    </div>
+                  </div>
+                  <button
+                    style="
+                      flex: none;
+                      height: 38px;
+                      padding: 0 15px;
+                      border-radius: 9px;
+                      border: none;
+                      background: oklch(0.52 0.15 255);
+                      color: oklch(1 0 0);
+                      font-size: 13.5px;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    style-hover="background: oklch(0.46 0.15 255);"
+                  >
+                    {{ otro.cta }}
+                  </button>
+                </div>
+
+                <div
+                  style="
+                    flex: none;
+                    display: flex;
+                    gap: 1px;
+                    background: oklch(0.9 0.01 80);
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 10px;
+                    overflow: hidden;
+                  "
+                >
+                  <sc-for list="{{ otro.kpis }}" as="k" hint-placeholder-count="4">
+                    <div style="flex: 1; background: oklch(1 0 0); padding: 11px 14px">
+                      <div
+                        style="
+                          font-size: 10.5px;
+                          letter-spacing: 0.04em;
+                          text-transform: uppercase;
+                          color: oklch(0.58 0.01 60);
+                        "
+                      >
+                        {{ k.label }}
+                      </div>
+                      <div
+                        style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 600; color: {{
+                          k.color
+                        }};"
+                      >
+                        {{ k.value }}
+                      </div>
+                      <div style="margin-top: 1px; font-size: 11.5px; color: oklch(0.58 0.01 60)">
+                        {{ k.hint }}
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    min-height: 0;
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 11px;
+                    background: oklch(1 0 0);
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                  "
+                >
+                  <div
+                    style="
+                      flex: none;
+                      padding: 11px 14px;
+                      background: oklch(0.975 0.005 80);
+                      border-bottom: 1px solid oklch(0.92 0.01 80);
+                      font-size: 13.5px;
+                      font-weight: 600;
+                      color: oklch(0.24 0.01 60);
+                    "
+                  >
+                    {{ otro.tablaTitulo }}
+                  </div>
+                  <div
+                    style="flex: none; display: grid; grid-template-columns: {{
+                      otro.grid
+                    }}; padding: 9px 14px; border-bottom: 1px solid oklch(0.93 0.01 80); font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: oklch(0.5 0.01 60);"
+                  >
+                    <sc-for list="{{ otro.cols }}" as="c" hint-placeholder-count="6">
+                      <div style="text-align: {{ c.align }};">{{ c.label }}</div>
+                    </sc-for>
+                  </div>
+                  <div style="flex: 1; overflow: auto">
+                    <sc-for list="{{ otro.rows }}" as="r" hint-placeholder-count="7">
+                      <div
+                        style="display: grid; grid-template-columns: {{
+                          otro.grid
+                        }}; align-items: center; padding: 10px 14px; border-bottom: 1px solid oklch(0.955 0.006 80);"
+                      >
+                        <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
+                          <div style="min-width: 0; padding-right: 8px; text-align: {{ c.align }};">
+                            <sc-if value="{{ c.chip }}" hint-placeholder-val="{{ false }}">
+                              <span
+                                style="font-size: 10.5px; font-weight: 600; white-space: nowrap; color: {{
+                                  c.color
+                                }}; background: {{
+                                  c.chipBg
+                                }}; padding: 3px 8px; border-radius: 5px;"
+                                >{{ c.v }}</span
+                              >
+                            </sc-if>
+                            <sc-if value="{{ c.plain }}" hint-placeholder-val="{{ true }}">
+                              <div
+                                style="font-family: {{ c.font }}; font-size: {{
+                                  c.size
+                                }}; font-weight: {{ c.weight }}; color: {{
+                                  c.color
+                                }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                              >
+                                {{ c.v }}
+                              </div>
+                            </sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.93 0.01 80);
+                      background: oklch(0.978 0.005 80);
+                      padding: 11px 14px;
+                      display: flex;
+                      align-items: center;
+                      gap: 14px;
+                    "
+                  >
+                    <span style="font-size: 12.5px; line-height: 1.45; color: oklch(0.5 0.01 60)">{{
+                      otro.pie
+                    }}</span>
+                    <div style="flex: 1"></div>
+                    <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">{{
+                      otro.totalLabel
+                    }}</span>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: oklch(0.23 0.01 60);
+                      "
+                      >{{ otro.total }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- ============ MOVIMIENTO MANUAL ============ -->
+            <sc-if value="{{ movOpen }}" hint-placeholder-val="{{ false }}">
+              <div
+                style="
+                  position: absolute;
+                  inset: 0;
+                  background: oklch(0.25 0.02 60 / 0.28);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <div
+                  style="
+                    width: 620px;
+                    background: oklch(0.995 0.004 80);
+                    border: 1px solid oklch(0.88 0.01 80);
+                    border-radius: 14px;
+                    overflow: hidden;
+                    box-shadow: 0 24px 60px oklch(0.3 0.02 60 / 0.28);
+                    display: flex;
+                    flex-direction: column;
+                  "
+                >
+                  <div
+                    style="
+                      flex: none;
+                      padding: 16px 20px 14px;
+                      border-bottom: 1px solid oklch(0.92 0.01 80);
+                      background: oklch(1 0 0);
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 14px;
+                    "
+                  >
+                    <div style="flex: 1; min-width: 0">
+                      <h3
+                        style="
+                          margin: 0;
+                          font-size: 18px;
+                          font-weight: 600;
+                          color: oklch(0.22 0.01 60);
+                        "
+                      >
+                        {{ modal.titulo }}
+                      </h3>
+                      <div style="margin-top: 4px; font-size: 12.5px; color: oklch(0.5 0.01 60)">
+                        {{ modal.sub }}
+                      </div>
+                    </div>
+                    <div
+                      onClick="{{ cerrarMov }}"
+                      style="
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 8px;
+                        border: 1px solid oklch(0.88 0.01 80);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 15px;
+                        color: oklch(0.45 0.01 60);
+                        cursor: pointer;
+                        background: oklch(1 0 0);
+                      "
+                      style-hover="background: oklch(0.96 0.006 80);"
+                    >
+                      ×
+                    </div>
+                  </div>
+
+                  <div style="flex: none; padding: 14px 20px 0; display: flex; gap: 6px">
+                    <sc-for list="{{ modal.tipos }}" as="t" hint-placeholder-count="4">
+                      <div
+                        onClick="{{ t.pick }}"
+                        style="flex: 1; text-align: center; font-size: 12.5px; font-weight: 600; padding: 8px 10px; border-radius: 9px; cursor: pointer; color: {{
+                          t.color
+                        }}; background: {{ t.bg }}; border: 1px solid {{ t.border }};"
+                      >
+                        {{ t.label }}
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div
+                    style="flex: none; padding: 14px 20px 18px; display: flex flex-direction: column;"
+                  >
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)">Importe</label>
+                        <input
+                          value="{{ modal.importe }}"
+                          onChange="{{ modal.setImporte }}"
+                          style="
+                            height: 44px;
+                            border-radius: 9px;
+                            border: 1px solid oklch(0.86 0.01 80);
+                            background: oklch(1 0 0);
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 22px;
+                            font-weight: 600;
+                            padding: 0 12px;
+                            color: oklch(0.22 0.01 60);
+                          "
+                        />
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)">{{
+                          modal.destinoLabel
+                        }}</label>
+                        <select
+                          style="
+                            height: 44px;
+                            border-radius: 9px;
+                            border: 1px solid oklch(0.86 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 14px;
+                            padding: 0 9px;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        >
+                          <sc-for list="{{ modal.destinos }}" as="o" hint-placeholder-count="4"
+                            ><option>{{ o }}</option></sc-for
+                          >
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 5px">
+                      <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)">Concepto</label>
+                      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                        <sc-for list="{{ modal.conceptos }}" as="c" hint-placeholder-count="5">
+                          <div
+                            onClick="{{ c.pick }}"
+                            style="font-size: 12.5px; font-weight: 500; padding: 6px 11px; border-radius: 20px; cursor: pointer; color: {{
+                              c.color
+                            }}; background: {{ c.bg }}; border: 1px solid {{ c.border }};"
+                          >
+                            {{ c.label }}
+                          </div>
+                        </sc-for>
+                      </div>
+                      <input
+                        placeholder="Detalle libre, por ejemplo “combustible de la camioneta”"
+                        style="
+                          margin-top: 6px;
+                          height: 38px;
+                          border-radius: 8px;
+                          border: 1px solid oklch(0.88 0.01 80);
+                          background: oklch(1 0 0);
+                          font-size: 13px;
+                          padding: 0 10px;
+                          color: oklch(0.26 0.01 60);
+                        "
+                      />
+                    </div>
+
+                    <div
+                      style="
+                        margin-top: 12px;
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 12px;
+                      "
+                    >
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                          >Comprobante de respaldo</label
+                        >
+                        <input
+                          placeholder="Factura, ticket o recibo"
+                          style="
+                            height: 38px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 13px;
+                            padding: 0 10px;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        />
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 5px">
+                        <label style="font-size: 11.5px; color: oklch(0.5 0.01 60)"
+                          >Imputación contable</label
+                        >
+                        <select
+                          style="
+                            height: 38px;
+                            border-radius: 8px;
+                            border: 1px solid oklch(0.88 0.01 80);
+                            background: oklch(1 0 0);
+                            font-size: 13px;
+                            padding: 0 8px;
+                            color: oklch(0.26 0.01 60);
+                          "
+                        >
+                          <sc-for list="{{ modal.imputaciones }}" as="o" hint-placeholder-count="4"
+                            ><option>{{ o }}</option></sc-for
+                          >
+                        </select>
+                      </div>
+                    </div>
+
+                    <div
+                      style="margin-top: 14px; font-size: 12.5px; line-height: 1.5; color: {{
+                        modal.notaColor
+                      }}; background: {{ modal.notaBg }}; border-radius: 9px; padding: 10px 12px;"
+                    >
+                      {{ modal.nota }}
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.91 0.01 80);
+                      background: oklch(1 0 0);
+                      padding: 13px 20px 15px;
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                    "
+                  >
+                    <div style="flex: 1; font-size: 12.5px; color: oklch(0.5 0.01 60)">
+                      Saldo de efectivo después del movimiento {{ modal.saldoDespues }}
+                    </div>
+                    <button
+                      onClick="{{ cerrarMov }}"
+                      style="
+                        flex: none;
+                        height: 40px;
+                        padding: 0 14px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.87 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 13.5px;
+                        font-weight: 500;
+                        color: oklch(0.33 0.01 60);
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.97 0.006 80);"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick="{{ cerrarMov }}"
+                      style="flex: none; height: 40px; padding: 0 18px; border-radius: 9px; border: none; background: {{
+                        modal.ctaBg
+                      }}; color: oklch(1 0 0); font-size: 14px; font-weight: 600; cursor: pointer;"
+                      style-hover="filter: brightness(0.93);"
+                    >
+                      {{ modal.cta }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"toleranciaArqueo":{"editor":"int","default":2000,"min":0,"max":20000,"step":500,"unit":"$","tsType":"number","section":"Arqueo"},"exigirMotivo":{"editor":"boolean","default":true,"tsType":"boolean","section":"Arqueo"}}'
+    >
+      const ACCENT = "oklch(0.52 0.15 255)";
+      const ACCENT_BG = "oklch(0.955 0.028 255)";
+      const RED = "oklch(0.5 0.17 25)";
+      const RED_BG = "oklch(0.955 0.03 25)";
+      const AMBER = "oklch(0.52 0.12 70)";
+      const AMBER_BG = "oklch(0.96 0.035 80)";
+      const GREEN = "oklch(0.44 0.11 155)";
+      const GREEN_BG = "oklch(0.955 0.03 155)";
+      const PURPLE = "oklch(0.45 0.16 300)";
+      const PURPLE_BG = "oklch(0.96 0.03 300)";
+      const GREY = "oklch(0.48 0.01 60)";
+      const GREY_BG = "oklch(0.955 0.006 80)";
+      const INK = "oklch(0.24 0.01 60)";
+      const MONO = "'IBM Plex Mono', monospace";
+      const SANS = "'Instrument Sans', sans-serif";
+
+      function money(n) { return (n < 0 ? "-$ " : "$ ") + Math.round(Math.abs(n)).toLocaleString("es-AR"); }
+      function parseNum(v) { const n = Number(String(v).replace(/[^0-9]/g, "")); return isNaN(n) ? 0 : n; }
+      function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+
+      const MOVS = [
+        { hora: "08:02", tipo: "APE", comp: "T-2026-0842", concepto: "Apertura de turno · fondo fijo del turno anterior", medio: "Efectivo", imp: 120000, user: "Diego R." },
+        { hora: "08:31", tipo: "VTA", comp: "FA B 0001-00021460", concepto: "Kiosco 24hs Central", medio: "Efectivo", imp: 58700, user: "Diego R." },
+        { hora: "09:14", tipo: "VTA", comp: "FA B 0001-00021461", concepto: "Consumidor final · mostrador", medio: "Tarjeta débito", imp: 34200, user: "Diego R." },
+        { hora: "09:48", tipo: "COB", comp: "RC X-0001-00004312", concepto: "Almacén Doña Rosa · a cuenta", medio: "Efectivo", imp: 96000, user: "Diego R." },
+        { hora: "10:22", tipo: "VTA", comp: "FA A 0001-00012902", concepto: "Supermercado Norte SRL", medio: "Transferencia", imp: 812400, user: "Marina P." },
+        { hora: "10:55", tipo: "EGR", comp: "TK 0044-1180", concepto: "Combustible camioneta de reparto", medio: "Efectivo", imp: -42000, user: "Diego R.", aviso: "Gasto con ticket, imputado a Fletes" },
+        { hora: "11:30", tipo: "COB", comp: "RC X-0001-00004313", concepto: "Rotisería Mediterránea", medio: "Cheque", imp: 143900, user: "Diego R.", aviso: "Cheque 00483921 Banco Nación, vto 20/09 · va a cartera" },
+        { hora: "12:05", tipo: "VTA", comp: "FA B 0001-00021463", concepto: "Consumidor final · mostrador", medio: "Efectivo", imp: 27400, user: "Diego R." },
+        { hora: "13:12", tipo: "EGR", comp: "OP 00002240", concepto: "Pago a Bebidas Alvear", medio: "Efectivo", imp: -214600, user: "Marina P., autorizado", aviso: "Pago a proveedor desde caja: baja el saldo de la cuenta corriente" },
+        { hora: "14:40", tipo: "VTA", comp: "FA B 0001-00021465", concepto: "Consumidor final · mostrador", medio: "Tarjeta crédito", imp: 118600, user: "Diego R." },
+        { hora: "15:18", tipo: "TRF", comp: "TR-0001-00318", concepto: "Envío a caja fuerte · retiro parcial", medio: "Efectivo", imp: -150000, user: "Diego R.", aviso: "Sale de esta caja e ingresa a Caja fuerte, no es un gasto" },
+        { hora: "16:02", tipo: "COB", comp: "RC X-0001-00004315", concepto: "Ferretería El Torno SA · dos facturas", medio: "Efectivo", imp: 180000, user: "Diego R." },
+        { hora: "16:44", tipo: "VTA", comp: "FA B 0001-00021468", concepto: "Consumidor final · mostrador", medio: "QR / billetera", imp: 24900, user: "Diego R." },
+        { hora: "17:20", tipo: "EGR", comp: "VA 0001-00092", concepto: "Vale de sueldo · adelanto a repartidor", medio: "Efectivo", imp: -60000, user: "Marina P., autorizado", aviso: "Vale a rendir, descuenta del sueldo de septiembre" },
+        { hora: "17:58", tipo: "VTA", comp: "FA B 0001-00021470", concepto: "Almacén Doña Rosa", medio: "Efectivo", imp: 43800, user: "Diego R." },
+        { hora: "18:21", tipo: "DEV", comp: "NC B 0001-00000412", concepto: "Devolución 2 lámparas LED", medio: "Efectivo", imp: -11800, user: "Diego R.", aviso: "Nota de crédito con devolución de efectivo al cliente" }
+      ];
+
+      const TIPO_STYLE = {
+        APE: [ GREY, GREY_BG ], VTA: [ ACCENT, ACCENT_BG ], COB: [ GREEN, GREEN_BG ],
+        EGR: [ RED, RED_BG ], TRF: [ PURPLE, PURPLE_BG ], DEV: [ AMBER, AMBER_BG ]
+      };
+
+      const DENOM = [ 20000, 10000, 5000, 2000, 1000, 500, 200 ];
+      const CONTEO_INICIAL = { 20000: 4, 10000: 9, 5000: 12, 2000: 15, 1000: 22, 500: 14, 200: 18 };
+
+      const CHEQUES = [
+        [ "00483921", "Rotisería Mediterránea", "Banco Nación", "20/09/26", 143900, "En cartera" ],
+        [ "00471299", "Distribuidora San Martín", "Banco Nación", "12/09/26", 180000, "En cartera" ],
+        [ "00512044", "Supermercado Norte", "Credicoop", "05/09/26", 420000, "Depositado" ],
+        [ "00498110", "Ferretería El Torno", "Galicia", "02/09/26", 214000, "En cartera" ],
+        [ "00466302", "Corralón Los Álamos", "Provincia", "18/08/26", 180000, "Rechazado" ],
+        [ "00390118", "Propio a Insumos del Sur", "Banco Nación", "28/09/26", 400000, "Entregado" ],
+        [ "00390119", "Propio a Tecno Pampa", "Banco Nación", "10/10/26", 620000, "Entregado" ]
+      ];
+
+      const BANCOS = [
+        [ "Banco Nación · cuenta corriente", "0110-4455-88", "29/08/26", 3184200, 0, "Conciliada" ],
+        [ "Banco Nación · caja de ahorro", "0110-4455-90", "29/08/26", 640500, 0, "Conciliada" ],
+        [ "Credicoop · cuenta corriente", "0191-2210-04", "28/08/26", 1120400, 3, "Con partidas pendientes" ],
+        [ "Galicia · cuenta corriente", "0007-9981-12", "27/08/26", -184600, 1, "En descubierto" ],
+        [ "Mercado Pago", "CVU 0000003100", "29/08/26", 296800, 0, "Conciliada" ]
+      ];
+
+      class Component extends DCLogic {
+        state = { tab: "caja", caja: "Caja mostrador 1 · turno tarde", query: "", chip: "Todos",
+          conteo: Object.assign({}, CONTEO_INICIAL), fondo: "120000", motivo: "", movOpen: false, movTipo: "Egreso", concepto: "Gasto operativo" };
+        set(k, v) { this.setState({ [k]: v }); }
+
+        cell(v, o) {
+          o = o || {};
+          return { v, align: o.align || "left", font: o.mono ? MONO : SANS, size: o.size || "13px",
+            weight: o.weight || "400", color: o.color || INK, chip: !!o.chip, chipBg: o.chipBg || GREY_BG, plain: !o.chip };
+        }
+
+        renderVals() {
+          const st = this.state;
+          const tab = st.tab;
+          const tolerancia = this.props.toleranciaArqueo ?? 2000;
+          const pedirMotivoSiempre = this.props.exigirMotivo !== false;
+
+          // ---------- caja ----------
+          const q = norm(st.query.trim());
+          const filtrados = MOVS.filter(m => {
+            if (q && !(norm(m.concepto).includes(q) || norm(m.comp).includes(q) || String(Math.abs(m.imp)).includes(q))) return false;
+            if (st.chip === "efectivo" && m.medio !== "Efectivo") return false;
+            if (st.chip === "ingresos" && m.imp <= 0) return false;
+            if (st.chip === "egresos" && m.imp >= 0) return false;
+            if (st.chip === "otros" && m.medio === "Efectivo") return false;
+            if (st.chip === "revisar" && !m.aviso) return false;
+            return true;
+          });
+
+          let acumEfectivo = 0;
+          const acumPorMov = MOVS.map(m => { if (m.medio === "Efectivo") acumEfectivo += m.imp; return acumEfectivo; });
+
+          const movs = filtrados.map(m => {
+            const i = MOVS.indexOf(m);
+            const [ tc, tb ] = TIPO_STYLE[m.tipo] || [ GREY, GREY_BG ];
+            return { hora: m.hora, tipo: m.tipo, comp: m.comp, concepto: m.concepto, medio: m.medio, user: m.user,
+              tipoColor: tc, tipoBg: tb, compColor: m.tipo === "APE" ? GREY : "oklch(0.45 0.01 60)",
+              importe: money(m.imp), impColor: m.imp < 0 ? RED : m.tipo === "APE" ? GREY : INK,
+              acum: m.medio === "Efectivo" ? money(acumPorMov[i]) : "—",
+              acumColor: m.medio === "Efectivo" ? "oklch(0.5 0.01 60)" : "oklch(0.72 0.01 60)",
+              aviso: !!m.aviso, avisoTxt: m.aviso || "",
+              avisoColor: m.tipo === "TRF" ? PURPLE : m.tipo === "EGR" ? AMBER : m.tipo === "DEV" ? AMBER : ACCENT,
+              bg: m.aviso ? "oklch(0.992 0.006 80)" : "oklch(1 0 0)" };
+          });
+
+          const porMedio = k => MOVS.filter(m => m.medio === k).reduce((n, m) => n + m.imp, 0);
+          const efectivoTeorico = porMedio("Efectivo");
+          const ingresos = MOVS.filter(m => m.imp > 0 && m.tipo !== "APE").reduce((n, m) => n + m.imp, 0);
+          const egresos = MOVS.filter(m => m.imp < 0).reduce((n, m) => n + m.imp, 0);
+
+          const medioDefs = [
+            { id: "efectivo", label: "Efectivo en caja", value: money(efectivoTeorico), hint: MOVS.filter(m => m.medio === "Efectivo").length + " movimientos", color: INK },
+            { id: "tarjetas", label: "Tarjetas", value: money(porMedio("Tarjeta débito") + porMedio("Tarjeta crédito")), hint: "acreditan en 48 h y 18 d", color: ACCENT },
+            { id: "trans", label: "Transferencias y QR", value: money(porMedio("Transferencia") + porMedio("QR / billetera")), hint: "ya en Banco Nación", color: ACCENT },
+            { id: "cheques", label: "Cheques recibidos", value: money(porMedio("Cheque")), hint: "1 cheque a cartera", color: PURPLE },
+            { id: "total", label: "Total del turno", value: money(ingresos + egresos), hint: "ingresos menos egresos", color: INK }
+          ];
+          const medios = medioDefs.map(m => ({ label: m.label, value: m.value, hint: m.hint, color: m.color,
+            bg: (st.chip === "efectivo" && m.id === "efectivo") || (st.chip === "otros" && m.id === "trans") ? "oklch(0.972 0.02 255)" : "oklch(1 0 0)",
+            pick: () => this.set("chip", m.id === "efectivo" ? "efectivo" : m.id === "total" ? "Todos" : "otros") }));
+
+          const chips = [ [ "Todos", "Todos" ], [ "efectivo", "Solo efectivo" ], [ "ingresos", "Ingresos" ], [ "egresos", "Egresos" ], [ "revisar", "Para revisar" ] ].map(([ id, label ]) => {
+            const on = st.chip === id;
+            return { label, pick: () => this.set("chip", id),
+              color: on ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: on ? ACCENT_BG : "oklch(1 0 0)", border: on ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          const billetes = DENOM.map(v => {
+            const cant = st.conteo[v];
+            return { label: "$ " + v.toLocaleString("es-AR"), cantTxt: cant === undefined ? "" : String(cant),
+              sub: cant ? money(v * cant) : "—", subColor: cant ? "oklch(0.35 0.01 60)" : "oklch(0.72 0.01 60)",
+              inputBg: cant === undefined ? "oklch(0.985 0.005 80)" : "oklch(1 0 0)",
+              set: e => { const val = e.target.value; this.setState(s => {
+                const next = Object.assign({}, s.conteo);
+                if (val === "") delete next[v]; else next[v] = parseNum(val);
+                return { conteo: next };
+              }); } };
+          });
+
+          const contado = DENOM.reduce((n, v) => n + v * (st.conteo[v] || 0), 0);
+          const cantBilletes = DENOM.reduce((n, v) => n + (st.conteo[v] || 0), 0);
+          const dif = contado - efectivoTeorico;
+          const dentroTol = Math.abs(dif) <= tolerancia;
+          const difColor = dif === 0 ? GREEN : dentroTol ? AMBER : RED;
+          const fondo = parseNum(st.fondo);
+
+          const motivos = [ "Vuelto mal dado", "Falta ticket de un gasto", "Error de tipeo en una venta", "Cobro no registrado", "Robo o faltante a investigar" ].map(label => {
+            const on = st.motivo === label;
+            return { label, pick: () => this.set("motivo", label),
+              color: on ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: on ? ACCENT_BG : "oklch(1 0 0)", border: on ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          const modalTipos = [ "Ingreso", "Egreso", "Transferencia", "Ajuste" ].map(label => {
+            const on = st.movTipo === label;
+            return { label, pick: () => this.set("movTipo", label),
+              color: on ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: on ? ACCENT_BG : "oklch(1 0 0)", border: on ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          const conceptosPorTipo = {
+            Ingreso: [ "Aporte del dueño", "Devolución de vale", "Reintegro de gasto", "Ingreso de otra caja" ],
+            Egreso: [ "Gasto operativo", "Pago a proveedor", "Vale de sueldo", "Retiro del dueño", "Flete y combustible" ],
+            Transferencia: [ "A caja fuerte", "A otra sucursal", "Depósito bancario" ],
+            Ajuste: [ "Diferencia de arqueo", "Corrección de importe", "Redondeo" ]
+          }[st.movTipo];
+
+          const conceptos = conceptosPorTipo.map(label => {
+            const on = st.concepto === label;
+            return { label, pick: () => this.set("concepto", label),
+              color: on ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: on ? ACCENT_BG : "oklch(1 0 0)", border: on ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          const notaModal = {
+            Ingreso: [ "Suma al efectivo del turno. Si viene de otra caja, cargalo como transferencia para que no se cuente dos veces.", GREEN, GREEN_BG ],
+            Egreso: [ "Baja el efectivo del turno y queda en el arqueo. Si es pago a proveedor, también descuenta su cuenta corriente.", AMBER, AMBER_BG ],
+            Transferencia: [ "No es un gasto: sale de esta caja y entra en el destino. El total de tesorería no cambia.", PURPLE, PURPLE_BG ],
+            Ajuste: [ "Se usa solo al cerrar, cuando la diferencia ya se investigó. Queda registrado con el usuario que lo autorizó.", RED, RED_BG ]
+          }[st.movTipo];
+
+          const signo = st.movTipo === "Ingreso" ? 1 : -1;
+
+          // ---------- cheques / bancos ----------
+          const chequeTone = e => e === "En cartera" ? [ ACCENT, ACCENT_BG ] : e === "Depositado" ? [ GREEN, GREEN_BG ]
+            : e === "Rechazado" ? [ RED, RED_BG ] : [ PURPLE, PURPLE_BG ];
+          const bancoTone = e => e === "Conciliada" ? [ GREEN, GREEN_BG ] : e === "En descubierto" ? [ RED, RED_BG ] : [ AMBER, AMBER_BG ];
+
+          const otro = tab === "cheques" ? {
+            titulo: "Cartera de cheques",
+            sub: "La pantalla de cheques que ya está hecha entra acá como pestaña: esta vista es el resumen que enlaza con ella y con los movimientos de caja que originaron cada cheque.",
+            cta: "Abrir cartera de cheques",
+            kpis: [
+              { label: "En cartera", value: money(CHEQUES.filter(c => c[5] === "En cartera").reduce((n, c) => n + c[4], 0)), hint: CHEQUES.filter(c => c[5] === "En cartera").length + " cheques de terceros", color: ACCENT },
+              { label: "Vencen en 7 días", value: money(CHEQUES.filter(c => c[5] === "En cartera" && c[3] <= "05/09/26").reduce((n, c) => n + c[4], 0)), hint: "depositar o endosar", color: AMBER },
+              { label: "Rechazados", value: money(CHEQUES.filter(c => c[5] === "Rechazado").reduce((n, c) => n + c[4], 0)), hint: "vuelven a la cuenta del cliente", color: RED },
+              { label: "Propios entregados", value: money(CHEQUES.filter(c => c[5] === "Entregado").reduce((n, c) => n + c[4], 0)), hint: "a cubrir en cuenta bancaria", color: PURPLE }
+            ],
+            tablaTitulo: "Últimos cheques", grid: "132px 1fr 148px 108px 138px 138px",
+            cols: [ { label: "Número", align: "left" }, { label: "Origen / destino", align: "left" }, { label: "Banco", align: "left" }, { label: "Vencimiento", align: "left" }, { label: "Importe", align: "right" }, { label: "Estado", align: "center" } ],
+            rows: CHEQUES.map(c => {
+              const [ ec, eb ] = chequeTone(c[5]);
+              return { cells: [ this.cell(c[0], { mono: true, size: "12.5px", weight: "600" }), this.cell(c[1]),
+                this.cell(c[2], { size: "12.5px", color: "oklch(0.45 0.01 60)" }),
+                this.cell(c[3], { mono: true, size: "12px", color: c[5] === "Rechazado" ? RED : "oklch(0.48 0.01 60)" }),
+                this.cell(money(c[4]), { align: "right", mono: true, weight: "600" }),
+                this.cell(c[5], { align: "center", chip: true, color: ec, chipBg: eb }) ] };
+            }),
+            pie: "Los cheques recibidos en caja entran a la cartera al cerrar el turno; los rechazados vuelven como deuda del cliente.",
+            totalLabel: "Total en cartera", total: money(CHEQUES.filter(c => c[5] === "En cartera").reduce((n, c) => n + c[4], 0))
+          } : {
+            titulo: "Cuentas bancarias",
+            sub: "Igual que cheques: la conciliación bancaria ya existente se engancha acá. Esta vista muestra saldos, partidas pendientes y qué mueve la caja hacia cada cuenta.",
+            cta: "Abrir conciliación bancaria",
+            kpis: [
+              { label: "Disponible total", value: money(BANCOS.reduce((n, b) => n + b[3], 0)), hint: BANCOS.length + " cuentas", color: INK },
+              { label: "En descubierto", value: money(BANCOS.filter(b => b[3] < 0).reduce((n, b) => n + b[3], 0)), hint: "Galicia cuenta corriente", color: RED },
+              { label: "Partidas sin conciliar", value: String(BANCOS.reduce((n, b) => n + b[4], 0)), hint: "revisar extractos", color: AMBER },
+              { label: "Cheques propios a cubrir", value: money(CHEQUES.filter(c => c[5] === "Entregado").reduce((n, c) => n + c[4], 0)), hint: "vencen en septiembre y octubre", color: PURPLE }
+            ],
+            tablaTitulo: "Saldos por cuenta", grid: "1fr 168px 118px 148px 148px 168px",
+            cols: [ { label: "Cuenta", align: "left" }, { label: "Número / CVU", align: "left" }, { label: "Últ. extracto", align: "left" }, { label: "Saldo", align: "right" }, { label: "Sin conciliar", align: "right" }, { label: "Estado", align: "center" } ],
+            rows: BANCOS.map(b => {
+              const [ ec, eb ] = bancoTone(b[5]);
+              return { cells: [ this.cell(b[0], { size: "13px" }), this.cell(b[1], { mono: true, size: "12px", color: "oklch(0.48 0.01 60)" }),
+                this.cell(b[2], { mono: true, size: "12px", color: "oklch(0.48 0.01 60)" }),
+                this.cell(money(b[3]), { align: "right", mono: true, weight: "600", color: b[3] < 0 ? RED : INK }),
+                this.cell(b[4] ? b[4] + " partidas" : "—", { align: "right", size: "12.5px", color: b[4] ? AMBER : "oklch(0.6 0.01 60)" }),
+                this.cell(b[5], { align: "center", chip: true, color: ec, chipBg: eb }) ] };
+            }),
+            pie: "Las transferencias y el QR del mostrador impactan directo en Banco Nación; las tarjetas entran cuando acredita la liquidación.",
+            totalLabel: "Disponible", total: money(BANCOS.reduce((n, b) => n + b[3], 0))
+          };
+
+          const tabDefs = [
+            [ "caja", "Caja", MOVS.filter(m => m.aviso).length ],
+            [ "cheques", "Cheques", CHEQUES.filter(c => c[5] === "Rechazado").length ],
+            [ "bancos", "Bancos", BANCOS.reduce((n, b) => n + b[4], 0) ]
+          ];
+
+          return {
+            tabs: tabDefs.map(([ k, label, badge ]) => ({
+              label, badge: badge > 0, badgeTxt: String(badge),
+              badgeColor: k === tab ? "oklch(0.36 0.13 255)" : "oklch(0.45 0.01 60)",
+              badgeBg: k === tab ? "oklch(0.93 0.04 255)" : "oklch(0.93 0.008 80)",
+              pick: () => this.set("tab", k),
+              color: tab === k ? INK : "oklch(0.5 0.01 60)",
+              bg: tab === k ? "oklch(1 0 0)" : "transparent",
+              shadow: tab === k ? "0 1px 2px oklch(0.3 0.02 60 / 0.12)" : "none" })),
+            esCaja: tab === "caja", esOtro: tab !== "caja", otro,
+            turnoTxt: "Turno abierto · " + MOVS.length + " movimientos",
+            turnoColor: GREEN, turnoBg: GREEN_BG, turnoBorde: "oklch(0.86 0.05 155)", turnoDot: GREEN,
+            contextoTxt: {
+              caja: "Turno abierto 08:02 por Diego R. · tolerancia de arqueo " + money(tolerancia),
+              cheques: CHEQUES.length + " cheques en el período · 1 rechazado",
+              bancos: BANCOS.length + " cuentas · últimos extractos al 29/08/26"
+            }[tab],
+
+            cajas: [ "Caja mostrador 1 · turno tarde", "Caja mostrador 2 · turno tarde", "Caja fuerte · tesorería", "Caja Sucursal Pico" ],
+            cajaSel: st.caja, setCaja: e => this.set("caja", e.target.value),
+            t: {
+              numero: "T-2026-0842", estado: "Abierto",
+              meta: st.caja + " · abierto 08:02 por Diego R. · fondo inicial " + money(120000) + " · cierre previsto 20:00",
+              estColor: GREEN, estBg: GREEN_BG,
+              borde: "oklch(0.86 0.05 155)", cardBg: "oklch(0.995 0.01 155)"
+            },
+            medios, chips, movs, vacio: movs.length === 0,
+            query: st.query, onQuery: e => this.set("query", e.target.value),
+            countTxt: movs.length + " de " + MOVS.length + " movimientos del turno",
+            ingresosFmt: money(ingresos), egresosFmt: money(egresos),
+            efectivoTeorico: money(efectivoTeorico),
+
+            arqueoSub: "Contá el cajón y compará contra el sistema",
+            billetes, billetesTotalCant: cantBilletes + " unid.", contadoFmt: money(contado),
+            difFmt: money(dif),
+            difLabel: dif === 0 ? "Caja cuadrada" : dif > 0 ? "Sobrante" : "Faltante",
+            difColor, difBg: dif === 0 ? GREEN_BG : dentroTol ? AMBER_BG : RED_BG,
+            difBorde: dif === 0 ? "oklch(0.86 0.05 155)" : dentroTol ? "oklch(0.88 0.05 80)" : "oklch(0.86 0.06 25)",
+            difTxt: dif === 0 ? "El conteo coincide con el sistema. Se puede cerrar el turno sin observaciones."
+              : dentroTol ? "Está dentro de la tolerancia de " + money(tolerancia) + ": se puede cerrar dejando el motivo asentado."
+              : "Supera la tolerancia de " + money(tolerancia) + ". El cierre necesita motivo y la autorización del encargado.",
+            pedirMotivo: dif !== 0 && (pedirMotivoSiempre || !dentroTol),
+            motivos,
+            otrosMedios: [
+              { label: "Tarjetas de débito y crédito", destino: "liquidación del posnet, acredita en 48 h y 18 días", valor: money(porMedio("Tarjeta débito") + porMedio("Tarjeta crédito")), dot: ACCENT },
+              { label: "Transferencias y QR", destino: "ya acreditado en Banco Nación", valor: money(porMedio("Transferencia") + porMedio("QR / billetera")), dot: GREEN },
+              { label: "Cheques recibidos", destino: "pasan a la cartera de cheques al cerrar", valor: money(porMedio("Cheque")), dot: PURPLE },
+              { label: "Vales a rendir", destino: "adelanto a repartidor, se descuenta del sueldo", valor: money(60000), dot: AMBER }
+            ],
+            cierrePasos: [
+              { titulo: "Se cierra el turno T-2026-0842", detalle: "Nadie más puede cargar movimientos con esta fecha y caja.", dot: ACCENT },
+              { titulo: "Deja " + money(fondo) + " de fondo fijo", detalle: "Queda como saldo inicial del próximo turno.", dot: GREEN },
+              { titulo: "Se rinde " + money(Math.max(0, contado - fondo)) + " a tesorería", detalle: "Genera la transferencia a Caja fuerte, pendiente de confirmar.", dot: PURPLE },
+              { titulo: dif === 0 ? "Sin diferencia que registrar" : "Se asienta la diferencia de " + money(dif), detalle: dif === 0 ? "El arqueo cierra exacto." : "Queda en el historial del turno con el motivo y el usuario.", dot: dif === 0 ? GREEN : difColor },
+              { titulo: "Los cheques pasan a la cartera", detalle: "El cheque 00483921 se registra a nombre de Rotisería Mediterránea.", dot: PURPLE }
+            ],
+            fondoTxt: st.fondo, setFondo: e => this.set("fondo", e.target.value),
+            aRendirFmt: money(Math.max(0, contado - fondo)),
+            cierreLabel: dif === 0 ? "Cerrar turno" : dentroTol ? "Cerrar con diferencia" : "Cerrar con autorización",
+            cierreBg: dif === 0 ? ACCENT : dentroTol ? AMBER : RED,
+            cerrarTurno: () => {},
+
+            abrirMov: () => this.setState({ movOpen: true, movTipo: "Egreso", concepto: "Gasto operativo" }),
+            abrirTransfer: () => this.setState({ movOpen: true, movTipo: "Transferencia", concepto: "A caja fuerte" }),
+            cerrarMov: () => this.set("movOpen", false),
+            movOpen: st.movOpen,
+            modal: {
+              titulo: st.movTipo === "Transferencia" ? "Transferencia entre cajas" : "Movimiento manual de caja",
+              sub: st.caja + " · turno T-2026-0842 · queda registrado con tu usuario",
+              tipos: modalTipos, conceptos,
+              importe: "42.000",
+              destinoLabel: st.movTipo === "Transferencia" ? "Caja de destino" : st.movTipo === "Egreso" ? "Paga con" : "Ingresa por",
+              destinos: st.movTipo === "Transferencia"
+                ? [ "Caja fuerte · tesorería", "Caja mostrador 2", "Caja Sucursal Pico", "Depósito en Banco Nación" ]
+                : [ "Efectivo", "Transferencia bancaria", "Cheque propio", "Tarjeta de la empresa" ],
+              imputaciones: [ "Fletes y combustible", "Gastos de mostrador", "Sueldos y adelantos", "Proveedores", "Retiro de socios" ],
+              nota: notaModal[0], notaColor: notaModal[1], notaBg: notaModal[2],
+              saldoDespues: money(efectivoTeorico + signo * 42000),
+              cta: st.movTipo === "Transferencia" ? "Registrar transferencia" : "Registrar " + st.movTipo.toLowerCase(),
+              ctaBg: st.movTipo === "Egreso" ? AMBER : st.movTipo === "Transferencia" ? PURPLE : st.movTipo === "Ajuste" ? RED : ACCENT
+            }
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

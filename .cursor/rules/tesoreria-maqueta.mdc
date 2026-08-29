@@ -1,0 +1,15 @@
+---
+description: Tesorería se implementa desde la maqueta DC; Caja es el diseño nuevo, cheques y pagos conservan su UX.
+globs: "**/tesoreria/**,**/caja/**,**/maquetas/**Tesoreria*"
+alwaysApply: false
+---
+
+# Tesorería — maqueta DC
+
+Fuente: `maquetas/Tesoreria.dc.html`. Ruta `/tesoreria` (Caja · Cheques · Pagos).
+
+## Qué hacer
+
+- **Caja:** workspace de la maqueta (turno, KPIs por medio, movimientos, arqueo lateral, movimiento manual). Tokens naranja Ventas360.
+- **Cheques y Pagos:** no cambiar la UX ni los flujos. Solo el estilo de las pestañas del shell.
+- Verificar Caja en el browser; Cheques y Pagos deben seguir igual por dentro.

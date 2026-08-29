@@ -1,4 +1,5 @@
 @use 'dc-list' as dc;
+@use 'typography' as ty;
 
 :host {
   display: flex;
@@ -14,21 +15,32 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding: 16px 22px 0;
+  font-family: ty.$font-family-base;
+  color: dc.$dc-text;
+  box-sizing: border-box;
 
-  &__bar {
+  &__header {
+    flex: none;
+    margin-bottom: 10px;
+  }
+
+  &__title {
+    @include dc.dc-list-title;
+  }
+
+  &__sub {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: dc.$dc-muted;
+  }
+
+  &__tabs-row {
     flex: none;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 10px 28px 0;
-  }
-
-  &__label {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: dc.$dc-subtle;
+    gap: 16px;
+    margin-bottom: 12px;
   }
 
   &__tabs {
@@ -41,16 +53,18 @@
 
   &__tab {
     text-decoration: none;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    gap: 7px;
     border: none;
+    background: transparent;
+    font: inherit;
     font-size: 13px;
-    font-weight: 700;
-    padding: 6px 14px;
+    font-weight: 600;
+    color: dc.$dc-muted;
+    padding: 7px 14px;
     border-radius: 7px;
     cursor: pointer;
-    background: transparent;
-    color: dc.$dc-muted;
-    font-family: inherit;
 
     &:hover {
       text-decoration: none;
@@ -60,8 +74,15 @@
     &--on {
       background: #fff;
       color: dc.$dc-text;
-      box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+      box-shadow: 0 1px 2px rgba(28, 25, 23, 0.12);
     }
+  }
+
+  &__ctx {
+    margin-left: auto;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 11.5px;
+    color: dc.$dc-muted;
   }
 
   &__outlet {
@@ -70,6 +91,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    margin: 0 -22px;
+    padding: 0;
   }
 }
 

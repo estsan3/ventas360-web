@@ -1,6 +1,12 @@
 <section class="tes">
-  <header class="tes__bar">
-    <span class="tes__label">Tesorería</span>
+  <header class="tes__header">
+    <div>
+      <h1 class="tes__title">Tesorería</h1>
+      <p class="tes__sub">Caja del turno, cartera de cheques y pagos a proveedores</p>
+    </div>
+  </header>
+
+  <div class="tes__tabs-row">
     <div class="tes__tabs">
       <a
         routerLink="caja"
@@ -13,7 +19,8 @@
       <a routerLink="cheques" routerLinkActive="tes__tab--on" class="tes__tab">Cheques</a>
       <a routerLink="pagos" routerLinkActive="tes__tab--on" class="tes__tab">Pagos</a>
     </div>
-  </header>
+    <span class="tes__ctx">{{ contextoTxt() }}</span>
+  </div>
 
   <div class="tes__outlet">
     <router-outlet />

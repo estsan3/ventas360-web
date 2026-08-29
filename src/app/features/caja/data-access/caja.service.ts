@@ -14,6 +14,7 @@ export interface MovimientoCajaDto {
   monto: number;
   concepto: string;
   referencia_tipo: string;
+  referencia_id: string;
   creado_en: string | null;
 }
 
