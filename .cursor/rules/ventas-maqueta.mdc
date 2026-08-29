@@ -1,0 +1,30 @@
+---
+description: Ventas (comprobantes) se implementa desde la maqueta DC, igual que Compras, Stock y Mostrador.
+globs: "**/comprobantes/**,**/presupuestos/**,**/pedidos/**,**/remitos/**,**/facturas/**,**/maquetas/**Ventas*"
+alwaysApply: false
+---
+
+# Ventas — maqueta DC
+
+Fuente: `maquetas/Ventas.dc.html`. Código: `src/app/features/comprobantes/` (ruta `/comprobantes`, menú **Ventas**). El Mostrador sigue en `/ventas`.
+
+Hacer **el mismo trabajo que Compras**: un workspace a pantalla completa (cuatro pestañas, KPIs, grilla, ficha lateral), no cuatro listados sueltos ni un modal de detalle.
+
+## Qué tiene la maqueta (no recortar)
+
+- Una sola pantalla viewport (sin topbar duplicada: el shell ya tiene menú)
+- Pestañas: **Presupuestos** · **Pedidos** · **Remitos** · **Facturas**
+- KPIs clicables distintos por pestaña
+- Búsqueda, chips de estado, filtro de vendedor, CTA nuevo
+- Grilla con columnas propias de cada tipo
+- Ficha: líneas, totales, nota, circuito presupuesto→pedido→remito→factura, impacto al confirmar, CTA
+- Tokens **naranja** Ventas360, no azul/violeta de la maqueta
+
+## Cómo
+
+- UI en español; commits en inglés
+- KPIs y circuito necesitan el universo: se carga al entrar (como Compras/Stock)
+- Mapear estados del API a las etiquetas de la maqueta sin inventar NC si el API no las tiene
+- Nuevo comprobante abre el Mostrador (`/ventas`, `/ventas/presupuesto`, etc.)
+- Verificar en el browser las cuatro pestañas
+- No tocar agro360 salvo pedido explícito

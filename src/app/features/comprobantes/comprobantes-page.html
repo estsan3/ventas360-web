@@ -1,21 +1,278 @@
-<section class="cmp">
-  <header class="cmp__bar">
-    <span class="cmp__label">Ventas</span>
-    <div class="cmp__tabs">
-      <a
-        routerLink="presupuestos"
-        routerLinkActive="cmp__tab--on"
-        class="cmp__tab"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        Presupuestos
-      </a>
-      <a routerLink="pedidos" routerLinkActive="cmp__tab--on" class="cmp__tab">Pedidos</a>
-      <a routerLink="remitos" routerLinkActive="cmp__tab--on" class="cmp__tab">Remitos</a>
+<section class="vta">
+  <header class="vta__header">
+    <div>
+      <h1 class="vta__title">Ventas</h1>
+      <p class="vta__sub">Presupuesto → pedido → remito (stock) → factura (cuenta del cliente)</p>
     </div>
   </header>
 
-  <div class="cmp__outlet">
-    <router-outlet />
+  <div class="vta__tabs-row">
+    <div class="vta__tabs">
+      <button
+        type="button"
+        class="vta__tab"
+        [class.vta__tab--on]="tab() === 'pre'"
+        (click)="setTab('pre')"
+      >
+        Presupuestos
+        @if (badges().pre > 0) {
+          <span class="vta__badge">{{ badges().pre }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="vta__tab"
+        [class.vta__tab--on]="tab() === 'ped'"
+        (click)="setTab('ped')"
+      >
+        Pedidos
+        @if (badges().ped > 0) {
+          <span class="vta__badge">{{ badges().ped }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="vta__tab"
+        [class.vta__tab--on]="tab() === 'rem'"
+        (click)="setTab('rem')"
+      >
+        Remitos
+        @if (badges().rem > 0) {
+          <span class="vta__badge">{{ badges().rem }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="vta__tab"
+        [class.vta__tab--on]="tab() === 'fac'"
+        (click)="setTab('fac')"
+      >
+        Facturas
+        @if (badges().fac > 0) {
+          <span class="vta__badge">{{ badges().fac }}</span>
+        }
+      </button>
+    </div>
+    <span class="vta__ctx">{{ contextoTxt() }}</span>
+  </div>
+
+  <div class="vta__split">
+    <div class="vta__main">
+      <div class="vta__kpis">
+        @for (k of kpis(); track k.label) {
+          <button
+            type="button"
+            class="vta__kpi"
+            [class.vta__kpi--on]="chip() === k.id && k.id !== 'todos'"
+            (click)="setKpi(k.id)"
+          >
+            <div class="vta__kpi-lab">{{ k.label }}</div>
+            <div class="vta__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+            <div class="vta__kpi-hint">{{ k.hint }}</div>
+          </button>
+        }
+      </div>
+      <div class="vta__toolbar">
+        <div class="vta__search">
+          <span>⌕</span>
+          <input
+            type="search"
+            [ngModel]="q()"
+            (ngModelChange)="q.set($event)"
+            [placeholder]="buscarPh()"
+          />
+        </div>
+        @for (c of chips(); track c.id) {
+          <button
+            type="button"
+            class="vta__chip"
+            [class.vta__chip--on]="chip() === c.id"
+            (click)="setChip(c.id)"
+          >
+            {{ c.label }}
+          </button>
+        }
+        <select
+          class="vta__select"
+          [ngModel]="vendedorId()"
+          (ngModelChange)="vendedorId.set($event)"
+        >
+          <option value="">Todos los vendedores</option>
+          @for (v of vendedores(); track v.id) {
+            <option [value]="v.id">{{ v.nombre }}</option>
+          }
+        </select>
+        <div class="vta__spacer"></div>
+        <button type="button" class="vta__link" (click)="limpiar()">Limpiar</button>
+        <button type="button" class="vta__cta" (click)="irNuevo()">{{ nuevoLabel() }}</button>
+      </div>
+      <div class="vta__card">
+        <div class="vta__thead" [attr.data-tab]="tab()">
+          @for (c of cols(); track c.label) {
+            <div
+              [class.vta__right]="c.align === 'right'"
+              [class.vta__center]="c.align === 'center'"
+            >
+              {{ c.label }}
+            </div>
+          }
+        </div>
+        <div class="vta__body">
+          @for (r of filas(); track r.id) {
+            <button
+              type="button"
+              class="vta__row"
+              [attr.data-tab]="tab()"
+              [class.vta__row--on]="r.sel"
+              (click)="abrir(r.id)"
+            >
+              @for (c of r.celdas; track $index) {
+                <div
+                  [class.vta__right]="c.align === 'right'"
+                  [class.vta__center]="c.align === 'center'"
+                  [class.vta__clip]="$index === 1"
+                >
+                  @if (c.pill) {
+                    <span class="vta__pill" [attr.data-tono]="c.tone">{{ c.v }}</span>
+                  } @else {
+                    <div
+                      [class.vta__mono]="c.mono"
+                      [class.vta__strong]="c.strong"
+                      [attr.data-tono]="c.tone"
+                    >
+                      {{ c.v }}
+                    </div>
+                    @if (c.sub) {
+                      <div class="vta__muted">{{ c.sub }}</div>
+                    }
+                  }
+                </div>
+              }
+            </button>
+          } @empty {
+            <div class="vta__empty">
+              @if (estado().status === 'loading') {
+                Cargando comprobantes…
+              } @else {
+                <div>Ningún comprobante con estos filtros</div>
+                <div class="vta__muted">Probá el chip “Todos” o quitá el filtro de vendedor.</div>
+              }
+            </div>
+          }
+        </div>
+        <div class="vta__foot">
+          <span>{{ countTxt() }}</span>
+          <div class="vta__spacer"></div>
+          @for (a of pieAcciones(); track a) {
+            <button type="button" class="vta__link" (click)="pieClick(a)">{{ a }}</button>
+          }
+          <span class="vta__muted">{{ totalLabel() }}</span>
+          <strong class="vta__mono">{{ totalFmt() }}</strong>
+        </div>
+      </div>
+    </div>
+
+    @if (ficha(); as d) {
+      <aside class="vta__side">
+        <div class="vta__side-h">
+          <div class="vta__side-tit">
+            <span class="vta__mono">{{ d.numero }}</span>
+            <span class="vta__pill" [attr.data-tono]="d.tone">{{ d.estado }}</span>
+            <div class="vta__spacer"></div>
+            <span class="vta__muted vta__tipo">{{ d.tipoTxt }}</span>
+          </div>
+          <div>{{ d.cliente }}</div>
+          <div class="vta__muted vta__mono">{{ d.meta }}</div>
+        </div>
+        <div class="vta__side-b">
+          <div>
+            <div class="vta__sec-lab">{{ d.lineasTitulo }}</div>
+            <div class="vta__mini">
+              <div class="vta__mini-h">
+                <div>Artículo</div>
+                <div class="vta__right">Cant.</div>
+                <div class="vta__right">Precio</div>
+                <div class="vta__right">Desc.</div>
+                <div class="vta__right">Subtotal</div>
+              </div>
+              @for (l of d.lineas; track l.id) {
+                <div class="vta__mini-r" [class.vta__mini-r--warn]="l.aviso">
+                  <div class="vta__clip">
+                    <div>{{ l.nombre }}</div>
+                    <div class="vta__muted vta__mono">{{ l.sku }}</div>
+                  </div>
+                  <div class="vta__right vta__mono">{{ l.cant }}</div>
+                  <div class="vta__right vta__mono">{{ l.precio }}</div>
+                  <div class="vta__right vta__mono vta__muted">{{ l.desc }}</div>
+                  <div class="vta__right vta__mono vta__strong">{{ l.subtotal }}</div>
+                  @if (l.aviso) {
+                    <div class="vta__aviso">{{ l.avisoTxt }}</div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="vta__totbox">
+            @for (t of d.totales; track t.label) {
+              <div class="vta__tot" [class.vta__tot--strong]="t.strong">
+                <span>{{ t.label }}</span>
+                <span class="vta__mono">{{ t.value }}</span>
+              </div>
+            }
+          </div>
+          <div class="vta__note" [attr.data-tono]="d.notaTone">{{ d.notaTxt }}</div>
+          @if (d.qrSrc) {
+            <div class="vta__qr">
+              <img [src]="d.qrSrc" width="120" height="120" alt="QR AFIP" />
+              @if (d.qrUrl) {
+                <a [href]="d.qrUrl" target="_blank" rel="noopener">Ver comprobante fiscal</a>
+              }
+            </div>
+          }
+          <div>
+            <div class="vta__sec-lab">Circuito del comprobante</div>
+            <div class="vta__traza">
+              @for (t of d.traza; track t.label) {
+                <button
+                  type="button"
+                  class="vta__traza-r"
+                  [disabled]="!t.id"
+                  (click)="irCircuito(t)"
+                >
+                  <span class="vta__dot" [class.vta__dot--on]="t.on"></span>
+                  <span>{{ t.label }}</span>
+                  <span class="vta__mono" [attr.data-tono]="t.on ? 'accent' : 'muted'">{{
+                    t.value
+                  }}</span>
+                </button>
+              }
+            </div>
+          </div>
+          <div>
+            <div class="vta__sec-lab">Qué impacta al confirmar</div>
+            <div class="vta__traza">
+              @for (i of d.impactos; track i.titulo) {
+                <div class="vta__impacto">
+                  <span class="vta__dot" [class.vta__dot--on]="i.on"></span>
+                  <div>
+                    <div>{{ i.titulo }}</div>
+                    <div class="vta__muted">{{ i.detalle }}</div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="vta__side-f">
+          @for (a of d.sec; track a) {
+            <button type="button" class="vta__btn" (click)="secClick(a)">{{ a }}</button>
+          }
+          <div class="vta__spacer"></div>
+          <button type="button" class="vta__cta" [disabled]="guardando()" (click)="cta()">
+            {{ d.ctaLabel }}
+          </button>
+        </div>
+      </aside>
+    }
   </div>
 </section>

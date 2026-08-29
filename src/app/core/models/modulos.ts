@@ -20,6 +20,7 @@ export const MODULO_POR_RUTA: Record<string, ModuloPermiso> = {
   presupuestos: 'ventas',
   pedidos: 'ventas',
   remitos: 'ventas',
+  facturas: 'ventas',
   clientes: 'clientes',
   'cuenta-corriente': 'cta_cte',
   productos: 'articulos',

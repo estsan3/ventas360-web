@@ -1,0 +1,1366 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <meta name="design_doc_mode" content="canvas" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: oklch(0.955 0.008 80);
+            font-family: 'Instrument Sans', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+          }
+          a {
+            color: oklch(0.52 0.15 255);
+            text-decoration: none;
+          }
+          a:hover {
+            color: oklch(0.42 0.15 255);
+            text-decoration: underline;
+          }
+          input,
+          select,
+          button {
+            font-family: inherit;
+          }
+          input:focus,
+          select:focus {
+            outline: 2px solid oklch(0.52 0.15 255);
+            outline-offset: -1px;
+          }
+          ::placeholder {
+            color: oklch(0.65 0.01 60);
+          }
+        </style>
+      </helmet>
+
+      <section style="display: flex; flex-direction: column; gap: 28px; padding: 56px 56px 90px">
+        <div style="display: flex; flex-direction: column; gap: 6px; max-width: 840px">
+          <div
+            style="
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              color: oklch(0.55 0.01 60);
+            "
+          >
+            Turno 6 · módulo nuevo
+          </div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 30px;
+              font-weight: 600;
+              letter-spacing: -0.02em;
+              color: oklch(0.25 0.01 60);
+            "
+          >
+            Ventas
+          </h1>
+          <p
+            style="
+              margin: 4px 0 0;
+              font-size: 15px;
+              line-height: 1.55;
+              color: oklch(0.48 0.01 60);
+              text-wrap: pretty;
+            "
+          >
+            El circuito de salida: presupuesto → pedido → remito que descuenta stock → factura que
+            impacta la cuenta corriente del cliente. Cada pestaña usa el mismo comprobante con su
+            propia grilla, su detalle y las reglas de lo que impacta al confirmarlo.
+          </p>
+        </div>
+
+        <div id="6a" style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <span
+              style="
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                font-weight: 600;
+                color: oklch(0.99 0 0);
+                background: oklch(0.3 0.01 60);
+                padding: 4px 9px;
+                border-radius: 5px;
+              "
+              >6a</span
+            >
+            <span style="font-size: 15px; font-weight: 600; color: oklch(0.3 0.01 60)"
+              >Ventas — presupuestos, pedidos, remitos y facturas</span
+            >
+          </div>
+
+          <div
+            style="
+              width: 1600px;
+              height: 1000px;
+              background: oklch(0.985 0.006 80);
+              border: 1px solid oklch(0.885 0.01 80);
+              border-radius: 12px;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              position: relative;
+              box-shadow:
+                0 1px 2px oklch(0.3 0.02 60 / 0.05),
+                0 12px 32px oklch(0.3 0.02 60 / 0.07);
+            "
+          >
+            <div
+              style="
+                height: 54px;
+                flex: none;
+                background: oklch(0.995 0.004 80);
+                border-bottom: 1px solid oklch(0.9 0.01 80);
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                padding: 0 18px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 9px">
+                <div
+                  style="
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 6px;
+                    background: oklch(0.52 0.15 255);
+                  "
+                ></div>
+                <span style="font-size: 14px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                  >Ventas</span
+                >
+              </div>
+              <div style="display: flex; gap: 2px">
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Mostrador</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    color: oklch(0.36 0.13 255);
+                    background: oklch(0.955 0.028 255);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Ventas</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Stock</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Compras</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Cuentas corrientes</span
+                >
+              </div>
+              <div style="flex: 1"></div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 7px;
+                  border: 1px solid oklch(0.88 0.05 80);
+                  background: oklch(0.96 0.035 80);
+                  border-radius: 8px;
+                  padding: 5px 10px;
+                "
+              >
+                <div
+                  style="
+                    width: 7px;
+                    height: 7px;
+                    border-radius: 50%;
+                    background: oklch(0.52 0.12 70);
+                  "
+                ></div>
+                <span style="font-size: 12.5px; font-weight: 600; color: oklch(0.52 0.12 70)">{{
+                  avisoTopbar
+                }}</span>
+              </div>
+              <div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: oklch(0.55 0.01 60);
+                "
+              >
+                29/08/26 · Sucursal Alvear
+              </div>
+              <div
+                style="
+                  width: 28px;
+                  height: 28px;
+                  border-radius: 50%;
+                  background: oklch(0.88 0.03 255);
+                  color: oklch(0.36 0.13 255);
+                  font-size: 11.5px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                EA
+              </div>
+            </div>
+
+            <div
+              style="
+                flex: none;
+                padding: 16px 22px 0;
+                display: flex;
+                align-items: flex-end;
+                gap: 16px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  gap: 2px;
+                  background: oklch(0.94 0.008 80);
+                  padding: 3px;
+                  border-radius: 9px;
+                "
+              >
+                <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+                  <div
+                    onClick="{{ t.pick }}"
+                    style="display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 7px; cursor: pointer; color: {{
+                      t.color
+                    }}; background: {{ t.bg }}; box-shadow: {{ t.shadow }};"
+                  >
+                    <span>{{ t.label }}</span>
+                    <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}">
+                      <span
+                        style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 700; color: {{
+                          t.badgeColor
+                        }}; background: {{ t.badgeBg }}; padding: 1px 5px; border-radius: 4px;"
+                        >{{ t.badgeTxt }}</span
+                      >
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="flex: 1"></div>
+              <div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 11.5px;
+                  color: oklch(0.55 0.01 60);
+                "
+              >
+                {{ contextoTxt }}
+              </div>
+            </div>
+
+            <div style="flex: 1; min-height: 0; display: flex; min-width: 0">
+              <div
+                style="
+                  flex: 1;
+                  min-width: 0;
+                  display: flex;
+                  flex-direction: column;
+                  padding: 14px 22px 20px;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    display: flex;
+                    gap: 1px;
+                    background: oklch(0.9 0.01 80);
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 10px;
+                    overflow: hidden;
+                  "
+                >
+                  <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+                    <div
+                      onClick="{{ k.pick }}"
+                      style="flex: 1; background: {{ k.bg }}; padding: 11px 14px; cursor: pointer;"
+                      style-hover="filter: brightness(0.985);"
+                    >
+                      <div
+                        style="
+                          font-size: 10.5px;
+                          letter-spacing: 0.04em;
+                          text-transform: uppercase;
+                          color: oklch(0.58 0.01 60);
+                        "
+                      >
+                        {{ k.label }}
+                      </div>
+                      <div
+                        style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 600; color: {{
+                          k.color
+                        }};"
+                      >
+                        {{ k.value }}
+                      </div>
+                      <div style="margin-top: 1px; font-size: 11.5px; color: oklch(0.58 0.01 60)">
+                        {{ k.hint }}
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div
+                  style="flex: none; margin-top: 12px; display: flex; align-items: center; gap: 9px"
+                >
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      height: 36px;
+                      width: 320px;
+                      border-radius: 9px;
+                      border: 1px solid oklch(0.86 0.01 80);
+                      background: oklch(1 0 0);
+                      padding: 0 11px;
+                    "
+                  >
+                    <span style="font-size: 14px; color: oklch(0.6 0.01 60)">⌕</span>
+                    <input
+                      value="{{ query }}"
+                      onChange="{{ onQuery }}"
+                      placeholder="{{ buscarPlaceholder }}"
+                      style="
+                        flex: 1;
+                        border: none;
+                        outline: none;
+                        font-size: 13.5px;
+                        color: oklch(0.24 0.01 60);
+                        background: transparent;
+                      "
+                    />
+                  </div>
+                  <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+                    <div
+                      onClick="{{ c.pick }}"
+                      style="font-size: 12.5px; font-weight: 500; padding: 6px 11px; border-radius: 20px; cursor: pointer; white-space: nowrap; color: {{
+                        c.color
+                      }}; background: {{ c.bg }}; border: 1px solid {{ c.border }};"
+                    >
+                      {{ c.label }}
+                    </div>
+                  </sc-for>
+                  <select
+                    value="{{ fVendedor }}"
+                    onChange="{{ setVendedor }}"
+                    style="
+                      height: 36px;
+                      border-radius: 9px;
+                      border: 1px solid oklch(0.88 0.01 80);
+                      font-size: 13px;
+                      padding: 0 8px;
+                      color: oklch(0.28 0.01 60);
+                      background: oklch(1 0 0);
+                    "
+                  >
+                    <sc-for list="{{ vendedores }}" as="v" hint-placeholder-count="4"
+                      ><option value="{{ v }}">{{ v }}</option></sc-for
+                    >
+                  </select>
+                  <div style="flex: 1"></div>
+                  <span
+                    onClick="{{ limpiar }}"
+                    style="
+                      font-size: 12.5px;
+                      color: oklch(0.52 0.15 255);
+                      cursor: pointer;
+                      white-space: nowrap;
+                    "
+                    >Limpiar</span
+                  >
+                  <button
+                    style="
+                      height: 36px;
+                      padding: 0 14px;
+                      border-radius: 9px;
+                      border: none;
+                      background: oklch(0.52 0.15 255);
+                      color: oklch(1 0 0);
+                      font-size: 13px;
+                      font-weight: 600;
+                      cursor: pointer;
+                      white-space: nowrap;
+                    "
+                    style-hover="background: oklch(0.46 0.15 255);"
+                  >
+                    {{ nuevoLabel }}
+                  </button>
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    min-height: 0;
+                    margin-top: 12px;
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 11px;
+                    background: oklch(1 0 0);
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                  "
+                >
+                  <div
+                    style="flex: none; display: grid; grid-template-columns: {{
+                      gridCols
+                    }}; padding: 10px 14px; background: oklch(0.972 0.005 80); border-bottom: 1px solid oklch(0.91 0.01 80); font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: oklch(0.5 0.01 60);"
+                  >
+                    <sc-for list="{{ cols }}" as="c" hint-placeholder-count="7">
+                      <div style="text-align: {{ c.align }};">{{ c.label }}</div>
+                    </sc-for>
+                  </div>
+                  <div style="flex: 1; overflow: auto">
+                    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="9">
+                      <div
+                        onClick="{{ r.open }}"
+                        style="display: grid; grid-template-columns: {{
+                          gridCols
+                        }}; align-items: center; padding: 10px 14px; border-bottom: 1px solid oklch(0.955 0.006 80); cursor: pointer; background: {{
+                          r.bg
+                        }}; box-shadow: {{ r.ring }};"
+                        style-hover="background: oklch(0.968 0.008 80);"
+                      >
+                        <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="7">
+                          <div style="min-width: 0; padding-right: 8px; text-align: {{ c.align }};">
+                            <sc-if value="{{ c.chip }}" hint-placeholder-val="{{ false }}">
+                              <span
+                                style="font-size: 11px; font-weight: 600; white-space: nowrap; color: {{
+                                  c.color
+                                }}; background: {{
+                                  c.chipBg
+                                }}; padding: 3px 8px; border-radius: 5px;"
+                                >{{ c.v }}</span
+                              >
+                            </sc-if>
+                            <sc-if value="{{ c.plain }}" hint-placeholder-val="{{ true }}">
+                              <div
+                                style="font-family: {{ c.font }}; font-size: {{
+                                  c.size
+                                }}; font-weight: {{ c.weight }}; color: {{
+                                  c.color
+                                }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                              >
+                                {{ c.v }}
+                              </div>
+                              <sc-if value="{{ c.sub }}" hint-placeholder-val="{{ false }}">
+                                <div
+                                  style="margin-top: 1px; font-size: 11px; color: {{
+                                    c.subColor
+                                  }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                >
+                                  {{ c.subTxt }}
+                                </div>
+                              </sc-if>
+                            </sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ vacio }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding: 60px 20px; text-align: center">
+                        <div
+                          style="font-size: 14.5px; font-weight: 500; color: oklch(0.35 0.01 60)"
+                        >
+                          Ningún comprobante con estos filtros
+                        </div>
+                        <div style="margin-top: 5px; font-size: 13px; color: oklch(0.55 0.01 60)">
+                          Probá el chip “Todos” o quitá el filtro de vendedor.
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <div
+                    style="
+                      flex: none;
+                      border-top: 1px solid oklch(0.93 0.01 80);
+                      background: oklch(0.978 0.005 80);
+                      padding: 10px 14px;
+                      display: flex;
+                      align-items: center;
+                      gap: 14px;
+                    "
+                  >
+                    <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">{{ countTxt }}</span>
+                    <div style="flex: 1"></div>
+                    <sc-for list="{{ pieAcciones }}" as="a" hint-placeholder-count="2">
+                      <span
+                        style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                        >{{ a }}</span
+                      >
+                    </sc-for>
+                    <span style="font-size: 12.5px; color: oklch(0.5 0.01 60)">{{
+                      totalLabel
+                    }}</span>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: oklch(0.23 0.01 60);
+                      "
+                      >{{ totalFmt }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- panel de detalle -->
+              <div
+                style="
+                  width: 520px;
+                  flex: none;
+                  border-left: 1px solid oklch(0.9 0.01 80);
+                  background: oklch(0.995 0.004 80);
+                  display: flex;
+                  flex-direction: column;
+                  min-height: 0;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    padding: 15px 18px 13px;
+                    border-bottom: 1px solid oklch(0.925 0.01 80);
+                    background: oklch(1 0 0);
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 9px">
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: oklch(0.22 0.01 60);
+                      "
+                      >{{ d.numero }}</span
+                    >
+                    <span
+                      style="font-size: 11px; font-weight: 600; color: {{
+                        d.estColor
+                      }}; background: {{ d.estBg }}; padding: 3px 8px; border-radius: 5px;"
+                      >{{ d.estado }}</span
+                    >
+                    <div style="flex: 1"></div>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 11px;
+                        color: oklch(0.6 0.01 60);
+                      "
+                      >{{ d.tipoTxt }}</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      margin-top: 5px;
+                      font-size: 14px;
+                      font-weight: 500;
+                      color: oklch(0.28 0.01 60);
+                    "
+                  >
+                    {{ d.cliente }}
+                  </div>
+                  <div
+                    style="
+                      margin-top: 2px;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 11.5px;
+                      color: oklch(0.57 0.01 60);
+                    "
+                  >
+                    {{ d.meta }}
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    min-height: 0;
+                    overflow: auto;
+                    padding: 14px 18px 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 14px;
+                  "
+                >
+                  <div>
+                    <div
+                      style="
+                        display: flex;
+                        align-items: baseline;
+                        justify-content: space-between;
+                        margin-bottom: 7px;
+                      "
+                    >
+                      <span
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10.5px;
+                          letter-spacing: 0.06em;
+                          text-transform: uppercase;
+                          color: oklch(0.55 0.01 60);
+                        "
+                        >{{ d.lineasTitulo }}</span
+                      >
+                      <span style="font-size: 12px; color: oklch(0.52 0.15 255); cursor: pointer">{{
+                        d.lineasAccion
+                      }}</span>
+                    </div>
+                    <div
+                      style="
+                        border: 1px solid oklch(0.9 0.01 80);
+                        border-radius: 10px;
+                        overflow: hidden;
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 1fr 54px 96px 56px 104px;
+                          padding: 8px 11px;
+                          background: oklch(0.972 0.005 80);
+                          border-bottom: 1px solid oklch(0.92 0.01 80);
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 10px;
+                          letter-spacing: 0.05em;
+                          text-transform: uppercase;
+                          color: oklch(0.5 0.01 60);
+                        "
+                      >
+                        <div>Artículo</div>
+                        <div style="text-align: right">Cant.</div>
+                        <div style="text-align: right">Precio</div>
+                        <div style="text-align: right">Desc.</div>
+                        <div style="text-align: right">Subtotal</div>
+                      </div>
+                      <sc-for list="{{ d.lineas }}" as="l" hint-placeholder-count="4">
+                        <div
+                          style="padding: 9px 11px; border-bottom: 1px solid oklch(0.958 0.006 80); background: {{
+                            l.bg
+                          }};"
+                        >
+                          <div
+                            style="
+                              display: grid;
+                              grid-template-columns: 1fr 54px 96px 56px 104px;
+                              align-items: center;
+                            "
+                          >
+                            <div style="min-width: 0; padding-right: 8px">
+                              <div
+                                style="
+                                  font-size: 12.5px;
+                                  color: oklch(0.26 0.01 60);
+                                  white-space: nowrap;
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                "
+                              >
+                                {{ l.nombre }}
+                              </div>
+                              <div
+                                style="
+                                  font-family: 'IBM Plex Mono', monospace;
+                                  font-size: 10.5px;
+                                  color: oklch(0.58 0.01 60);
+                                "
+                              >
+                                {{ l.cod }}
+                              </div>
+                            </div>
+                            <div
+                              style="
+                                text-align: right;
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 12.5px;
+                                color: oklch(0.4 0.01 60);
+                              "
+                            >
+                              {{ l.cant }}
+                            </div>
+                            <div
+                              style="
+                                text-align: right;
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 12.5px;
+                                color: oklch(0.42 0.01 60);
+                              "
+                            >
+                              {{ l.precio }}
+                            </div>
+                            <div
+                              style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: {{
+                                l.descColor
+                              }};"
+                            >
+                              {{ l.desc }}
+                            </div>
+                            <div
+                              style="
+                                text-align: right;
+                                font-family: 'IBM Plex Mono', monospace;
+                                font-size: 12.5px;
+                                font-weight: 600;
+                                color: oklch(0.24 0.01 60);
+                              "
+                            >
+                              {{ l.subtotal }}
+                            </div>
+                          </div>
+                          <sc-if value="{{ l.aviso }}" hint-placeholder-val="{{ false }}">
+                            <div
+                              style="margin-top: 4px; font-size: 11.5px; line-height: 1.4; color: {{
+                                l.avisoColor
+                              }};"
+                            >
+                              {{ l.avisoTxt }}
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      border: 1px solid oklch(0.9 0.01 80);
+                      border-radius: 10px;
+                      background: oklch(1 0 0);
+                      padding: 12px 13px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 8px;
+                    "
+                  >
+                    <sc-for list="{{ d.totales }}" as="t" hint-placeholder-count="4">
+                      <div
+                        style="display: flex; align-items: baseline; justify-content: space-between"
+                      >
+                        <span
+                          style="font-size: {{ t.size }}; font-weight: {{ t.weight }}; color: {{
+                            t.labelColor
+                          }};"
+                          >{{ t.label }}</span
+                        >
+                        <span
+                          style="font-family: 'IBM Plex Mono', monospace; font-size: {{
+                            t.valueSize
+                          }}; font-weight: 600; color: {{ t.color }};"
+                          >{{ t.value }}</span
+                        >
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div
+                    style="font-size: 12.5px; line-height: 1.5; color: {{
+                      d.notaColor
+                    }}; background: {{ d.notaBg }}; border-radius: 9px; padding: 10px 12px;"
+                  >
+                    {{ d.notaTxt }}
+                  </div>
+
+                  <div>
+                    <div
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.06em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                        margin-bottom: 7px;
+                      "
+                    >
+                      Circuito del comprobante
+                    </div>
+                    <div
+                      style="
+                        border: 1px solid oklch(0.9 0.01 80);
+                        border-radius: 10px;
+                        overflow: hidden;
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ d.traza }}" as="t" hint-placeholder-count="4">
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            padding: 9px 12px;
+                            border-bottom: 1px solid oklch(0.958 0.006 80);
+                          "
+                        >
+                          <div
+                            style="width: 8px; height: 8px; border-radius: 50%; flex: none; background: {{
+                              t.dot
+                            }};"
+                          ></div>
+                          <span style="flex: 1; font-size: 12.5px; color: oklch(0.34 0.01 60)">{{
+                            t.label
+                          }}</span>
+                          <span
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: {{
+                              t.valColor
+                            }};"
+                            >{{ t.value }}</span
+                          >
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 10.5px;
+                        letter-spacing: 0.06em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                        margin-bottom: 7px;
+                      "
+                    >
+                      Qué impacta al confirmar
+                    </div>
+                    <div
+                      style="
+                        border: 1px solid oklch(0.9 0.01 80);
+                        border-radius: 10px;
+                        overflow: hidden;
+                        background: oklch(1 0 0);
+                      "
+                    >
+                      <sc-for list="{{ d.impactos }}" as="i" hint-placeholder-count="4">
+                        <div
+                          style="
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 10px;
+                            padding: 10px 12px;
+                            border-bottom: 1px solid oklch(0.958 0.006 80);
+                          "
+                        >
+                          <div
+                            style="width: 8px; height: 8px; border-radius: 50%; flex: none; margin-top: 5px; background: {{
+                              i.dot
+                            }};"
+                          ></div>
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font-size: 12.5px;
+                                font-weight: 500;
+                                color: oklch(0.28 0.01 60);
+                              "
+                            >
+                              {{ i.titulo }}
+                            </div>
+                            <div
+                              style="
+                                margin-top: 2px;
+                                font-size: 11.5px;
+                                line-height: 1.4;
+                                color: oklch(0.55 0.01 60);
+                              "
+                            >
+                              {{ i.detalle }}
+                            </div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: none;
+                    border-top: 1px solid oklch(0.91 0.01 80);
+                    background: oklch(1 0 0);
+                    padding: 13px 18px 15px;
+                    display: flex;
+                    gap: 9px;
+                  "
+                >
+                  <sc-for list="{{ d.accionesSec }}" as="a" hint-placeholder-count="2">
+                    <button
+                      style="
+                        flex: none;
+                        height: 40px;
+                        padding: 0 13px;
+                        border-radius: 9px;
+                        border: 1px solid oklch(0.87 0.01 80);
+                        background: oklch(1 0 0);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: oklch(0.33 0.01 60);
+                        cursor: pointer;
+                      "
+                      style-hover="background: oklch(0.97 0.006 80);"
+                    >
+                      {{ a }}
+                    </button>
+                  </sc-for>
+                  <div style="flex: 1"></div>
+                  <button
+                    onClick="{{ d.cta }}"
+                    style="flex: none; height: 40px; padding: 0 18px; border-radius: 9px; border: none; background: {{
+                      d.ctaBg
+                    }}; color: oklch(1 0 0); font-size: 13.5px; font-weight: 600; cursor: {{
+                      d.ctaCursor
+                    }};"
+                    style-hover="filter: brightness(0.93);"
+                  >
+                    {{ d.ctaLabel }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"tasaIva":{"editor":"enum","options":["21","10.5","27"],"default":"21","tsType":"string","section":"Facturación"},"alertarLimiteCredito":{"editor":"boolean","default":true,"tsType":"boolean","section":"Controles"}}'
+    >
+      const ACCENT = "oklch(0.52 0.15 255)";
+      const ACCENT_BG = "oklch(0.955 0.028 255)";
+      const RED = "oklch(0.5 0.17 25)";
+      const RED_BG = "oklch(0.955 0.03 25)";
+      const AMBER = "oklch(0.52 0.12 70)";
+      const AMBER_BG = "oklch(0.96 0.035 80)";
+      const GREEN = "oklch(0.44 0.11 155)";
+      const GREEN_BG = "oklch(0.955 0.03 155)";
+      const PURPLE = "oklch(0.45 0.16 300)";
+      const PURPLE_BG = "oklch(0.96 0.03 300)";
+      const GREY = "oklch(0.48 0.01 60)";
+      const GREY_BG = "oklch(0.955 0.006 80)";
+      const INK = "oklch(0.24 0.01 60)";
+      const MONO = "'IBM Plex Mono', monospace";
+      const SANS = "'Instrument Sans', sans-serif";
+
+      function money(n) {
+        const neg = n < 0;
+        return (neg ? "-$ " : "$ ") + Math.round(Math.abs(n)).toLocaleString("es-AR");
+      }
+      function norm(s) { return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+      function ord(f) { const p = String(f).split("/"); return p.length === 3 ? p[2] + p[1] + p[0] : "999999"; }
+      const HOY = ord("29/08/26");
+      const SEMANA = ord("05/09/26");
+
+      const CLI = {
+        1: { nom: "Distribuidora San Martín SRL", cuit: "30-71234567-9", iva: "Resp. inscripto", cond: "Cuenta 30 días", vend: "Laura Gómez", zona: "Alvear", saldo: 1284500, limite: 1500000, desc: 8 },
+        2: { nom: "Supermercado Norte SRL", cuit: "30-70998877-4", iva: "Resp. inscripto", cond: "Cuenta 45 días", vend: "Marina Paz", zona: "Trenel", saldo: 2115400, limite: 2000000, desc: 12 },
+        3: { nom: "Corralón Los Álamos", cuit: "20-24112233-1", iva: "Resp. inscripto", cond: "Cuenta 30 días", vend: "Marina Paz", zona: "Gral. Pico", saldo: 987250, limite: 800000, desc: 5 },
+        4: { nom: "Almacén Doña Rosa", cuit: "27-18994455-6", iva: "Monotributo", cond: "Contado 7 días", vend: "Diego Ruiz", zona: "Realicó", saldo: 186300, limite: 300000, desc: 0 },
+        5: { nom: "Hotel Plaza Alvear SRL", cuit: "30-71001199-0", iva: "Resp. inscripto", cond: "Cuenta 45 días", vend: "Marina Paz", zona: "Alvear", saldo: 431600, limite: 900000, desc: 10 },
+        6: { nom: "Consumidor final", cuit: "—", iva: "Consumidor final", cond: "Contado", vend: "Diego Ruiz", zona: "Salón", saldo: 0, limite: 0, desc: 0 }
+      };
+
+      const L = (nom, cod, cant, precio, desc, stock) => ({ nom, cod, cant, precio, desc: desc || 0, stock: stock === undefined ? 999 : stock });
+
+      const DOCS = [
+        // presupuestos
+        { tipo: "pre", num: "P-0001-00782", cli: 3, fecha: "28/08/26", vence: "11/09/26", estado: "Enviado", vend: "Marina Paz",
+          lineas: [ L("Pintura látex interior 20 l blanco", "PIN-7701", 12, 68500, 5, 31), L("Cerradura doble paleta reforzada", "CER-9902", 6, 44900, 0, 8), L("Manguera reforzada 1/2\" x 25 m", "MAN-8820", 4, 31200, 0, 14) ] },
+        { tipo: "pre", num: "P-0001-00781", cli: 5, fecha: "27/08/26", vence: "10/09/26", estado: "Aceptado", vend: "Marina Paz", pedido: "PV-0001-01204",
+          lineas: [ L("Lámpara LED 12W luz cálida", "LAM-1150", 60, 5900, 10, 0), L("Pilas AA alcalinas (blister x4)", "PIL-0902", 24, 4400, 0, 60) ] },
+        { tipo: "pre", num: "P-0001-00779", cli: 1, fecha: "25/08/26", vence: "08/09/26", estado: "En revisión", vend: "Laura Gómez",
+          lineas: [ L("Caja de tornillos autoperforantes 8x1", "TOR-0455", 40, 11200, 8, 42), L("Guantes de trabajo talle L", "GUA-4410", 60, 5200, 8, 5) ] },
+        { tipo: "pre", num: "P-0001-00774", cli: 2, fecha: "20/08/26", vence: "27/08/26", estado: "Vencido", vend: "Marina Paz",
+          lineas: [ L("Resma A4 75 g (500 hojas)", "PAP-4400", 80, 16400, 12, 19) ] },
+        { tipo: "pre", num: "P-0001-00770", cli: 4, fecha: "18/08/26", vence: "01/09/26", estado: "Rechazado", vend: "Diego Ruiz",
+          lineas: [ L("Auriculares in-ear con micrófono", "AUR-5502", 12, 12800, 0, 9) ] },
+        // pedidos
+        { tipo: "ped", num: "PV-0001-01206", cli: 1, fecha: "29/08/26", vence: "01/09/26", estado: "Para preparar", vend: "Laura Gómez",
+          lineas: [ L("Cable HDMI 2.0 · 1,5 m", "CAB-3301", 20, 8400, 8, 27), L("Mouse inalámbrico Logitech M170", "MOU-1041", 10, 21500, 8, 4), L("Teclado USB Redragon Kumara", "TEC-2210", 4, 56900, 8, 2) ] },
+        { tipo: "ped", num: "PV-0001-01205", cli: 2, fecha: "28/08/26", vence: "30/08/26", estado: "Preparado", vend: "Marina Paz",
+          lineas: [ L("Agua mineral 500 ml (pack x12)", "AGU-0110", 40, 14900, 12, 88), L("Alfajor Guaymallén simple (caja x50)", "ALF-0110", 20, 32000, 12, 210) ] },
+        { tipo: "ped", num: "PV-0001-01204", cli: 5, fecha: "27/08/26", vence: "29/08/26", estado: "Remitido parcial", vend: "Marina Paz", presupuesto: "P-0001-00781", remito: "RV-0001-08841",
+          lineas: [ L("Lámpara LED 12W luz cálida", "LAM-1150", 60, 5900, 10, 0), L("Pilas AA alcalinas (blister x4)", "PIL-0902", 24, 4400, 0, 60) ] },
+        { tipo: "ped", num: "PV-0001-01201", cli: 3, fecha: "26/08/26", vence: "28/08/26", estado: "Bloqueado", vend: "Marina Paz",
+          lineas: [ L("Pintura látex interior 20 l blanco", "PIN-7701", 20, 68500, 5, 31) ] },
+        { tipo: "ped", num: "PV-0001-01198", cli: 4, fecha: "25/08/26", vence: "26/08/26", estado: "Cerrado", vend: "Diego Ruiz", remito: "RV-0001-08830", factura: "FA B 0001-00021455",
+          lineas: [ L("Lámpara LED 12W luz cálida", "LAM-1150", 12, 5900, 0, 0) ] },
+        // remitos
+        { tipo: "rem", num: "RV-0001-08843", cli: 2, fecha: "29/08/26", estado: "Para facturar", vend: "Marina Paz", pedido: "PV-0001-01205",
+          lineas: [ L("Agua mineral 500 ml (pack x12)", "AGU-0110", 40, 14900, 12, 88), L("Alfajor Guaymallén simple (caja x50)", "ALF-0110", 20, 32000, 12, 210) ] },
+        { tipo: "rem", num: "RV-0001-08842", cli: 1, fecha: "29/08/26", estado: "En reparto", vend: "Laura Gómez", pedido: "PV-0001-01206",
+          lineas: [ L("Cable HDMI 2.0 · 1,5 m", "CAB-3301", 20, 8400, 8, 27), L("Mouse inalámbrico Logitech M170", "MOU-1041", 4, 21500, 8, 4) ] },
+        { tipo: "rem", num: "RV-0001-08841", cli: 5, fecha: "28/08/26", estado: "Para facturar", vend: "Marina Paz", pedido: "PV-0001-01204",
+          lineas: [ L("Pilas AA alcalinas (blister x4)", "PIL-0902", 24, 4400, 0, 60) ] },
+        { tipo: "rem", num: "RV-0001-08838", cli: 3, fecha: "27/08/26", estado: "Devuelto", vend: "Marina Paz", pedido: "PV-0001-01195",
+          lineas: [ L("Cerradura doble paleta reforzada", "CER-9902", 4, 44900, 0, 8) ] },
+        { tipo: "rem", num: "RV-0001-08830", cli: 4, fecha: "25/08/26", estado: "Facturado", vend: "Diego Ruiz", pedido: "PV-0001-01198", factura: "FA B 0001-00021455",
+          lineas: [ L("Lámpara LED 12W luz cálida", "LAM-1150", 12, 5900, 0, 0) ] },
+        // facturas
+        { tipo: "fac", num: "FA A 0001-00012902", cli: 2, fecha: "29/08/26", vence: "13/10/26", estado: "Emitida", vend: "Marina Paz", remito: "RV-0001-08843", pedido: "PV-0001-01205", cae: "76122334455661",
+          lineas: [ L("Agua mineral 500 ml (pack x12)", "AGU-0110", 40, 14900, 12, 88), L("Alfajor Guaymallén simple (caja x50)", "ALF-0110", 20, 32000, 12, 210) ] },
+        { tipo: "fac", num: "FA A 0001-00012901", cli: 1, fecha: "28/08/26", vence: "27/09/26", estado: "Emitida", vend: "Laura Gómez", remito: "RV-0001-08839", cae: "76122334455498",
+          lineas: [ L("Caja de tornillos autoperforantes 8x1", "TOR-0455", 24, 11200, 8, 42) ] },
+        { tipo: "fac", num: "FA B 0001-00021455", cli: 4, fecha: "25/08/26", vence: "01/09/26", estado: "Cobrada", vend: "Diego Ruiz", remito: "RV-0001-08830", pedido: "PV-0001-01198", cae: "76122334454210",
+          lineas: [ L("Lámpara LED 12W luz cálida", "LAM-1150", 12, 5900, 0, 0) ] },
+        { tipo: "fac", num: "FA A 0001-00012845", cli: 1, fecha: "12/07/26", vence: "11/08/26", estado: "Vencida", vend: "Laura Gómez", remito: "RV-0001-08801", cae: "76122334451188",
+          lineas: [ L("Pintura látex interior 20 l blanco", "PIN-7701", 8, 68500, 5, 31) ] },
+        { tipo: "fac", num: "NC A 0001-00000318", cli: 3, fecha: "27/08/26", vence: "27/08/26", estado: "Nota de crédito", vend: "Marina Paz", remito: "RV-0001-08838", cae: "76122334455002", nc: true,
+          lineas: [ L("Cerradura doble paleta reforzada", "CER-9902", 4, 44900, 0, 8) ] },
+        { tipo: "fac", num: "FA A 0001-00012877", cli: 5, fecha: "20/08/26", vence: "04/10/26", estado: "Emitida", vend: "Marina Paz", remito: "", cae: "", pendienteCae: true,
+          lineas: [ L("Lámpara LED 12W luz cálida", "LAM-1150", 30, 5900, 10, 0) ] }
+      ];
+
+      const EST = {
+        "Enviado": [ ACCENT, ACCENT_BG ], "Aceptado": [ GREEN, GREEN_BG ], "En revisión": [ GREY, GREY_BG ],
+        "Vencido": [ AMBER, AMBER_BG ], "Rechazado": [ RED, RED_BG ],
+        "Para preparar": [ ACCENT, ACCENT_BG ], "Preparado": [ PURPLE, PURPLE_BG ], "Remitido parcial": [ AMBER, AMBER_BG ],
+        "Bloqueado": [ RED, RED_BG ], "Cerrado": [ GREEN, GREEN_BG ],
+        "Para facturar": [ PURPLE, PURPLE_BG ], "En reparto": [ ACCENT, ACCENT_BG ], "Devuelto": [ RED, RED_BG ],
+        "Facturado": [ GREEN, GREEN_BG ], "Emitida": [ ACCENT, ACCENT_BG ], "Cobrada": [ GREEN, GREEN_BG ],
+        "Vencida": [ RED, RED_BG ], "Nota de crédito": [ PURPLE, PURPLE_BG ]
+      };
+
+      const TIPO_TXT = { pre: "Presupuesto", ped: "Pedido de venta", rem: "Remito de venta", fac: "Comprobante fiscal" };
+
+      class Component extends DCLogic {
+        state = { tab: "pre", query: "", chip: "Todos", vend: "Todos los vendedores", sel: {} };
+        set(k, v) { this.setState({ [k]: v }); }
+
+        neto(doc) { return doc.lineas.reduce((n, l) => n + l.cant * l.precio * (1 - l.desc / 100), 0); }
+        ivaDe(doc) {
+          const c = CLI[doc.cli];
+          const tasa = this.props.tasaIva ? Number(this.props.tasaIva) : 21;
+          return c.iva === "Monotributo" || c.iva === "Consumidor final" ? 0 : this.neto(doc) * tasa / 100;
+        }
+        total(doc) { return this.neto(doc) + this.ivaDe(doc); }
+
+        cell(v, o) {
+          o = o || {};
+          return { v, align: o.align || "left", font: o.mono ? MONO : SANS, size: o.size || "13px",
+            weight: o.weight || "400", color: o.color || INK, chip: !!o.chip, chipBg: o.chipBg || GREY_BG,
+            plain: !o.chip, sub: !!o.sub, subTxt: o.sub || "", subColor: o.subColor || "oklch(0.58 0.01 60)" };
+        }
+
+        renderVals() {
+          const st = this.state;
+          const tab = st.tab;
+          const alertarLimite = this.props.alertarLimiteCredito !== false;
+          const tasa = this.props.tasaIva ? Number(this.props.tasaIva) : 21;
+
+          const docsDe = t => DOCS.filter(d => d.tipo === t);
+          const conf = {
+            pre: { nuevo: "+ Nuevo presupuesto", buscar: "N° de presupuesto, cliente o artículo",
+              chips: [ [ "Todos", "Todos" ], [ "Enviado", "Enviados" ], [ "Aceptado", "Aceptados" ], [ "Vencido", "Vencidos" ] ],
+              cols: [ [ "Presupuesto", 152 ], [ "Cliente", 0 ], [ "Emitido", 92 ], [ "Válido hasta", 108 ], [ "Vendedor", 118 ], [ "Total", 132, "right" ], [ "Estado", 128, "center" ] ],
+              pie: [ "Enviar por WhatsApp", "Exportar" ], totalLabel: "Presupuestado" },
+            ped: { nuevo: "+ Nuevo pedido", buscar: "N° de pedido, cliente o artículo",
+              chips: [ [ "Todos", "Todos" ], [ "Para preparar", "Para preparar" ], [ "Preparado", "Preparados" ], [ "Bloqueado", "Bloqueados" ] ],
+              cols: [ [ "Pedido", 152 ], [ "Cliente", 0 ], [ "Ingresó", 92 ], [ "Compromiso", 108 ], [ "Stock", 110, "center" ], [ "Total", 132, "right" ], [ "Estado", 138, "center" ] ],
+              pie: [ "Imprimir hoja de armado", "Generar remitos" ], totalLabel: "Comprometido" },
+            rem: { nuevo: "+ Nuevo remito", buscar: "N° de remito, cliente o artículo",
+              chips: [ [ "Todos", "Todos" ], [ "Para facturar", "Para facturar" ], [ "En reparto", "En reparto" ], [ "Devuelto", "Devueltos" ] ],
+              cols: [ [ "Remito", 152 ], [ "Cliente", 0 ], [ "Fecha", 92 ], [ "Pedido", 138 ], [ "Bultos", 84, "right" ], [ "Valorizado", 132, "right" ], [ "Estado", 128, "center" ] ],
+              pie: [ "Hoja de ruta", "Facturar seleccionados" ], totalLabel: "Valorizado" },
+            fac: { nuevo: "+ Nueva factura", buscar: "N° de comprobante, cliente o CAE",
+              chips: [ [ "Todos", "Todos" ], [ "Emitida", "Emitidas" ], [ "Vencida", "Vencidas" ], [ "Nota de crédito", "Notas de crédito" ] ],
+              cols: [ [ "Comprobante", 172 ], [ "Cliente", 0 ], [ "Fecha", 92 ], [ "Vence", 92 ], [ "CAE", 148 ], [ "Total", 132, "right" ], [ "Estado", 128, "center" ] ],
+              pie: [ "Libro IVA ventas", "Exportar" ], totalLabel: "Facturado" }
+          }[tab];
+
+          const q = norm(st.query.trim());
+          const filtrados = docsDe(tab).filter(d => {
+            const c = CLI[d.cli];
+            if (q && !(norm(d.num).includes(q) || norm(c.nom).includes(q) || d.lineas.some(l => norm(l.nom).includes(q)) || (d.cae || "").includes(q))) return false;
+            if (st.vend !== "Todos los vendedores" && d.vend !== st.vend) return false;
+            if (st.chip !== "Todos" && d.estado !== st.chip) return false;
+            return true;
+          });
+
+          const gridCols = conf.cols.map(c => c[1] ? c[1] + "px" : "1fr").join(" ");
+          const cols = conf.cols.map(c => ({ label: c[0], align: c[2] || "left" }));
+
+          const faltante = d => d.lineas.filter(l => l.stock < l.cant).length;
+          const selKey = tab;
+          const selNum = st.sel[selKey] || filtrados[0] && filtrados[0].num || docsDe(tab)[0].num;
+
+          const rows = filtrados.map(d => {
+            const c = CLI[d.cli];
+            const [ ec, eb ] = EST[d.estado] || [ GREY, GREY_BG ];
+            const sel = selNum === d.num;
+            const falt = faltante(d);
+            const vencidoTxt = tab === "fac" && ord(d.vence) <= HOY && d.estado !== "Cobrada" && d.estado !== "Nota de crédito";
+            const cells = [ this.cell(d.num, { mono: true, size: "12.5px", weight: "600" }),
+              this.cell(c.nom, { size: "13px", sub: c.cuit + " · " + c.cond, color: "oklch(0.26 0.01 60)" }) ];
+
+            if (tab === "pre") {
+              const caduco = ord(d.vence) <= HOY;
+              cells.push(this.cell(d.fecha, { mono: true, size: "12px", color: "oklch(0.48 0.01 60)" }));
+              cells.push(this.cell(d.vence, { mono: true, size: "12px", color: caduco ? RED : "oklch(0.48 0.01 60)" }));
+              cells.push(this.cell(d.vend, { size: "12.5px", color: "oklch(0.45 0.01 60)" }));
+            } else if (tab === "ped") {
+              cells.push(this.cell(d.fecha, { mono: true, size: "12px", color: "oklch(0.48 0.01 60)" }));
+              cells.push(this.cell(d.vence, { mono: true, size: "12px", color: ord(d.vence) <= HOY ? RED : "oklch(0.48 0.01 60)" }));
+              cells.push(falt
+                ? this.cell(falt + " sin stock", { align: "center", chip: true, color: RED, chipBg: RED_BG })
+                : this.cell("Completo", { align: "center", chip: true, color: GREEN, chipBg: GREEN_BG }));
+            } else if (tab === "rem") {
+              cells.push(this.cell(d.fecha, { mono: true, size: "12px", color: "oklch(0.48 0.01 60)" }));
+              cells.push(this.cell(d.pedido || "sin pedido", { mono: true, size: "11.5px", color: d.pedido ? ACCENT : PURPLE }));
+              cells.push(this.cell(String(d.lineas.reduce((n, l) => n + l.cant, 0)), { align: "right", mono: true, size: "12.5px", color: "oklch(0.42 0.01 60)" }));
+            } else {
+              cells.push(this.cell(d.fecha, { mono: true, size: "12px", color: "oklch(0.48 0.01 60)" }));
+              cells.push(this.cell(d.vence, { mono: true, size: "12px", color: vencidoTxt ? RED : "oklch(0.48 0.01 60)" }));
+              cells.push(this.cell(d.cae || "sin CAE", { mono: true, size: "11.5px", color: d.cae ? "oklch(0.5 0.01 60)" : RED }));
+            }
+            const importe = d.nc ? -this.total(d) : this.total(d);
+            cells.push(this.cell(money(importe), { align: "right", mono: true, size: "13px", weight: "600", color: d.nc ? GREEN : "oklch(0.23 0.01 60)" }));
+            cells.push(this.cell(d.estado, { align: "center", chip: true, color: ec, chipBg: eb }));
+
+            return { cells, open: () => this.setState(s => ({ sel: Object.assign({}, s.sel, { [selKey]: d.num }) })),
+              bg: sel ? "oklch(0.972 0.02 255)" : "oklch(1 0 0)", ring: sel ? "inset 2px 0 0 " + ACCENT : "none" };
+          });
+
+          // KPIs por pestaña
+          const kpiDefs = {
+            pre: [
+              { label: "Presupuestos abiertos", value: String(docsDe("pre").filter(d => d.estado === "Enviado" || d.estado === "En revisión").length), hint: "esperando respuesta", color: INK, f: "Todos" },
+              { label: "Aceptados sin pedido", value: String(docsDe("pre").filter(d => d.estado === "Aceptado" && !d.pedido).length), hint: "convertir a pedido", color: PURPLE, f: "Aceptado" },
+              { label: "Vencen esta semana", value: String(docsDe("pre").filter(d => ord(d.vence) <= SEMANA).length), hint: "revalidar precios", color: AMBER, f: "Todos" },
+              { label: "Tasa de conversión", value: "38 %", hint: "últimos 90 días", color: INK, f: "Todos" },
+              { label: "Monto presupuestado", value: money(docsDe("pre").reduce((n, d) => n + this.total(d), 0)), hint: "agosto", color: INK, f: "Todos" }
+            ],
+            ped: [
+              { label: "Para preparar", value: String(docsDe("ped").filter(d => d.estado === "Para preparar").length), hint: "armar y remitir", color: ACCENT, f: "Para preparar" },
+              { label: "Preparados", value: String(docsDe("ped").filter(d => d.estado === "Preparado").length), hint: "esperando reparto", color: PURPLE, f: "Preparado" },
+              { label: "Con faltante de stock", value: String(docsDe("ped").filter(d => faltante(d) > 0).length), hint: "no se pueden completar", color: RED, f: "Todos" },
+              { label: "Bloqueados por crédito", value: String(docsDe("ped").filter(d => d.estado === "Bloqueado").length), hint: "límite excedido", color: RED, f: "Bloqueado" },
+              { label: "Comprometido", value: money(docsDe("ped").filter(d => d.estado !== "Cerrado").reduce((n, d) => n + this.total(d), 0)), hint: "pedidos abiertos", color: INK, f: "Todos" }
+            ],
+            rem: [
+              { label: "Para facturar", value: String(docsDe("rem").filter(d => d.estado === "Para facturar").length), hint: "mercadería entregada", color: PURPLE, f: "Para facturar" },
+              { label: "En reparto", value: String(docsDe("rem").filter(d => d.estado === "En reparto").length), hint: "salieron hoy", color: ACCENT, f: "En reparto" },
+              { label: "Devoluciones", value: String(docsDe("rem").filter(d => d.estado === "Devuelto").length), hint: "reingresan a stock", color: RED, f: "Devuelto" },
+              { label: "Entregado sin facturar", value: money(docsDe("rem").filter(d => d.estado === "Para facturar").reduce((n, d) => n + this.total(d), 0)), hint: "riesgo fiscal", color: AMBER, f: "Para facturar" },
+              { label: "Unidades del día", value: String(docsDe("rem").filter(d => d.fecha === "29/08/26").reduce((n, d) => n + d.lineas.reduce((m, l) => m + l.cant, 0), 0)), hint: "salidas de stock", color: INK, f: "Todos" }
+            ],
+            fac: [
+              { label: "Facturado del mes", value: money(docsDe("fac").filter(d => !d.nc).reduce((n, d) => n + this.total(d), 0)), hint: "agosto 2026", color: INK, f: "Todos" },
+              { label: "Vencidas sin cobrar", value: String(docsDe("fac").filter(d => d.estado === "Vencida").length), hint: "pasar a cobranzas", color: RED, f: "Vencida" },
+              { label: "Sin CAE", value: String(docsDe("fac").filter(d => d.pendienteCae).length), hint: "reintentar en AFIP", color: RED, f: "Todos" },
+              { label: "Notas de crédito", value: money(docsDe("fac").filter(d => d.nc).reduce((n, d) => n + this.total(d), 0)), hint: "devoluciones y ajustes", color: PURPLE, f: "Nota de crédito" },
+              { label: "IVA débito fiscal", value: money(docsDe("fac").reduce((n, d) => n + (d.nc ? -1 : 1) * this.ivaDe(d), 0)), hint: "libro IVA ventas", color: INK, f: "Todos" }
+            ]
+          }[tab];
+
+          const kpis = kpiDefs.map(k => ({ label: k.label, value: k.value, hint: k.hint, color: k.color,
+            bg: st.chip === k.f && k.f !== "Todos" ? "oklch(0.972 0.02 255)" : "oklch(1 0 0)",
+            pick: () => this.set("chip", k.f) }));
+
+          const chips = conf.chips.map(([ id, label ]) => {
+            const on = st.chip === id;
+            return { label, pick: () => this.set("chip", id),
+              color: on ? "oklch(0.36 0.13 255)" : "oklch(0.42 0.01 60)",
+              bg: on ? ACCENT_BG : "oklch(1 0 0)", border: on ? "oklch(0.82 0.06 255)" : "oklch(0.89 0.01 80)" };
+          });
+
+          // ---------- detalle ----------
+          const d = docsDe(tab).find(x => x.num === selNum) || docsDe(tab)[0];
+          const c = CLI[d.cli];
+          const [ dec, deb ] = EST[d.estado] || [ GREY, GREY_BG ];
+          const neto = this.neto(d);
+          const iva = this.ivaDe(d);
+          const descTotal = d.lineas.reduce((n, l) => n + l.cant * l.precio * l.desc / 100, 0);
+          const excede = alertarLimite && c.limite > 0 && c.saldo + this.total(d) > c.limite;
+          const falt = faltante(d);
+
+          const lineas = d.lineas.map(l => {
+            const sinStock = l.stock < l.cant;
+            return { nombre: l.nom, cod: l.cod, cant: l.cant + " u", precio: money(l.precio),
+              desc: l.desc ? l.desc + " %" : "—", descColor: l.desc ? GREEN : "oklch(0.6 0.01 60)",
+              subtotal: money(l.cant * l.precio * (1 - l.desc / 100)),
+              aviso: sinStock && (tab === "pre" || tab === "ped"),
+              avisoTxt: sinStock ? "Stock disponible " + l.stock + " u de " + l.cant + " pedidas: hay que reponer o entregar parcial." : "",
+              avisoColor: RED,
+              bg: sinStock && (tab === "pre" || tab === "ped") ? "oklch(0.99 0.008 30)" : "oklch(1 0 0)" };
+          });
+
+          const tot = (label, value, big, color) => ({ label, value, size: big ? "14px" : "12.5px", weight: big ? "600" : "400",
+            labelColor: big ? INK : "oklch(0.52 0.01 60)", valueSize: big ? "19px" : "13px", color: color || (big ? INK : "oklch(0.35 0.01 60)") });
+
+          const totales = [
+            tot("Bruto", money(neto + descTotal)),
+            tot("Descuentos", descTotal ? "-" + money(descTotal) : "—", false, descTotal ? GREEN : "oklch(0.6 0.01 60)"),
+            tot("Neto", money(neto)),
+            tot("IVA " + (iva ? tasa + " %" : "no corresponde"), money(iva)),
+            tot(d.nc ? "Total de la nota de crédito" : "Total", money(this.total(d)), true, d.nc ? GREEN : INK)
+          ];
+
+          // nota + CTA por tipo y estado
+          let nota, notaColor, notaBg, cta, ctaBg, ctaCursor = "pointer", accionesSec;
+          if (tab === "pre") {
+            accionesSec = [ "Imprimir", "Duplicar" ];
+            if (d.estado === "Aceptado") { nota = d.pedido ? "Ya se convirtió en el pedido " + d.pedido + ": los precios quedaron congelados con los de este presupuesto." : "El cliente aceptó: al convertirlo en pedido se reservan las unidades y se congela el precio hasta la entrega."; notaColor = GREEN; notaBg = GREEN_BG; cta = d.pedido ? "Ver pedido" : "Convertir en pedido"; ctaBg = GREEN; }
+            else if (d.estado === "Vencido") { nota = "Venció el " + d.vence + " sin respuesta. Los precios de la lista cambiaron: al revalidarlo se recalculan con la lista de hoy."; notaColor = AMBER; notaBg = AMBER_BG; cta = "Revalidar precios"; ctaBg = AMBER; }
+            else if (d.estado === "Rechazado") { nota = "El cliente lo rechazó por precio. Queda en el historial para comparar contra el próximo presupuesto."; notaColor = RED; notaBg = RED_BG; cta = "Rehacer con descuento"; ctaBg = RED; }
+            else if (falt) { nota = falt + " artículos no tienen stock suficiente. El presupuesto se puede enviar igual, pero conviene aclarar el plazo de entrega o generar la compra."; notaColor = AMBER; notaBg = AMBER_BG; cta = "Convertir en pedido"; ctaBg = AMBER; }
+            else { nota = "Un presupuesto no mueve stock ni cuenta corriente: solo reserva el precio hasta el " + d.vence + "."; notaColor = ACCENT; notaBg = ACCENT_BG; cta = "Convertir en pedido"; ctaBg = ACCENT; }
+          } else if (tab === "ped") {
+            accionesSec = [ "Hoja de armado", "Cancelar pedido" ];
+            if (d.estado === "Bloqueado") { nota = "Pedido bloqueado: el saldo de " + money(c.saldo) + " más este pedido supera el límite de crédito de " + money(c.limite) + ". Necesita cobro previo o autorización."; notaColor = RED; notaBg = RED_BG; cta = "Autorizar y liberar"; ctaBg = RED; }
+            else if (falt) { nota = falt + " líneas sin stock suficiente. Podés remitir lo disponible y dejar el resto pendiente, o esperar la compra."; notaColor = AMBER; notaBg = AMBER_BG; cta = "Remitir lo disponible"; ctaBg = AMBER; }
+            else if (d.estado === "Cerrado") { nota = "Pedido cumplido: remitido con " + d.remito + " y facturado con " + d.factura + "."; notaColor = GREEN; notaBg = GREEN_BG; cta = "Ver factura"; ctaBg = GREEN; ctaCursor = "pointer"; }
+            else if (d.estado === "Remitido parcial") { nota = "Se entregó parte con " + d.remito + ". El resto sigue reservado en stock hasta que se complete o se cancele."; notaColor = AMBER; notaBg = AMBER_BG; cta = "Remitir el resto"; ctaBg = AMBER; }
+            else { nota = "El pedido reserva stock sin descontarlo. Recién el remito hace la salida real de mercadería."; notaColor = ACCENT; notaBg = ACCENT_BG; cta = d.estado === "Preparado" ? "Generar remito" : "Marcar preparado"; ctaBg = ACCENT; }
+          } else if (tab === "rem") {
+            accionesSec = [ "Imprimir remito", "Reimprimir etiquetas" ];
+            if (d.estado === "Devuelto") { nota = "El cliente rechazó la entrega. Al procesar la devolución las unidades reingresan a stock y, si ya estaba facturado, se emite nota de crédito."; notaColor = RED; notaBg = RED_BG; cta = "Reingresar a stock"; ctaBg = RED; }
+            else if (d.estado === "Facturado") { nota = "Entregado y facturado con " + d.factura + ". El movimiento de stock ya está registrado el " + d.fecha + "."; notaColor = GREEN; notaBg = GREEN_BG; cta = "Ver factura"; ctaBg = GREEN; }
+            else if (d.estado === "En reparto") { nota = "Salió del depósito: el stock ya está descontado. Si el cliente rechaza parte, se procesa como devolución antes de facturar."; notaColor = ACCENT; notaBg = ACCENT_BG; cta = "Confirmar entrega"; ctaBg = ACCENT; }
+            else { nota = "Mercadería entregada sin facturar. Conviene facturar el mismo día: el remito descuenta stock pero no genera la deuda del cliente."; notaColor = PURPLE; notaBg = PURPLE_BG; cta = "Facturar este remito"; ctaBg = PURPLE; }
+          } else {
+            accionesSec = [ "Imprimir / PDF", "Enviar por mail" ];
+            if (d.pendienteCae) { nota = "AFIP rechazó el pedido de CAE. El comprobante no es válido hasta obtenerlo: revisá el punto de venta y reintentá."; notaColor = RED; notaBg = RED_BG; cta = "Reintentar CAE"; ctaBg = RED; }
+            else if (d.nc) { nota = "Nota de crédito por la devolución del remito " + d.remito + ". Resta " + money(this.total(d)) + " del saldo del cliente y reingresa la mercadería."; notaColor = PURPLE; notaBg = PURPLE_BG; cta = "Ver en cuenta corriente"; ctaBg = PURPLE; }
+            else if (d.estado === "Vencida") { nota = "Venció el " + d.vence + " sin cobrar. Ya está sumando mora en la cuenta corriente del cliente."; notaColor = RED; notaBg = RED_BG; cta = "Registrar cobro"; ctaBg = RED; }
+            else if (d.estado === "Cobrada") { nota = "Cobrada e imputada. El circuito quedó cerrado: pedido, remito, factura y recibo."; notaColor = GREEN; notaBg = GREEN_BG; cta = "Ver recibo"; ctaBg = GREEN; }
+            else if (excede) { nota = "Emitida, pero el saldo del cliente queda en " + money(c.saldo + this.total(d)) + " sobre un límite de " + money(c.limite) + ". El próximo pedido se va a bloquear."; notaColor = AMBER; notaBg = AMBER_BG; cta = "Registrar cobro"; ctaBg = AMBER; }
+            else { nota = "Emitida con CAE " + d.cae + ". Suma a la cuenta corriente con vencimiento " + d.vence + " según la condición " + c.cond + "."; notaColor = ACCENT; notaBg = ACCENT_BG; cta = "Registrar cobro"; ctaBg = ACCENT; }
+          }
+
+          const pasos = [
+            { label: "Presupuesto", value: d.tipo === "pre" ? d.num : d.presupuesto || "—" },
+            { label: "Pedido", value: d.tipo === "ped" ? d.num : d.pedido || "—" },
+            { label: "Remito", value: d.tipo === "rem" ? d.num : d.remito || "—" },
+            { label: "Factura", value: d.tipo === "fac" ? d.num : d.factura || "—" }
+          ].map(p => ({ label: p.label, value: p.value,
+            dot: p.value === "—" ? "oklch(0.85 0.01 80)" : GREEN,
+            valColor: p.value === "—" ? GREY : ACCENT }));
+
+          const impactos = {
+            pre: [
+              { titulo: "Stock", detalle: "No mueve nada: el presupuesto no reserva ni descuenta unidades.", dot: GREY },
+              { titulo: "Precio", detalle: "Queda congelado hasta el " + d.vence + " con la lista vigente al " + d.fecha + ".", dot: ACCENT },
+              { titulo: "Cuenta corriente", detalle: "Sin efecto hasta que se facture.", dot: GREY },
+              { titulo: "Al convertirlo", detalle: "Genera el pedido con estas cantidades y precios, y reserva el stock disponible.", dot: PURPLE }
+            ],
+            ped: [
+              { titulo: "Stock", detalle: falt ? "Reserva lo disponible; " + falt + " líneas quedan pendientes de reposición." : "Reserva las unidades: siguen contadas pero no disponibles para el mostrador.", dot: falt ? AMBER : ACCENT },
+              { titulo: "Crédito del cliente", detalle: excede ? "Excede el límite: el pedido queda bloqueado hasta autorizar." : "Saldo " + money(c.saldo) + " sobre un límite de " + money(c.limite) + ".", dot: excede ? RED : GREEN },
+              { titulo: "Cuenta corriente", detalle: "Sin movimiento: la deuda nace con la factura.", dot: GREY },
+              { titulo: "Al remitir", detalle: "Descuenta el stock reservado y habilita la facturación.", dot: PURPLE }
+            ],
+            rem: [
+              { titulo: "Stock", detalle: d.estado === "Devuelto" ? "Reingresa " + d.lineas.reduce((n, l) => n + l.cant, 0) + " u al depósito al procesar la devolución." : "Descuenta " + d.lineas.reduce((n, l) => n + l.cant, 0) + " u del depósito con fecha " + d.fecha + ".", dot: RED },
+              { titulo: "Cuenta corriente", detalle: "No genera deuda: el remito solo documenta la entrega.", dot: GREY },
+              { titulo: "Pedido asociado", detalle: d.pedido ? "Descuenta lo entregado de " + d.pedido + "; el resto queda pendiente." : "Sin pedido: es una entrega directa, queda marcada para revisión.", dot: d.pedido ? ACCENT : PURPLE },
+              { titulo: "Al facturar", detalle: "Toma estas cantidades y precios, y recién ahí impacta la cuenta corriente.", dot: PURPLE }
+            ],
+            fac: [
+              { titulo: "Cuenta corriente", detalle: (d.nc ? "Resta " : "Suma ") + money(this.total(d)) + " al saldo de " + c.nom + ", vence " + d.vence + ".", dot: d.nc ? GREEN : RED },
+              { titulo: "Stock", detalle: d.remito ? "No mueve stock: la salida se hizo con el remito " + d.remito + "." : "Sin remito: al emitirla se descuenta el stock en el mismo acto.", dot: d.remito ? GREY : AMBER },
+              { titulo: "AFIP", detalle: d.pendienteCae ? "Pendiente de CAE: el comprobante no es válido todavía." : "CAE " + d.cae + " obtenido, comprobante fiscal válido.", dot: d.pendienteCae ? RED : GREEN },
+              { titulo: "IVA ventas", detalle: iva ? "Genera " + money(iva) + " de débito fiscal en el libro del mes." : "Sin IVA: el cliente es " + c.iva.toLowerCase() + ".", dot: iva ? ACCENT : GREY }
+            ]
+          }[tab];
+
+          const tabDefs = [
+            [ "pre", "Presupuestos", docsDe("pre").filter(x => x.estado === "Aceptado" && !x.pedido).length ],
+            [ "ped", "Pedidos", docsDe("ped").filter(x => x.estado === "Para preparar" || x.estado === "Bloqueado").length ],
+            [ "rem", "Remitos", docsDe("rem").filter(x => x.estado === "Para facturar").length ],
+            [ "fac", "Facturas", docsDe("fac").filter(x => x.estado === "Vencida" || x.pendienteCae).length ]
+          ];
+
+          return {
+            tabs: tabDefs.map(([ k, label, badge ]) => ({
+              label, badge: badge > 0, badgeTxt: String(badge),
+              badgeColor: k === tab ? "oklch(0.36 0.13 255)" : "oklch(0.45 0.01 60)",
+              badgeBg: k === tab ? "oklch(0.93 0.04 255)" : "oklch(0.93 0.008 80)",
+              pick: () => this.setState({ tab: k, chip: "Todos", query: "" }),
+              color: tab === k ? INK : "oklch(0.5 0.01 60)",
+              bg: tab === k ? "oklch(1 0 0)" : "transparent",
+              shadow: tab === k ? "0 1px 2px oklch(0.3 0.02 60 / 0.12)" : "none" })),
+            avisoTopbar: docsDe("rem").filter(x => x.estado === "Para facturar").length + " remitos sin facturar · " + docsDe("ped").filter(x => x.estado === "Bloqueado").length + " pedido bloqueado",
+            contextoTxt: {
+              pre: "Presupuestos válidos 14 días · lista de precios al 25/08/26",
+              ped: "Reserva de stock activa · límite de crédito por cliente",
+              rem: "Cada remito descuenta stock al confirmarse · depósito Salón",
+              fac: "Facturación electrónica AFIP · IVA " + tasa + " % · punto de venta 0001"
+            }[tab],
+            kpis, chips, cols, gridCols, rows, vacio: rows.length === 0,
+            query: st.query, onQuery: e => this.set("query", e.target.value),
+            buscarPlaceholder: conf.buscar, nuevoLabel: conf.nuevo,
+            pieAcciones: conf.pie, totalLabel: conf.totalLabel,
+            totalFmt: money(filtrados.reduce((n, x) => n + (x.nc ? -1 : 1) * this.total(x), 0)),
+            countTxt: rows.length + " comprobantes",
+            vendedores: [ "Todos los vendedores", "Laura Gómez", "Marina Paz", "Diego Ruiz" ],
+            fVendedor: st.vend, setVendedor: e => this.set("vend", e.target.value),
+            limpiar: () => this.setState({ query: "", chip: "Todos", vend: "Todos los vendedores" }),
+            d: {
+              numero: d.num, estado: d.estado, estColor: dec, estBg: deb, tipoTxt: TIPO_TXT[d.tipo],
+              cliente: c.nom,
+              meta: c.cuit + " · " + c.iva + " · " + c.cond + " · " + d.vend + " · " + c.zona + (d.vence ? " · vence " + d.vence : ""),
+              lineasTitulo: tab === "rem" ? "Mercadería entregada" : "Detalle del comprobante",
+              lineasAccion: tab === "fac" ? "Ver comprobante fiscal" : "+ Agregar línea",
+              lineas, totales,
+              notaTxt: nota, notaColor, notaBg,
+              traza: pasos, impactos,
+              accionesSec, ctaLabel: cta, ctaBg, ctaCursor,
+              cta: () => {
+                const next = tab === "pre" ? "ped" : tab === "ped" ? "rem" : tab === "rem" ? "fac" : "fac";
+                this.setState({ tab: next, chip: "Todos" });
+              }
+            }
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

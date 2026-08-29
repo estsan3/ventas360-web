@@ -48,6 +48,7 @@ export const routes: Routes = [
       { path: 'presupuestos', redirectTo: '/comprobantes/presupuestos', pathMatch: 'full' },
       { path: 'pedidos', redirectTo: '/comprobantes/pedidos', pathMatch: 'full' },
       { path: 'remitos', redirectTo: '/comprobantes/remitos', pathMatch: 'full' },
+      { path: 'facturas', redirectTo: '/comprobantes/facturas', pathMatch: 'full' },
       {
         path: 'cuenta-corriente',
         canActivate: [permisoGuard('cta_cte')],
