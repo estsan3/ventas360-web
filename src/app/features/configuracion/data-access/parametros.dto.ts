@@ -23,3 +23,15 @@ export interface UpsertTalonarioDto {
   proximo_numero: number;
   activo: boolean;
 }
+
+export interface ParametrosAfipDto {
+  habilitada: boolean;
+  cuit: string;
+  razon_social: string;
+  condicion_iva: 'responsable_inscripto' | 'monotributo' | 'exento';
+  punto_venta: number;
+  domicilio: string;
+  proveedor?: 'simulado' | 'afip';
+  homologacion?: boolean;
+  certificado_configurado?: boolean;
+}

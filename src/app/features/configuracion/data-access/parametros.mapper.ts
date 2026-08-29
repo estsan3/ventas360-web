@@ -1,10 +1,16 @@
 import {
+  ParametrosAfipDto,
   ParametrosNegocioDto,
   ParametrosOperativosDto,
   TalonarioDto,
   UpsertTalonarioDto,
 } from './parametros.dto';
-import { ParametrosNegocio, ParametrosOperativos, Talonario } from './parametros.model';
+import {
+  ParametrosAfip,
+  ParametrosNegocio,
+  ParametrosOperativos,
+  Talonario,
+} from './parametros.model';
 
 export function negocioToModel(dto: ParametrosNegocioDto): ParametrosNegocio {
   return { ivaPorcentaje: dto.iva_porcentaje, moneda: dto.moneda };
@@ -46,5 +52,30 @@ export function talonarioToUpsertDto(model: Talonario): UpsertTalonarioDto {
     prefijo: model.prefijo,
     proximo_numero: model.proximoNumero,
     activo: model.activo,
+  };
+}
+
+export function afipToModel(dto: ParametrosAfipDto): ParametrosAfip {
+  return {
+    habilitada: dto.habilitada,
+    cuit: dto.cuit,
+    razonSocial: dto.razon_social,
+    condicionIva: dto.condicion_iva,
+    puntoVenta: dto.punto_venta,
+    domicilio: dto.domicilio,
+    proveedor: dto.proveedor ?? 'simulado',
+    homologacion: dto.homologacion ?? true,
+    certificadoConfigurado: dto.certificado_configurado ?? false,
+  };
+}
+
+export function afipToDto(model: ParametrosAfip): ParametrosAfipDto {
+  return {
+    habilitada: model.habilitada,
+    cuit: model.cuit,
+    razon_social: model.razonSocial,
+    condicion_iva: model.condicionIva,
+    punto_venta: model.puntoVenta,
+    domicilio: model.domicilio,
   };
 }

@@ -51,6 +51,7 @@ export class VentasStore {
   cargarReferencias(): void {
     this.api.listarProductosRef().subscribe((items) => this._productosRef.set(items));
     this.api.listarDepositosRef().subscribe((items) => this._depositosRef.set(items));
+    this.api.listarClientesRef().subscribe((items) => this._clientesRef.set(items));
   }
 
   crear(body: CrearPedido): Observable<Pedido> {

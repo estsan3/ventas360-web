@@ -32,6 +32,13 @@ export interface Pedido {
   ivaPorcentaje: number;
   total: number;
   cae: string | null;
+  caeVencimiento: string | null;
+  letra: string | null;
+  cbteTipo: number | null;
+  puntoVenta: number | null;
+  cbteNro: number | null;
+  qrUrl: string | null;
+  numero: string | null;
   fecha: string;
   lineas: LineaPedido[];
 }
@@ -45,6 +52,7 @@ export interface CrearPedido {
   clienteId: string;
   tipo: TipoComprobante;
   depositoId?: string | null;
+  origenId?: string | null;
   fecha?: string | null;
   lineas: CrearLineaPedido[];
 }

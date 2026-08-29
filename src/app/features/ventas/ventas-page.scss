@@ -2016,6 +2016,7 @@ $dc-placeholder: #b8b2ab;
       border-color: #f0c8a8;
     }
 
+    &:disabled,
     &--off {
       color: $dc-subtle;
       background: #f7f4f0;

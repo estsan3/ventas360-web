@@ -3,8 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { DepositoCatalogo, ListaPrecioCatalogo, VendedorCatalogo } from './catalogos.models';
-import { ParametrosNegocioDto, ParametrosOperativosDto, TalonarioDto } from './parametros.dto';
 import {
+  ParametrosAfipDto,
+  ParametrosNegocioDto,
+  ParametrosOperativosDto,
+  TalonarioDto,
+} from './parametros.dto';
+import {
+  afipToDto,
+  afipToModel,
   negocioToDto,
   negocioToModel,
   operativosToDto,
@@ -12,7 +19,12 @@ import {
   talonarioToModel,
   talonarioToUpsertDto,
 } from './parametros.mapper';
-import { ParametrosNegocio, ParametrosOperativos, Talonario } from './parametros.model';
+import {
+  ParametrosAfip,
+  ParametrosNegocio,
+  ParametrosOperativos,
+  Talonario,
+} from './parametros.model';
 import { MatrizPermisosDto } from './permisos.dto';
 import { CeldaPermiso, RolEditable } from './permisos.model';
 import { UsuarioDto } from './usuario.dto';
@@ -229,6 +241,16 @@ export class ConfiguracionService {
     return this.http
       .put<TalonarioDto>(`${this.base}/parametros/talonarios`, talonarioToUpsertDto(datos))
       .pipe(map(talonarioToModel));
+  }
+
+  obtenerAfip(): Observable<ParametrosAfip> {
+    return this.http.get<ParametrosAfipDto>(`${this.base}/parametros/afip`).pipe(map(afipToModel));
+  }
+
+  guardarAfip(datos: ParametrosAfip): Observable<ParametrosAfip> {
+    return this.http
+      .put<ParametrosAfipDto>(`${this.base}/parametros/afip`, afipToDto(datos))
+      .pipe(map(afipToModel));
   }
 
   obtenerMatrizPermisos(): Observable<CeldaPermiso[]> {

@@ -2,7 +2,7 @@
   <header class="config__header">
     <div>
       <h1 class="config__title">Configuración</h1>
-      <p class="config__subtitle">Negocio, catálogos operativos y usuarios</p>
+      <p class="config__subtitle">Negocio, ARCA, catálogos operativos y usuarios</p>
     </div>
     <app-button variant="outline" size="md" (clicked)="cerrarSesion()">
       <app-icon name="log-out" />
@@ -123,6 +123,50 @@
           </section>
         } @else {
           <p class="config__hint">Solo un administrador puede editar parámetros de negocio.</p>
+        }
+      }
+
+      @if (seccion() === 'arca') {
+        @if (esAdmin()) {
+          <section class="config__panel">
+            <h3>Facturación ARCA</h3>
+            <p class="config__hint">
+              Identidad fiscal del emisor. El certificado digital se configura en el servidor
+              (<code>VENTAS360_AFIP_CERTIFICADO</code>). Con proveedor simulado se genera un CAE de
+              prueba.
+            </p>
+            <p class="config__hint">
+              Ambiente:
+              {{ afipAmbiente().proveedor === 'afip' ? 'ARCA real' : 'Simulado' }}
+              ·
+              {{ afipAmbiente().homologacion ? 'Homologación' : 'Producción' }}
+              · Certificado
+              {{ afipAmbiente().certificadoConfigurado ? 'cargado' : 'no configurado' }}
+            </p>
+            <form class="config__form" [formGroup]="formAfip">
+              <label class="config__check">
+                <input type="checkbox" formControlName="habilitada" />
+                Emitir factura fiscal (pedir CAE)
+              </label>
+              <app-text-input label="CUIT emisor" formControlName="cuit" />
+              <app-text-input label="Razón social" formControlName="razonSocial" />
+              <app-select-input
+                label="Condición IVA"
+                [options]="ivaEmisorOptions"
+                formControlName="condicionIva"
+              />
+              <app-text-input label="Punto de venta" type="number" formControlName="puntoVenta" />
+              <app-text-input label="Domicilio fiscal" formControlName="domicilio" />
+            </form>
+            <app-button
+              variant="primary"
+              size="md"
+              [disabled]="guardando()"
+              (clicked)="guardarAfip()"
+            >
+              Guardar ARCA
+            </app-button>
+          </section>
         }
       }
 

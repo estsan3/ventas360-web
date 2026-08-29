@@ -32,6 +32,13 @@ export function pedidoToModel(dto: PedidoDto): Pedido {
     ivaPorcentaje: dto.iva_porcentaje,
     total: dto.total,
     cae: dto.cae,
+    caeVencimiento: dto.cae_vencimiento ?? null,
+    letra: dto.letra ?? null,
+    cbteTipo: dto.cbte_tipo ?? null,
+    puntoVenta: dto.punto_venta ?? null,
+    cbteNro: dto.cbte_nro ?? null,
+    qrUrl: dto.qr_url ?? null,
+    numero: dto.numero ?? null,
     fecha: dto.fecha,
     lineas: dto.lineas.map((l) => ({
       id: l.id,
@@ -48,6 +55,7 @@ export function crearPedidoToDto(model: CrearPedido): CrearPedidoDto {
     cliente_id: model.clienteId,
     tipo: model.tipo,
     deposito_id: model.depositoId ?? null,
+    origen_id: model.origenId ?? null,
     fecha: model.fecha,
     lineas: model.lineas.map((l) => ({
       producto_id: l.productoId,

@@ -28,6 +28,8 @@ import { IaService } from '../../ia/data-access/ia.service';
 import { InterpretarMostradorResultado } from '../../ia/data-access/ia.model';
 import { BANCOS_EMISORES_AR } from '../cuenta-corriente/data-access/bancos-argentina';
 import { BancosService, CuentaBancariaDto } from '../bancos/data-access/bancos.service';
+import { ConfiguracionService } from '../configuracion/data-access/configuracion.service';
+import { ParametrosAfip } from '../configuracion/data-access/parametros.model';
 import {
   ClienteRef,
   DatosCheque,
@@ -52,8 +54,10 @@ import {
   TipoMedioMos,
   TonoCc,
   acreditacionesMpDemo,
+  compDesdeLetra,
   dtoPct,
   labelMedio,
+  letraFiscal,
   medioCobroDesdeTipo,
   moneyMos,
   nuevoPagoMos,
@@ -144,6 +148,7 @@ export class VentasPage {
   private readonly store = inject(VentasStore);
   private readonly api = inject(VentasService);
   private readonly bancosApi = inject(BancosService);
+  private readonly configApi = inject(ConfiguracionService);
   private readonly ia = inject(IaService);
   private readonly notifications = inject(NotificationStore);
   private readonly destroyRef = inject(DestroyRef);
@@ -226,6 +231,13 @@ export class VentasPage {
   protected readonly pagosMos = signal<PagoMos[]>([nuevoPagoMos('efectivo', 1)]);
   protected readonly compMos = signal<CompMos>('factura_b');
   protected readonly ticketMos = signal<TicketMos | null>(null);
+  protected readonly afip = signal<ParametrosAfip | null>(null);
+  protected readonly clienteCondicionIva = signal('consumidor_final');
+  protected readonly letraFiscalActual = computed(() => {
+    const emisor = this.afip()?.condicionIva ?? 'responsable_inscripto';
+    const receptor = this.cfMode() ? 'consumidor_final' : this.clienteCondicionIva();
+    return letraFiscal(emisor, receptor);
+  });
   protected readonly aiCliSel = signal<string | null>(null);
   protected readonly aiProdSel = signal<string | null>(null);
   protected readonly cuentasBanco = signal<CuentaBancariaDto[]>([]);
@@ -677,6 +689,13 @@ export class VentasPage {
     }
     this.mpConsumidas.set(this.leerMpConsumidas());
     this.store.cargarReferencias();
+    this.configApi
+      .obtenerAfip()
+      .pipe(catchError(() => of(null)))
+      .subscribe((a) => {
+        this.afip.set(a);
+        this.aplicarLetraFiscal();
+      });
     this.api
       .listarZonasRef()
       .pipe(catchError(() => of([] as ZonaRef[])))
@@ -829,6 +848,8 @@ export class VentasPage {
     this.clienteMeta.set(this.metaDeCliente(c));
     this.clienteBloqueado.set(c.bloqueado);
     this.clienteLimite.set(c.limiteCredito);
+    this.clienteCondicionIva.set(c.condicionIva);
+    this.aplicarLetraFiscal();
     this.clienteQuickOpen.set(false);
     this.buscarClienteOpen.set(false);
     this.clientesAutocomplete.set([]);
@@ -1274,11 +1295,45 @@ export class VentasPage {
     }
   }
 
+  protected facturaHabilitada(letra: 'A' | 'B' | 'C'): boolean {
+    return this.letraFiscalActual() === letra;
+  }
+
+  protected tituloCompOff(letra: 'A' | 'B' | 'C'): string {
+    if (this.facturaHabilitada(letra)) {
+      return '';
+    }
+    if (letra === 'A') {
+      return 'Factura A no aplica a consumidor final ni a monotributo/exento.';
+    }
+    if (letra === 'C') {
+      return 'Factura C solo aplica si el emisor es monotributo o exento.';
+    }
+    return 'Factura B no aplica a responsable inscripto (corresponde Factura A).';
+  }
+
   protected setCompMos(comp: CompMos): void {
+    if (comp === 'factura_a' && !this.facturaHabilitada('A')) {
+      return;
+    }
+    if (comp === 'factura_b' && !this.facturaHabilitada('B')) {
+      return;
+    }
+    if (comp === 'factura_c' && !this.facturaHabilitada('C')) {
+      return;
+    }
     this.compMos.set(comp);
     if (comp === 'ticket') {
       this.pagosMos.update((list) => list.filter((p) => p.tipo !== 'ctacte'));
     }
+  }
+
+  private aplicarLetraFiscal(): void {
+    const actual = this.compMos();
+    if (actual === 'remito' || actual === 'ticket') {
+      return;
+    }
+    this.compMos.set(compDesdeLetra(this.letraFiscalActual()));
   }
 
   protected confirmarMostrador(): void {
@@ -1438,8 +1493,13 @@ export class VentasPage {
       case 'ticket':
         return 'Ticket interno sin validez fiscal. No se puede cargar a cuenta corriente.';
       case 'factura_a':
-        return 'Factura A: IVA discriminado. Requiere condición de IVA responsable inscripto del cliente.';
+        return 'Factura A: IVA discriminado. Requiere CUIT y responsable inscripto.';
+      case 'factura_c':
+        return 'Factura C: emisor monotributo o exento. Sin IVA discriminado.';
       default:
+        if (!this.facturaHabilitada('A')) {
+          return 'Factura B: IVA incluido. Factura A no aplica a este cliente.';
+        }
         return 'Factura B: IVA incluido en el precio de venta al público.';
     }
   }
@@ -1498,9 +1558,11 @@ export class VentasPage {
     this.clienteInput.set('');
     this.clienteBloqueado.set(false);
     this.clienteLimite.set(0);
+    this.clienteCondicionIva.set('consumidor_final');
     this.clienteSaldo.set(null);
     this.clienteQuickOpen.set(false);
     this.clientesAutocomplete.set([]);
+    this.aplicarLetraFiscal();
   }
 
   private cargarConsumidorFinal(aplicar: boolean): void {
@@ -1873,8 +1935,20 @@ export class VentasPage {
         }),
       )
       .subscribe({
-        next: () => {
-          this.notifications.success(snapshotTicket.titulo, snapshotTicket.sub);
+        next: (confirmado) => {
+          const ticket = snapshotTicket;
+          if (confirmado.cae) {
+            ticket.lineas = [
+              {
+                label: 'Comprobante',
+                value: confirmado.numero || `Factura ${confirmado.letra ?? ''}`.trim(),
+                tono: 'ok',
+              },
+              { label: 'CAE', value: confirmado.cae, tono: 'ok' },
+              ...ticket.lineas,
+            ];
+          }
+          this.notifications.success(ticket.titulo, ticket.sub);
           this.guardando.set(false);
           this.consumirMpDePagos();
           this.lineas.set([]);
@@ -1883,7 +1957,7 @@ export class VentasPage {
           this.pagosMos.set([nuevoPagoMos('efectivo', this.pagoSeq)]);
           this.descGlobalTxt.set('0');
           if (this.esFactura()) {
-            this.ticketMos.set(snapshotTicket);
+            this.ticketMos.set(ticket);
           }
           this.cargarSaldo(clienteId);
         },

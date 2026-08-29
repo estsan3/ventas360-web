@@ -26,6 +26,7 @@ import { UsuariosStore } from './data-access/usuarios.store';
 
 type SeccionConfig =
   | 'negocio'
+  | 'arca'
   | 'permisos'
   | 'talonarios'
   | 'zonas'
@@ -71,6 +72,7 @@ export class ConfiguracionPage {
 
   protected readonly menuItems: { id: SeccionConfig; label: string }[] = [
     { id: 'negocio', label: 'Negocio' },
+    { id: 'arca', label: 'ARCA' },
     { id: 'permisos', label: 'Permisos' },
     { id: 'talonarios', label: 'Talonarios' },
     { id: 'zonas', label: 'Zonas' },
@@ -83,6 +85,12 @@ export class ConfiguracionPage {
   protected readonly monedaOptions: SelectOption[] = [
     { value: 'ARS', label: 'ARS' },
     { value: 'USD', label: 'USD' },
+  ];
+
+  protected readonly ivaEmisorOptions: SelectOption[] = [
+    { value: 'responsable_inscripto', label: 'Responsable inscripto' },
+    { value: 'monotributo', label: 'Monotributo' },
+    { value: 'exento', label: 'Exento' },
   ];
 
   protected readonly tipoTalonarioOptions: SelectOption[] = [
@@ -235,6 +243,21 @@ export class ConfiguracionPage {
     condicionesPago: ['contado,30_dias,60_dias', Validators.required],
   });
 
+  protected readonly formAfip = this.fb.nonNullable.group({
+    habilitada: [false],
+    cuit: [''],
+    razonSocial: [''],
+    condicionIva: ['responsable_inscripto' as 'responsable_inscripto' | 'monotributo' | 'exento'],
+    puntoVenta: [1, [Validators.required, Validators.min(1)]],
+    domicilio: [''],
+  });
+
+  protected readonly afipAmbiente = signal({
+    proveedor: 'simulado' as 'simulado' | 'afip',
+    homologacion: true,
+    certificadoConfigurado: false,
+  });
+
   protected readonly formTalonario = this.fb.nonNullable.group({
     tipoComprobante: ['pedido' as TipoTalonario, Validators.required],
     prefijo: [''],
@@ -341,6 +364,21 @@ export class ConfiguracionPage {
       });
     });
     this.api.listarTalonarios().subscribe((items) => this.talonarios.set(items));
+    this.api.obtenerAfip().subscribe((a) => {
+      this.formAfip.reset({
+        habilitada: a.habilitada,
+        cuit: a.cuit,
+        razonSocial: a.razonSocial,
+        condicionIva: a.condicionIva,
+        puntoVenta: a.puntoVenta,
+        domicilio: a.domicilio,
+      });
+      this.afipAmbiente.set({
+        proveedor: a.proveedor,
+        homologacion: a.homologacion,
+        certificadoConfigurado: a.certificadoConfigurado,
+      });
+    });
   }
 
   protected guardarNegocio(): void {
@@ -382,6 +420,46 @@ export class ConfiguracionPage {
       .subscribe({
         next: () => {
           this.notifications.success('Parámetros guardados', 'Operativos actualizados');
+          this.guardando.set(false);
+        },
+        error: () => this.guardando.set(false),
+      });
+  }
+
+  protected guardarAfip(): void {
+    if (!this.esAdmin() || this.formAfip.invalid) {
+      return;
+    }
+    const raw = this.formAfip.getRawValue();
+    const punto = Number(raw.puntoVenta);
+    if (!Number.isInteger(punto) || punto < 1) {
+      this.notifications.error('Punto de venta', 'Debe ser un entero ≥ 1');
+      return;
+    }
+    this.guardando.set(true);
+    this.api
+      .guardarAfip({
+        habilitada: raw.habilitada,
+        cuit: raw.cuit,
+        razonSocial: raw.razonSocial,
+        condicionIva: raw.condicionIva,
+        puntoVenta: punto,
+        domicilio: raw.domicilio,
+        proveedor: this.afipAmbiente().proveedor,
+        homologacion: this.afipAmbiente().homologacion,
+        certificadoConfigurado: this.afipAmbiente().certificadoConfigurado,
+      })
+      .subscribe({
+        next: (a) => {
+          this.afipAmbiente.set({
+            proveedor: a.proveedor,
+            homologacion: a.homologacion,
+            certificadoConfigurado: a.certificadoConfigurado,
+          });
+          this.notifications.success(
+            'ARCA guardado',
+            a.habilitada ? 'Factura fiscal activa' : 'Factura fiscal desactivada',
+          );
           this.guardando.set(false);
         },
         error: () => this.guardando.set(false),

@@ -1,7 +1,7 @@
 import { MedioCobro } from './data-access/pedido.model';
 
 export type TipoMedioMos = 'efectivo' | 'tarjeta' | 'transferencia' | 'cheque' | 'ctacte';
-export type CompMos = 'factura_a' | 'factura_b' | 'remito' | 'ticket';
+export type CompMos = 'factura_a' | 'factura_b' | 'factura_c' | 'remito' | 'ticket';
 export type TonoCc = 'ok' | 'debe' | 'favor' | 'warn' | 'cf' | 'muted';
 
 export const MEDIOS_MOS: { tipo: TipoMedioMos; label: string }[] = [
@@ -70,6 +70,34 @@ export function parseNumMos(raw: string): number {
 
 export function moneyMos(n: number): string {
   return `$ ${n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+export function letraFiscal(emisorIva: string, receptorIva: string): 'A' | 'B' | 'C' {
+  if (emisorIva === 'monotributo' || emisorIva === 'exento') {
+    return 'C';
+  }
+  if (receptorIva === 'responsable_inscripto') {
+    return 'A';
+  }
+  return 'B';
+}
+
+export function facturaLetraHabilitada(
+  letra: 'A' | 'B' | 'C',
+  emisorIva: string,
+  receptorIva: string,
+): boolean {
+  return letraFiscal(emisorIva, receptorIva) === letra;
+}
+
+export function compDesdeLetra(letra: 'A' | 'B' | 'C'): CompMos {
+  if (letra === 'A') {
+    return 'factura_a';
+  }
+  if (letra === 'C') {
+    return 'factura_c';
+  }
+  return 'factura_b';
 }
 
 export function dtoPct(dto: string): number {

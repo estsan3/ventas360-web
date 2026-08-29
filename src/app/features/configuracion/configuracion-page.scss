@@ -168,6 +168,7 @@
     font-size: ty.$font-size-sm;
     color: t.$color-text;
     padding-bottom: t.$space-sm;
+    grid-column: 1 / -1;
   }
 
   &__hint {

@@ -30,6 +30,13 @@ export interface PedidoDto {
   iva_porcentaje: number;
   total: number;
   cae: string | null;
+  cae_vencimiento?: string | null;
+  letra?: string | null;
+  cbte_tipo?: number | null;
+  punto_venta?: number | null;
+  cbte_nro?: number | null;
+  qr_url?: string | null;
+  numero?: string | null;
   fecha: string;
   lineas: LineaPedidoDto[];
 }
@@ -43,6 +50,7 @@ export interface CrearPedidoDto {
   cliente_id: string;
   tipo?: TipoComprobanteDto;
   deposito_id?: string | null;
+  origen_id?: string | null;
   fecha?: string | null;
   lineas: CrearLineaPedidoDto[];
 }

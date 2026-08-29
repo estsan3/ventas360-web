@@ -611,6 +611,9 @@
                 type="button"
                 class="mos__comp"
                 [class.mos__comp--on]="compMos() === 'factura_a'"
+                [class.mos__comp--off]="!facturaHabilitada('A')"
+                [disabled]="!facturaHabilitada('A')"
+                [title]="tituloCompOff('A')"
                 (click)="setCompMos('factura_a')"
               >
                 Factura A
@@ -619,9 +622,23 @@
                 type="button"
                 class="mos__comp"
                 [class.mos__comp--on]="compMos() === 'factura_b'"
+                [class.mos__comp--off]="!facturaHabilitada('B')"
+                [disabled]="!facturaHabilitada('B')"
+                [title]="tituloCompOff('B')"
                 (click)="setCompMos('factura_b')"
               >
                 Factura B
+              </button>
+              <button
+                type="button"
+                class="mos__comp"
+                [class.mos__comp--on]="compMos() === 'factura_c'"
+                [class.mos__comp--off]="!facturaHabilitada('C')"
+                [disabled]="!facturaHabilitada('C')"
+                [title]="tituloCompOff('C')"
+                (click)="setCompMos('factura_c')"
+              >
+                Factura C
               </button>
               <button
                 type="button"

@@ -16,3 +16,17 @@ export interface Talonario {
   proximoNumero: number;
   activo: boolean;
 }
+
+export type CondicionIvaEmisor = 'responsable_inscripto' | 'monotributo' | 'exento';
+
+export interface ParametrosAfip {
+  habilitada: boolean;
+  cuit: string;
+  razonSocial: string;
+  condicionIva: CondicionIvaEmisor;
+  puntoVenta: number;
+  domicilio: string;
+  proveedor: 'simulado' | 'afip';
+  homologacion: boolean;
+  certificadoConfigurado: boolean;
+}
