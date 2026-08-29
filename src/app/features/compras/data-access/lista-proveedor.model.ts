@@ -63,6 +63,9 @@ export interface ListaProveedorItem {
 export interface CrearProveedorLista {
   nombre: string;
   cuit: string;
+  email?: string;
+  telefono?: string;
+  condicionIva?: string;
   observaciones: string;
   mapeoExcel: MapeoColumna[];
   excelFilaInicio: number;

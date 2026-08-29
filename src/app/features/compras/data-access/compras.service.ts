@@ -76,6 +76,9 @@ export class ComprasService {
       .post<ProveedorListaDto>(`${this.api}/proveedores`, {
         nombre: body.nombre,
         cuit: body.cuit,
+        email: body.email ?? '',
+        telefono: body.telefono ?? '',
+        condicion_iva: body.condicionIva ?? 'responsable_inscripto',
         observaciones: body.observaciones,
         mapeo_excel: body.mapeoExcel,
         excel_fila_inicio: body.excelFilaInicio,
@@ -83,6 +86,44 @@ export class ComprasService {
         margen_venta_pct: body.margenVentaPct,
       })
       .pipe(map(proveedorListaToModel));
+  }
+
+  estadoCuenta(proveedorId: string): Observable<{
+    proveedorId: string;
+    saldo: number;
+    movimientos: {
+      id: string;
+      tipo: string;
+      monto: number;
+      concepto: string;
+      fecha: string;
+    }[];
+  }> {
+    return this.http
+      .get<{
+        proveedor_id: string;
+        saldo: number;
+        movimientos: {
+          id: string;
+          tipo: string;
+          monto: number;
+          concepto: string;
+          fecha: string;
+        }[];
+      }>(`${this.api}/cxp/proveedores/${proveedorId}`)
+      .pipe(
+        map((dto) => ({
+          proveedorId: dto.proveedor_id,
+          saldo: dto.saldo,
+          movimientos: dto.movimientos.map((m) => ({
+            id: m.id,
+            tipo: m.tipo,
+            monto: m.monto,
+            concepto: m.concepto,
+            fecha: m.fecha,
+          })),
+        })),
+      );
   }
 
   importarLista(

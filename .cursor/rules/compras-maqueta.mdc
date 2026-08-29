@@ -1,0 +1,31 @@
+---
+description: Compras se implementa desde la maqueta DC, igual que Stock, Artículos, CxC y Mostrador.
+globs: "**/compras/**,**/maquetas/**Compras*"
+alwaysApply: false
+---
+
+# Compras — maqueta DC
+
+Fuente: `maquetas/Compras.dc.html`. Código: `src/app/features/compras/` (ruta `/compras`, menú Compras).
+
+Hacer **el mismo trabajo que Stock / Artículos / Mostrador**: llevar la maqueta a producto (cuatro pestañas, KPIs, ficha lateral, alta de proveedor), no un listado mínimo ni un drawer genérico.
+
+## Qué tiene la maqueta (no recortar)
+
+- Una sola pantalla viewport (sin topbar duplicada: el shell ya tiene menú)
+- Pestañas: **Pedidos de compra** · **Proveedores** · **Remitos de compra** · **Facturas de compra**
+- Pedidos: KPIs clicables, búsqueda, chips, grilla (orden/proveedor/fechas/líneas/recibido/total/estado), ficha con líneas, totales, trazabilidad y CTA
+- Proveedores: lista izquierda + ficha (KPIs, Lista de precios / Condiciones / Movimientos)
+- Remitos: lista + recepción (cantidades, depósito, confirmar ingreso a stock)
+- Facturas: KPIs, grilla, ficha de conciliación orden·remito·factura
+- Overlay **Alta de proveedor** en 3 pasos (fiscal, condiciones, lista)
+- Tokens **naranja** Ventas360, no azul/violeta de la maqueta (IA en naranja suave)
+
+## Cómo
+
+- UI en español; commits en inglés
+- KPIs y fichas necesitan el universo del tab: se carga al entrar (como Stock/Cheques)
+- Combos de depósitos y proveedores sí
+- Extra comercial (plazo, flete, retenciones) es operativo de UI si el API no lo persiste
+- Verificar en el browser las cuatro pestañas
+- No tocar agro360 salvo pedido explícito

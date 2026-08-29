@@ -1,683 +1,984 @@
-<section class="page lst">
-  <header class="lst__header">
-    <h1 class="lst__title">Compras</h1>
-    <div class="lst__actions">
-      @if (tab() === 'proveedores') {
-        <button
-          type="button"
-          class="lst__btn lst__btn--ghost"
-          (click)="nuevoProveedorOpen.set(true)"
-        >
-          + Nuevo proveedor
-        </button>
-      }
-      @if (tab() !== 'listas') {
-        <button type="button" class="lst__cta" (click)="abrirAlta()">
-          {{ tab() === 'pedidos' ? '+ Pedido de compra' : '+ Remito / factura' }}
-        </button>
-      }
-      <button type="button" class="lst__btn lst__btn--ghost" (click)="buscar()">Buscar</button>
+<section class="cpr">
+  <header class="cpr__header">
+    <div>
+      <h1 class="cpr__title">Compras</h1>
+      <p class="cpr__sub">Pedido → remito (stock) → factura (cuenta del proveedor)</p>
     </div>
   </header>
 
-  <div class="lst__seg">
-    <button
-      type="button"
-      class="lst__seg-btn"
-      [class.lst__seg-btn--on]="tab() === 'facturas'"
-      (click)="setTab('facturas')"
-    >
-      Remitos y facturas
-    </button>
-    <button
-      type="button"
-      class="lst__seg-btn"
-      [class.lst__seg-btn--on]="tab() === 'pedidos'"
-      (click)="setTab('pedidos')"
-    >
-      Pedidos de compra
-    </button>
-    <button
-      type="button"
-      class="lst__seg-btn"
-      [class.lst__seg-btn--on]="tab() === 'proveedores'"
-      (click)="setTab('proveedores')"
-    >
-      Proveedores
-    </button>
-    <button
-      type="button"
-      class="lst__seg-btn"
-      [class.lst__seg-btn--on]="tab() === 'listas'"
-      (click)="setTab('listas')"
-    >
-      Listas de precios
-    </button>
+  <div class="cpr__tabs-row">
+    <div class="cpr__tabs">
+      <button
+        type="button"
+        class="cpr__tab"
+        [class.cpr__tab--on]="tab() === 'oc'"
+        (click)="setTab('oc')"
+      >
+        Pedidos de compra
+        @if (badgeOc() > 0) {
+          <span class="cpr__badge">{{ badgeOc() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="cpr__tab"
+        [class.cpr__tab--on]="tab() === 'prov'"
+        (click)="setTab('prov')"
+      >
+        Proveedores
+        @if (badgeProv() > 0) {
+          <span class="cpr__badge">{{ badgeProv() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="cpr__tab"
+        [class.cpr__tab--on]="tab() === 'rec'"
+        (click)="setTab('rec')"
+      >
+        Remitos de compra
+        @if (badgeRec() > 0) {
+          <span class="cpr__badge">{{ badgeRec() }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="cpr__tab"
+        [class.cpr__tab--on]="tab() === 'fact'"
+        (click)="setTab('fact')"
+      >
+        Facturas de compra
+        @if (badgeFact() > 0) {
+          <span class="cpr__badge">{{ badgeFact() }}</span>
+        }
+      </button>
+    </div>
+    <span class="cpr__ctx">{{ contextoTxt() }}</span>
   </div>
 
-  @if (tab() === 'facturas') {
-    <div class="lst__card">
-      @if (estado().status === 'error') {
-        <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
-      } @else if (!buscado()) {
-        <div class="lst__empty">Buscá para listar remitos y facturas de compra</div>
-      } @else if (filasFacturas().length === 0) {
-        <div class="lst__empty">
-          {{
-            estado().status === 'loading'
-              ? 'Cargando compras…'
-              : 'No hay remitos ni facturas. Cargá un remito de mercadería para ingresar stock.'
-          }}
-        </div>
-      } @else {
-        <table class="lst__table">
-          <thead>
-            <tr>
-              <th>Comprobante</th>
-              <th>Fecha</th>
-              <th>Proveedor</th>
-              <th class="lst__th-right">Total</th>
-              <th>Estado</th>
-              <th class="lst__th-right">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of filasFacturas(); track row.id) {
-              <tr>
-                <td class="lst__strong">{{ row.comprobante }}</td>
-                <td>{{ row.fecha }}</td>
-                <td>{{ row.proveedor }}</td>
-                <td class="lst__td-right lst__strong">{{ row.total }}</td>
-                <td>
-                  <span
-                    class="lst__badge"
-                    [class.lst__badge--warn]="row.estadoTone === 'warn'"
-                    [class.lst__badge--ok]="row.estadoTone === 'ok'"
-                    [class.lst__badge--danger]="row.estadoTone === 'danger'"
-                    [class.lst__badge--info]="row.estadoTone === 'info'"
-                    [class.lst__badge--neutral]="row.estadoTone === 'neutral'"
-                  >
-                    {{ row.estadoLabel }}
-                  </span>
-                </td>
-                <td class="lst__td-right">
-                  <div class="lst__acciones">
-                    @if (row.puedeConfirmar) {
-                      <button
-                        type="button"
-                        class="lst__accion lst__accion--primary"
-                        (click)="confirmar(row.id)"
-                      >
-                        Confirmar
-                      </button>
-                    }
-                    @if (row.puedeFacturar) {
-                      <button
-                        type="button"
-                        class="lst__accion lst__accion--primary"
-                        (click)="facturar(row.id)"
-                      >
-                        Facturar
-                      </button>
-                    }
-                    @if (!row.puedeConfirmar && !row.puedeFacturar) {
-                      <span class="lst__muted">—</span>
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-  }
-
-  @if (tab() === 'pedidos') {
-    <div class="lst__card">
-      @if (estado().status === 'error') {
-        <div class="lst__empty lst__empty--error">{{ estado().error }}</div>
-      } @else if (!buscado()) {
-        <div class="lst__empty">Buscá para listar pedidos de compra</div>
-      } @else if (filasPedidos().length === 0) {
-        <div class="lst__empty">
-          {{
-            estado().status === 'loading'
-              ? 'Cargando pedidos…'
-              : 'No hay pedidos. Creá una OC: no mueve stock hasta que recibas el remito.'
-          }}
-        </div>
-      } @else {
-        <table class="lst__table">
-          <thead>
-            <tr>
-              <th>Pedido</th>
-              <th>Fecha</th>
-              <th>Proveedor</th>
-              <th class="lst__th-right">Total</th>
-              <th>Recibido</th>
-              <th>Estado</th>
-              <th class="lst__th-right">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of filasPedidos(); track row.id) {
-              <tr>
-                <td>{{ row.comprobante }}</td>
-                <td>{{ row.fecha }}</td>
-                <td>{{ row.proveedor }}</td>
-                <td class="lst__td-right">{{ row.total }}</td>
-                <td>{{ row.avance }}</td>
-                <td>
-                  <span
-                    class="lst__badge"
-                    [class.lst__badge--warn]="row.estadoTone === 'warn'"
-                    [class.lst__badge--ok]="row.estadoTone === 'ok'"
-                    [class.lst__badge--info]="row.estadoTone === 'info'"
-                    [class.lst__badge--neutral]="row.estadoTone === 'neutral'"
-                    >{{ row.estadoLabel }}</span
-                  >
-                </td>
-                <td class="lst__td-right">
-                  <div class="lst__acciones">
-                    @if (row.puedeEmitir) {
-                      <button
-                        type="button"
-                        class="lst__accion lst__accion--primary"
-                        (click)="emitir(row.id)"
-                      >
-                        Emitir
-                      </button>
-                    }
-                    @if (row.puedeRecibir) {
-                      <button
-                        type="button"
-                        class="lst__accion lst__accion--primary"
-                        (click)="recibir(row.id)"
-                      >
-                        Recibir
-                      </button>
-                    }
-                    @if (!row.puedeEmitir && !row.puedeRecibir) {
-                      <span class="lst__muted">—</span>
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-  }
-
-  @if (tab() === 'proveedores') {
-    <div class="lst__card">
-      @if (!buscado()) {
-        <div class="lst__empty">Buscá para listar proveedores</div>
-      } @else if (filasProveedores().length === 0) {
-        <div class="lst__empty">No hay proveedores. Creá uno para importar su lista.</div>
-      } @else {
-        <table class="lst__table">
-          <thead>
-            <tr>
-              <th>Proveedor</th>
-              <th>CUIT</th>
-              <th>Rubro</th>
-              <th>Contacto</th>
-              <th class="lst__th-right">Saldo a pagar</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of filasProveedores(); track row.id) {
-              <tr>
-                <td>
-                  <div class="lst__name">{{ row.nombre }}</div>
-                </td>
-                <td>{{ row.cuit || '—' }}</td>
-                <td>{{ row.rubro }}</td>
-                <td>{{ row.contacto }}</td>
-                <td class="lst__td-right">{{ row.saldo }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
-  }
-
-  @if (tab() === 'listas') {
-    @let lp = listaActiva();
-    <div class="lst__lista-bar">
-      <div class="lst__lista-label">Lista del proveedor (no es tu catálogo)</div>
-      <select
-        class="lst__select"
-        [ngModel]="listaProvId()"
-        (ngModelChange)="seleccionarProveedorLista($event)"
-      >
-        @for (p of proveedores(); track p.id) {
-          <option [value]="p.id">{{ p.nombre }}</option>
-        }
-      </select>
-      <div class="lst__lista-spacer"></div>
-      <label class="lst__btn lst__btn--ghost lst__file">
-        📎 Cargar archivo Excel…
-        <input type="file" accept=".xlsx,.xlsm" (change)="onArchivo($event)" hidden />
-      </label>
-    </div>
-
-    @if (!buscado()) {
-      <div class="lst__card">
-        <div class="lst__empty">
-          Buscá para cargar el proveedor y actualizar su lista de precios
-        </div>
-      </div>
-    } @else if (!lp) {
-      <div class="lst__card">
-        <div class="lst__empty">Creá un proveedor para importar su lista de precios.</div>
-      </div>
-    } @else {
-      <div class="lst__lista-grid">
-        <div class="lst__card lst__card--scroll">
-          <div class="lst__card-head">
-            <div class="lst__card-title">Vista previa · {{ lp.nombre }}</div>
-            <div class="lst__card-sub">
-              {{
-                archivoSeleccionado()?.name ||
-                  lp.ultimaImportacionArchivo ||
-                  'Sin archivo seleccionado'
-              }}
-            </div>
-          </div>
-          <table class="lst__table">
-            <thead>
-              <tr>
-                @for (c of preview()?.previewCols ?? []; track c) {
-                  <th class="lst__th-map">{{ c }}</th>
-                } @empty {
-                  <th class="lst__th-map">Cargá un Excel para ver la vista previa</th>
-                }
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of preview()?.previewRows ?? []; track $index) {
-                <tr>
-                  @for (cell of row; track $index) {
-                    <td>{{ cell }}</td>
-                  }
-                </tr>
-              } @empty {
-                <tr>
-                  <td class="lst__empty-cell">Sin datos de preview</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-          <div class="lst__lista-foot">
-            <div class="lst__lista-foot-title">
-              @if (preview() && !preview()!.dryRun) {
-                Última importación · {{ lp.nombre }} · ahora
-              } @else if (lp.ultimaImportacionFecha) {
-                Última importación · {{ lp.nombre }} ·
-                {{ lp.ultimaImportacionFecha | slice: 0 : 10 }}
-              } @else {
-                Sin importaciones previas · {{ lp.nombre }}
-              }
-            </div>
-            <div class="lst__lista-stats">
-              <span>
-                <b class="lst__ok">{{
-                  preview()?.actualizados ?? lp.ultimaImportacionActualizados
-                }}</b>
-                en catálogo
-              </span>
-              <span>
-                <b class="lst__warn">{{ preview()?.nuevos ?? lp.ultimaImportacionNuevos }}</b>
-                ítems de lista
-              </span>
-              <span>
-                <b class="lst__danger">{{ preview()?.sinMatch ?? lp.ultimaImportacionSinMatch }}</b>
-                sin SKU propio
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="lst__mapeo">
-          <div class="lst__mapeo-head">
-            <div class="lst__card-title">Mapeo de columnas</div>
-            <span class="lst__pill-warn">Solo esta importación</span>
-          </div>
-          <div class="lst__mapeo-hint">
-            Tomado del alta de {{ lp.nombre }}. Podés corregirlo para este archivo puntual.
-          </div>
-          <div class="lst__mapeo-rows">
-            @for (m of mapeoImport(); track $index) {
-              <div class="lst__mapeo-row">
-                <div class="lst__mapeo-campo">{{ etiquetaCampo(m.campo) }}</div>
-                <select
-                  class="lst__select lst__select--flex"
-                  [ngModel]="m.columna"
-                  (ngModelChange)="actualizarMapeoColumna($index, $event)"
-                >
-                  @for (col of columnasExcel; track col) {
-                    <option [value]="col">Columna {{ col }}</option>
-                  }
-                </select>
-              </div>
-            }
-            <div class="lst__mapeo-row">
-              <div class="lst__mapeo-campo">Empieza en fila</div>
-              <input
-                class="lst__input"
-                type="number"
-                min="1"
-                [ngModel]="filaInicio()"
-                (ngModelChange)="filaInicio.set(+$event || 2)"
-              />
-            </div>
-          </div>
-          <div class="lst__mapeo-row lst__mapeo-row--mt">
-            <div class="lst__mapeo-campo lst__mapeo-campo--wide">Actualizar precio de venta</div>
-            <select
-              class="lst__select"
-              [ngModel]="politicaVenta()"
-              (ngModelChange)="politicaVenta.set($event)"
-            >
-              @for (o of politicaOpts; track o.value) {
-                <option [value]="o.value">{{ o.label }}</option>
-              }
-            </select>
-          </div>
-          @if (politicaVenta() === 'margen_fijo') {
-            <div class="lst__mapeo-row">
-              <div class="lst__mapeo-campo">Margen %</div>
-              <input
-                class="lst__input"
-                type="number"
-                min="0"
-                [ngModel]="margenPct()"
-                (ngModelChange)="margenPct.set(+$event || 0)"
-              />
-            </div>
+  @if (tab() === 'oc') {
+    <div class="cpr__split">
+      <div class="cpr__main">
+        <div class="cpr__kpis">
+          @for (k of ocKpis(); track k.label) {
+            <button type="button" class="cpr__kpi" (click)="setChipOc(k.id)">
+              <div class="cpr__kpi-lab">{{ k.label }}</div>
+              <div class="cpr__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+              <div class="cpr__kpi-hint">{{ k.hint }}</div>
+            </button>
           }
+        </div>
+        <div class="cpr__toolbar">
+          <div class="cpr__search">
+            <span>⌕</span>
+            <input
+              type="search"
+              [ngModel]="qOc()"
+              (ngModelChange)="qOc.set($event)"
+              placeholder="N° de orden, proveedor o artículo"
+            />
+          </div>
           <button
             type="button"
-            class="lst__cta lst__cta--full"
-            [disabled]="importando() || !archivoSeleccionado()"
-            (click)="importarLista()"
+            class="cpr__chip"
+            [class.cpr__chip--on]="chipOc() === 'todas'"
+            (click)="setChipOc('todas')"
           >
-            {{ importando() ? 'Importando…' : 'Importar con este mapeo' }}
+            Todas
+          </button>
+          <button
+            type="button"
+            class="cpr__chip"
+            [class.cpr__chip--on]="chipOc() === 'abiertas'"
+            (click)="setChipOc('abiertas')"
+          >
+            Abiertas
+          </button>
+          <button
+            type="button"
+            class="cpr__chip"
+            [class.cpr__chip--on]="chipOc() === 'enviada'"
+            (click)="setChipOc('enviada')"
+          >
+            Enviadas
+          </button>
+          <button
+            type="button"
+            class="cpr__chip"
+            [class.cpr__chip--on]="chipOc() === 'parcial'"
+            (click)="setChipOc('parcial')"
+          >
+            Parciales
+          </button>
+          <button
+            type="button"
+            class="cpr__chip"
+            [class.cpr__chip--on]="chipOc() === 'recibida'"
+            (click)="setChipOc('recibida')"
+          >
+            Recibidas
+          </button>
+          <div class="cpr__spacer"></div>
+          <button type="button" class="cpr__btn cpr__btn--ia" (click)="sugerirFaltantes()">
+            Sugerir compra por faltantes
+          </button>
+          <button type="button" class="cpr__cta" (click)="abrirNuevaOrden('pedido_compra')">
+            + Nueva orden
           </button>
         </div>
+        <div class="cpr__card">
+          <div class="cpr__thead cpr__thead--oc">
+            <div>Orden</div>
+            <div>Proveedor</div>
+            <div>Emitida</div>
+            <div>Entrega</div>
+            <div class="cpr__right">Líneas</div>
+            <div class="cpr__right">Recibido</div>
+            <div class="cpr__right">Total</div>
+            <div class="cpr__center">Estado</div>
+          </div>
+          <div class="cpr__body">
+            @for (r of ocRows(); track r.id) {
+              <button
+                type="button"
+                class="cpr__row cpr__row--oc"
+                [class.cpr__row--on]="r.sel"
+                (click)="abrirOc(r.id)"
+              >
+                <div class="cpr__mono cpr__strong">{{ r.numero }}</div>
+                <div class="cpr__clip">
+                  <div>{{ r.prov }}</div>
+                  <div class="cpr__muted">{{ r.sub }}</div>
+                </div>
+                <div class="cpr__mono">{{ r.fecha }}</div>
+                <div class="cpr__mono">{{ r.entrega }}</div>
+                <div class="cpr__right cpr__mono">{{ r.lineas }}</div>
+                <div class="cpr__right cpr__mono cpr__strong" [attr.data-tono]="r.recTone">
+                  {{ r.recTxt }}
+                </div>
+                <div class="cpr__right cpr__mono cpr__strong">{{ r.total }}</div>
+                <div class="cpr__center">
+                  <span class="cpr__pill" [attr.data-tono]="r.tone">{{ r.estado }}</span>
+                </div>
+              </button>
+            } @empty {
+              <div class="cpr__empty">
+                @if (estado().status === 'loading') {
+                  Cargando órdenes…
+                } @else {
+                  <div>Ninguna orden con estos filtros</div>
+                  <div class="cpr__muted">Probá con el chip “Todas” o buscá por proveedor.</div>
+                }
+              </div>
+            }
+          </div>
+          <div class="cpr__foot">
+            <span>{{ ocCountTxt() }}</span>
+            <div class="cpr__spacer"></div>
+            <span class="cpr__muted">Comprometido en las órdenes filtradas</span>
+            <strong class="cpr__mono">{{ ocTotalFmt() }}</strong>
+          </div>
+        </div>
       </div>
-      @if (itemsLista().length > 0) {
-        <div class="lst__card lst__card--scroll" style="margin-top: 16px">
-          <div class="lst__card-head">
-            <div class="lst__card-title">Lista persistida · no es tu catálogo</div>
-            <div class="lst__card-sub">
-              Solo los ítems con SKU propio existen en Artículos. El resto queda acá hasta que los
-              des de alta.
+      @if (ocSel(); as oc) {
+        <aside class="cpr__side">
+          <div class="cpr__side-h">
+            <div class="cpr__side-tit">
+              <span class="cpr__mono">{{ oc.numero }}</span>
+              <span class="cpr__pill" [attr.data-tono]="oc.tone">{{ oc.estado }}</span>
+            </div>
+            <div>{{ oc.prov }}</div>
+            <div class="cpr__muted cpr__mono">{{ oc.meta }}</div>
+          </div>
+          <div class="cpr__side-b">
+            <div class="cpr__sec-lab">Líneas pedidas</div>
+            <div class="cpr__mini">
+              <div class="cpr__mini-h cpr__mini-h--oc">
+                <div>Artículo</div>
+                <div class="cpr__right">Ped.</div>
+                <div class="cpr__right">Rec.</div>
+                <div class="cpr__right">Pend.</div>
+                <div class="cpr__right">Subtotal</div>
+              </div>
+              @for (l of oc.lineas; track l.id) {
+                <div class="cpr__mini-r cpr__mini-r--oc">
+                  <div class="cpr__clip">
+                    <div>{{ l.nombre }}</div>
+                    <div class="cpr__muted cpr__mono">{{ l.sub }}</div>
+                  </div>
+                  <div class="cpr__right cpr__mono">{{ l.pedido }}</div>
+                  <div class="cpr__right cpr__mono">{{ l.recibido }}</div>
+                  <div class="cpr__right cpr__mono cpr__strong" [attr.data-tono]="l.pendTone">
+                    {{ l.pend }}
+                  </div>
+                  <div class="cpr__right cpr__mono cpr__strong">{{ l.subtotal }}</div>
+                </div>
+              }
+            </div>
+            <div class="cpr__totbox">
+              @for (t of oc.totales; track t.label) {
+                <div class="cpr__tot" [class.cpr__tot--strong]="t.strong">
+                  <span>{{ t.label }}</span>
+                  <span class="cpr__mono">{{ t.value }}</span>
+                </div>
+              }
+            </div>
+            <div class="cpr__note" [attr.data-tono]="oc.notaTone">{{ oc.notaTxt }}</div>
+            <div class="cpr__sec-lab">Trazabilidad</div>
+            <div class="cpr__traza">
+              @for (t of oc.traza; track t.label) {
+                <div class="cpr__traza-r">
+                  <span class="cpr__dot" [class.cpr__dot--on]="t.on"></span>
+                  <span>{{ t.label }}</span>
+                  <span class="cpr__mono cpr__muted">{{ t.value }}</span>
+                </div>
+              }
             </div>
           </div>
-          <table class="lst__table">
-            <thead>
-              <tr>
-                <th>Código proveedor</th>
-                <th>Descripción</th>
-                <th class="lst__th-right">Costo</th>
-                <th>Catálogo</th>
-                <th class="lst__th-right">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (it of itemsLista(); track it.id) {
-                <tr>
-                  <td>{{ it.codigoProveedor }}</td>
-                  <td>{{ it.nombre }}</td>
-                  <td class="lst__td-right">{{ it.costo }}</td>
-                  <td>{{ it.enCatalogo ? 'En Artículos' : 'Solo lista' }}</td>
-                  <td class="lst__td-right">
-                    @if (!it.enCatalogo) {
-                      <div class="lst__acciones">
-                        @if (altaItemId() === it.id) {
+          <div class="cpr__side-f">
+            <button type="button" class="cpr__btn" (click)="imprimirOc()">Imprimir</button>
+            <button type="button" class="cpr__btn" (click)="duplicarOc()">Duplicar</button>
+            <div class="cpr__spacer"></div>
+            <button type="button" class="cpr__cta" (click)="ctaOc()">{{ oc.cta.label }}</button>
+          </div>
+        </aside>
+      }
+    </div>
+  }
+
+  @if (tab() === 'prov') {
+    <div class="cpr__split">
+      <div class="cpr__rail">
+        <div class="cpr__rail-h">
+          <div class="cpr__search">
+            <span>⌕</span>
+            <input
+              type="search"
+              [ngModel]="qProv()"
+              (ngModelChange)="qProv.set($event)"
+              placeholder="Nombre, CUIT o rubro"
+            />
+          </div>
+          <button type="button" class="cpr__cta cpr__cta--block" (click)="abrirAlta()">
+            + Dar de alta un proveedor
+          </button>
+        </div>
+        <div class="cpr__rail-b">
+          @for (p of provList(); track p.id) {
+            <button
+              type="button"
+              class="cpr__plist"
+              [class.cpr__plist--on]="p.sel"
+              (click)="seleccionarProv(p.id)"
+            >
+              <div class="cpr__plist-t">
+                <span>{{ p.nombre }}</span>
+                <span class="cpr__mono cpr__strong">{{ p.saldoFmt }}</span>
+              </div>
+              <div class="cpr__plist-m">
+                <span class="cpr__pill" [attr.data-tono]="p.listaTone">{{ p.listaTxt }}</span>
+                <span class="cpr__muted">{{ p.rubro }}</span>
+              </div>
+            </button>
+          } @empty {
+            <div class="cpr__empty cpr__empty--sm">Ningún proveedor con esa búsqueda</div>
+          }
+        </div>
+        <div class="cpr__rail-f">{{ provCountTxt() }}</div>
+      </div>
+      @if (provFicha(); as p) {
+        <div class="cpr__main">
+          <div class="cpr__ficha-h">
+            <div>
+              <div class="cpr__ficha-tit">
+                <h2>{{ p.nombre }}</h2>
+                <span class="cpr__pill" [attr.data-tono]="p.estTone">{{ p.estado }}</span>
+              </div>
+              <div class="cpr__muted cpr__mono">{{ p.meta }}</div>
+            </div>
+            <div class="cpr__ficha-acts">
+              <button type="button" class="cpr__btn" (click)="irCtaCteProv()">
+                Cuenta corriente
+              </button>
+              <button
+                type="button"
+                class="cpr__cta"
+                (click)="abrirNuevaOrden('pedido_compra', p.id)"
+              >
+                Nueva orden
+              </button>
+            </div>
+          </div>
+          <div class="cpr__kpis cpr__kpis--6">
+            @for (k of p.kpis; track k.label) {
+              <div class="cpr__kpi">
+                <div class="cpr__kpi-lab">{{ k.label }}</div>
+                <div class="cpr__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+                <div class="cpr__kpi-hint">{{ k.hint }}</div>
+              </div>
+            }
+          </div>
+          <div class="cpr__subtabs">
+            <button
+              type="button"
+              class="cpr__stab"
+              [class.cpr__stab--on]="provSub() === 'lista'"
+              (click)="setProvSub('lista')"
+            >
+              Lista de precios
+            </button>
+            <button
+              type="button"
+              class="cpr__stab"
+              [class.cpr__stab--on]="provSub() === 'condiciones'"
+              (click)="setProvSub('condiciones')"
+            >
+              Condiciones
+            </button>
+            <button
+              type="button"
+              class="cpr__stab"
+              [class.cpr__stab--on]="provSub() === 'movs'"
+              (click)="setProvSub('movs')"
+            >
+              Movimientos
+            </button>
+          </div>
+          @if (provSub() === 'lista') {
+            <div class="cpr__lista-card">
+              <div>
+                <div class="cpr__strong">{{ p.listaTitulo }}</div>
+                <div class="cpr__muted">{{ p.listaSub }}</div>
+              </div>
+              <label class="cpr__btn cpr__btn--ia cpr__file">
+                Importar Excel / PDF
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv,.pdf"
+                  hidden
+                  (change)="onListaArchivo($event)"
+                />
+              </label>
+            </div>
+            <div class="cpr__card cpr__card--grow">
+              <div class="cpr__thead cpr__thead--lista">
+                <div>Cód. prov.</div>
+                <div>Artículo</div>
+                <div class="cpr__right">Costo lista</div>
+                <div class="cpr__right">Costo neto</div>
+                <div class="cpr__center">Vínculo</div>
+              </div>
+              <div class="cpr__body">
+                @for (r of p.listaRows; track r.id) {
+                  <div class="cpr__row cpr__row--lista">
+                    <div class="cpr__mono">{{ r.codProv }}</div>
+                    <div class="cpr__clip">
+                      <div>{{ r.nombre }}</div>
+                      <div class="cpr__muted cpr__mono">{{ r.sub }}</div>
+                    </div>
+                    <div class="cpr__right cpr__mono cpr__strong">{{ r.costo }}</div>
+                    <div class="cpr__right cpr__mono">{{ r.neto }}</div>
+                    <div class="cpr__center cpr__vinc">
+                      <span class="cpr__pill" [attr.data-tono]="r.chipTone">{{ r.chip }}</span>
+                      @if (r.accionar) {
+                        @if (altaSkuId() === r.id) {
                           <input
-                            class="lst__input"
-                            placeholder="SKU propio"
+                            class="cpr__sku"
                             [ngModel]="altaSku()"
                             (ngModelChange)="altaSku.set($event)"
+                            placeholder="SKU"
                           />
-                          <button
-                            type="button"
-                            class="lst__accion lst__accion--primary"
-                            (click)="confirmarAlta()"
-                          >
+                          <button type="button" class="cpr__link" (click)="confirmarAltaSku()">
                             Crear
                           </button>
                         } @else {
-                          <button
-                            type="button"
-                            class="lst__accion lst__accion--primary"
-                            (click)="empezarAlta(it.id)"
-                          >
+                          <button type="button" class="cpr__link" (click)="empezarAltaSku(r.id)">
                             Dar de alta
                           </button>
                         }
-                      </div>
-                    } @else {
-                      <span class="lst__muted">—</span>
-                    }
-                  </td>
-                </tr>
+                      }
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="cpr__empty">
+                    No hay ítems de lista. Importá un Excel del proveedor.
+                  </div>
+                }
+              </div>
+              <div class="cpr__foot">
+                <div class="cpr__note cpr__note--inline">{{ p.reglaTxt }}</div>
+                <div class="cpr__spacer"></div>
+                <button
+                  type="button"
+                  class="cpr__cta"
+                  [disabled]="importando()"
+                  (click)="abrirNuevaOrden('pedido_compra', p.id)"
+                >
+                  Nueva orden con esta lista
+                </button>
+              </div>
+            </div>
+          }
+          @if (provSub() === 'condiciones') {
+            <div class="cpr__bloques">
+              @for (b of p.bloques; track b.titulo) {
+                <div class="cpr__bloque">
+                  <div class="cpr__bloque-h">{{ b.titulo }}</div>
+                  @for (f of b.filas; track f.label) {
+                    <div class="cpr__bloque-r">
+                      <span>{{ f.label }}</span>
+                      <span>{{ f.value }}</span>
+                    </div>
+                  }
+                </div>
               }
-            </tbody>
-          </table>
-        </div>
-      }
-    }
-  }
-</section>
-
-@if (nuevoProveedorOpen()) {
-  <div class="comp-modal" (click)="nuevoProveedorOpen.set(false)">
-    <div class="comp-modal__panel" (click)="$event.stopPropagation()">
-      <div class="comp-modal__head">
-        <h2 class="comp-modal__title">Nuevo proveedor</h2>
-        <button type="button" class="comp-modal__close" (click)="nuevoProveedorOpen.set(false)">
-          ✕
-        </button>
-      </div>
-      <div class="comp-modal__form">
-        <div>
-          <div class="comp-modal__label">Razón social</div>
-          <input
-            class="comp-modal__input"
-            placeholder="Distribuidora Herrafe SA"
-            [ngModel]="nuevoNombre()"
-            (ngModelChange)="nuevoNombre.set($event)"
-          />
-        </div>
-        <div>
-          <div class="comp-modal__label">CUIT</div>
-          <input
-            class="comp-modal__input"
-            placeholder="30-00000000-0"
-            [ngModel]="nuevoCuit()"
-            (ngModelChange)="nuevoCuit.set($event)"
-          />
-        </div>
-        <div>
-          <div class="comp-modal__label">Rubro / observaciones</div>
-          <input
-            class="comp-modal__input"
-            placeholder="Herramientas y fijaciones"
-            [ngModel]="nuevoRubro()"
-            (ngModelChange)="nuevoRubro.set($event)"
-          />
-        </div>
-      </div>
-      <div class="comp-modal__mapeo">
-        <div class="comp-modal__mapeo-title">Formato de la lista de precios (Excel)</div>
-        <div class="comp-modal__hint">
-          Este mapeo queda guardado en el proveedor: define qué columna del Excel corresponde a cada
-          dato de tu base.
-        </div>
-        <div class="comp-modal__mapeo-table">
-          <div class="comp-modal__mapeo-head-row">
-            <div>Columna Excel</div>
-            <div>Concepto en mi base de datos</div>
-            <div></div>
-          </div>
-          @for (m of nuevoProvMapeo(); track $index) {
-            <div class="comp-modal__mapeo-row">
-              <select
-                class="comp-modal__select"
-                [ngModel]="m.columna"
-                (ngModelChange)="actualizarNuevoMapeo($index, 'columna', $event)"
-              >
-                @for (col of columnasExcel; track col) {
-                  <option [value]="col">{{ col }}</option>
+            </div>
+          }
+          @if (provSub() === 'movs') {
+            <div class="cpr__card cpr__card--grow">
+              <div class="cpr__thead cpr__thead--mov">
+                <div>Fecha</div>
+                <div>Tipo</div>
+                <div>Comprobante</div>
+                <div class="cpr__right">Debe</div>
+                <div class="cpr__right">Haber</div>
+                <div class="cpr__right">Saldo</div>
+              </div>
+              <div class="cpr__body">
+                @for (m of p.movs; track m.id) {
+                  <div class="cpr__row cpr__row--mov">
+                    <div class="cpr__mono">{{ m.fecha }}</div>
+                    <div>
+                      <span class="cpr__pill" [attr.data-tono]="m.tipoTone">{{ m.tipo }}</span>
+                    </div>
+                    <div class="cpr__clip">{{ m.detalle }}</div>
+                    <div class="cpr__right cpr__mono">{{ m.debe }}</div>
+                    <div class="cpr__right cpr__mono" data-tono="ok">{{ m.haber }}</div>
+                    <div class="cpr__right cpr__mono cpr__strong">{{ m.saldo }}</div>
+                  </div>
+                } @empty {
+                  <div class="cpr__empty">Sin movimientos en la cuenta de este proveedor</div>
                 }
-              </select>
-              <select
-                class="comp-modal__select"
-                [ngModel]="m.campo"
-                (ngModelChange)="actualizarNuevoMapeo($index, 'campo', $event)"
-              >
-                @for (c of camposMapeoOpts; track c.value) {
-                  <option [value]="c.value">{{ c.label }}</option>
-                }
-              </select>
-              <button
-                type="button"
-                class="comp-modal__del"
-                (click)="quitarFilaMapeoNuevo($index)"
-                title="Quitar"
-              >
-                ✕
-              </button>
+              </div>
+              <div class="cpr__foot">
+                <span class="cpr__muted">{{ p.movNota }}</span>
+                <div class="cpr__spacer"></div>
+                <span class="cpr__muted">Saldo a pagar</span>
+                <strong class="cpr__mono">{{ p.saldoFmt }}</strong>
+                <button type="button" class="cpr__cta" (click)="irPagar()">Registrar pago</button>
+              </div>
             </div>
           }
         </div>
-        <button type="button" class="comp-modal__add" (click)="agregarFilaMapeoNuevo()">
-          + Agregar columna
-        </button>
-        <div class="comp-modal__fila">
-          <div class="comp-modal__fila-label">La lista empieza en la fila</div>
-          <input
-            class="comp-modal__fila-input"
-            type="number"
-            min="1"
-            [ngModel]="nuevoFilaInicio()"
-            (ngModelChange)="nuevoFilaInicio.set(+$event || 2)"
-          />
+      }
+    </div>
+  }
+
+  @if (tab() === 'rec') {
+    <div class="cpr__split">
+      <div class="cpr__rail cpr__rail--rec">
+        <div class="cpr__rail-h">
+          <div class="cpr__duo">
+            <button type="button" class="cpr__btn cpr__btn--ia" (click)="abrirIa()">
+              Cargar remito con IA
+            </button>
+            <button type="button" class="cpr__btn" (click)="abrirNuevaOrden('remito_compra')">
+              Carga manual
+            </button>
+          </div>
+          <div class="cpr__chips">
+            <button
+              type="button"
+              class="cpr__chip"
+              [class.cpr__chip--on]="chipRec() === 'todas'"
+              (click)="setChipRec('todas')"
+            >
+              Todos
+            </button>
+            <button
+              type="button"
+              class="cpr__chip"
+              [class.cpr__chip--on]="chipRec() === 'pendientes'"
+              (click)="setChipRec('pendientes')"
+            >
+              Por revisar
+            </button>
+            <button
+              type="button"
+              class="cpr__chip"
+              [class.cpr__chip--on]="chipRec() === 'ingresados'"
+              (click)="setChipRec('ingresados')"
+            >
+              En stock
+            </button>
+          </div>
+        </div>
+        <div class="cpr__rail-b">
+          @for (r of recRows(); track r.id) {
+            <button
+              type="button"
+              class="cpr__plist"
+              [class.cpr__plist--on]="r.sel"
+              (click)="abrirRec(r.id)"
+            >
+              <div class="cpr__plist-t">
+                <span class="cpr__mono cpr__strong">{{ r.numero }}</span>
+                <span class="cpr__clip">{{ r.prov }}</span>
+                <span class="cpr__mono cpr__muted">{{ r.fecha }}</span>
+              </div>
+              <div class="cpr__plist-m">
+                <span class="cpr__pill" [attr.data-tono]="r.tone">{{ r.estado }}</span>
+                <span class="cpr__muted" [attr.data-tono]="r.ocTone">{{ r.ocTxt }}</span>
+                <span class="cpr__spacer"></span>
+                <span class="cpr__mono">{{ r.total }}</span>
+              </div>
+            </button>
+          } @empty {
+            <div class="cpr__empty cpr__empty--sm">No hay remitos. Cargá uno con IA o a mano.</div>
+          }
         </div>
       </div>
-      <div class="comp-modal__foot">
-        <button
-          type="button"
-          class="lst__btn lst__btn--ghost"
-          (click)="nuevoProveedorOpen.set(false)"
-        >
-          Cancelar
+      @if (recSel(); as rec) {
+        <div class="cpr__main">
+          <div class="cpr__banner">
+            <div>
+              <div class="cpr__side-tit">
+                <span class="cpr__mono">{{ rec.numero }}</span>
+                <span class="cpr__pill" [attr.data-tono]="rec.tone">{{ rec.estado }}</span>
+              </div>
+              <div class="cpr__muted">{{ rec.meta }}</div>
+            </div>
+            <div class="cpr__spacer"></div>
+            @for (k of rec.resumen; track k.label) {
+              <div class="cpr__mini-kpi">
+                <div class="cpr__kpi-lab">{{ k.label }}</div>
+                <div class="cpr__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+              </div>
+            }
+            <select [ngModel]="recDepositoId()" (ngModelChange)="recDepositoId.set($event)">
+              @for (d of depositos(); track d.id) {
+                <option [value]="d.id">{{ d.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="cpr__card cpr__card--grow">
+            <div class="cpr__thead cpr__thead--rec">
+              <div>Descripción del remito</div>
+              <div>Artículo</div>
+              <div class="cpr__right">Pedido</div>
+              <div class="cpr__right">Recibido</div>
+              <div class="cpr__right">Dif.</div>
+              <div class="cpr__right">Costo</div>
+              <div class="cpr__right">Subtotal</div>
+              <div class="cpr__right">Estado</div>
+            </div>
+            <div class="cpr__body">
+              @for (l of rec.lineas; track l.id) {
+                <div class="cpr__row cpr__row--rec">
+                  <div class="cpr__clip">
+                    <div>{{ l.nombre }}</div>
+                    @if (l.aviso) {
+                      <div class="cpr__muted" data-tono="accent">{{ l.avisoTxt }}</div>
+                    }
+                  </div>
+                  <div class="cpr__mono cpr__clip">{{ l.codigoTxt }}</div>
+                  <div class="cpr__right cpr__mono">{{ l.pedido }}</div>
+                  <div class="cpr__right cpr__mono cpr__strong">{{ l.recibido }}</div>
+                  <div class="cpr__right cpr__mono cpr__strong" [attr.data-tono]="l.difTone">
+                    {{ l.dif }}
+                  </div>
+                  <div class="cpr__right cpr__mono">{{ l.costo }}</div>
+                  <div class="cpr__right cpr__mono cpr__strong">{{ l.subtotal }}</div>
+                  <div class="cpr__right">
+                    <span class="cpr__pill" [attr.data-tono]="l.chipTone">{{ l.chip }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="cpr__foot">
+              <div class="cpr__note cpr__note--inline" [attr.data-tono]="rec.notaTone">
+                {{ rec.notaTxt }}
+              </div>
+              <div class="cpr__spacer"></div>
+              <div class="cpr__right">
+                <div class="cpr__muted">Según la orden {{ rec.totalPedido }}</div>
+                <div>
+                  <span class="cpr__muted">Ingresa a stock</span>
+                  <strong class="cpr__mono">{{ rec.totalRecibido }}</strong>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="cpr__cta"
+                [disabled]="!rec.puedeIngresar || guardando()"
+                (click)="confirmarRemito()"
+              >
+                {{ rec.ctaLabel }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (tab() === 'fact') {
+    <div class="cpr__split">
+      <div class="cpr__main">
+        <div class="cpr__kpis">
+          @for (k of factKpis(); track k.label) {
+            <div class="cpr__kpi">
+              <div class="cpr__kpi-lab">{{ k.label }}</div>
+              <div class="cpr__kpi-val" [attr.data-tono]="k.tone">{{ k.value }}</div>
+              <div class="cpr__kpi-hint">{{ k.hint }}</div>
+            </div>
+          }
+        </div>
+        <div class="cpr__card cpr__card--grow">
+          <div class="cpr__thead cpr__thead--fact">
+            <div>Comprobante</div>
+            <div>Proveedor</div>
+            <div>Fecha</div>
+            <div>Vence</div>
+            <div>Remitos</div>
+            <div class="cpr__right">Total</div>
+            <div class="cpr__center">Conciliación</div>
+          </div>
+          <div class="cpr__body">
+            @for (f of factRows(); track f.id) {
+              <button
+                type="button"
+                class="cpr__row cpr__row--fact"
+                [class.cpr__row--on]="f.sel"
+                (click)="abrirFact(f.id)"
+              >
+                <div class="cpr__mono cpr__strong">{{ f.numero }}</div>
+                <div class="cpr__clip">{{ f.prov }}</div>
+                <div class="cpr__mono">{{ f.fecha }}</div>
+                <div class="cpr__mono">{{ f.vto }}</div>
+                <div class="cpr__mono" [attr.data-tono]="f.remTone">{{ f.remTxt }}</div>
+                <div class="cpr__right cpr__mono cpr__strong">{{ f.total }}</div>
+                <div class="cpr__center">
+                  <span class="cpr__pill" [attr.data-tono]="f.tone">{{ f.estado }}</span>
+                </div>
+              </button>
+            } @empty {
+              <div class="cpr__empty">
+                No hay facturas de compra. Se generan desde un remito confirmado.
+              </div>
+            }
+          </div>
+          <div class="cpr__foot">
+            <span>{{ factCountTxt() }}</span>
+            <div class="cpr__spacer"></div>
+            <button type="button" class="cpr__link" (click)="abrirNuevaOrden('factura_compra')">
+              Cargar factura a mano
+            </button>
+          </div>
+        </div>
+      </div>
+      @if (factSel(); as fc) {
+        <aside class="cpr__side cpr__side--fact">
+          <div class="cpr__side-h">
+            <div class="cpr__side-tit">
+              <span class="cpr__mono">{{ fc.numero }}</span>
+              <span class="cpr__pill" [attr.data-tono]="fc.tone">{{ fc.estado }}</span>
+            </div>
+            <div>{{ fc.prov }}</div>
+            <div class="cpr__muted cpr__mono">{{ fc.meta }}</div>
+          </div>
+          <div class="cpr__side-b">
+            <div class="cpr__sec-lab">Conciliación orden · remito · factura</div>
+            <div class="cpr__mini">
+              <div class="cpr__mini-h cpr__mini-h--conc">
+                <div>Artículo</div>
+                <div class="cpr__right">Orden</div>
+                <div class="cpr__right">Remito</div>
+                <div class="cpr__right">Factura</div>
+              </div>
+              @for (c of fc.conc; track c.id) {
+                <div class="cpr__mini-r cpr__mini-r--conc">
+                  <div class="cpr__clip">{{ c.nombre }}</div>
+                  <div class="cpr__right cpr__mono">{{ c.oc }}</div>
+                  <div class="cpr__right cpr__mono">{{ c.rem }}</div>
+                  <div class="cpr__right cpr__mono cpr__strong" [attr.data-tono]="c.factTone">
+                    {{ c.fact }}
+                  </div>
+                  @if (c.aviso) {
+                    <div class="cpr__aviso">{{ c.avisoTxt }}</div>
+                  }
+                </div>
+              }
+            </div>
+            <div class="cpr__totbox">
+              @for (t of fc.totales; track t.label) {
+                <div class="cpr__tot" [class.cpr__tot--strong]="t.strong">
+                  <span>{{ t.label }}</span>
+                  <span class="cpr__mono">{{ t.value }}</span>
+                </div>
+              }
+            </div>
+            <div class="cpr__note" [attr.data-tono]="fc.notaTone">{{ fc.notaTxt }}</div>
+            <div class="cpr__sec-lab">Qué impacta al registrar</div>
+            <div class="cpr__traza">
+              @for (i of fc.impactos; track i.titulo) {
+                <div class="cpr__impacto">
+                  <span class="cpr__dot cpr__dot--on"></span>
+                  <div>
+                    <div>{{ i.titulo }}</div>
+                    <div class="cpr__muted">{{ i.detalle }}</div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="cpr__side-f">
+            <button type="button" class="cpr__btn" (click)="setTab('rec')">Ver remito</button>
+            <div class="cpr__spacer"></div>
+            <button type="button" class="cpr__cta" (click)="registrarFactura()">
+              {{ fc.ctaLabel }}
+            </button>
+          </div>
+        </aside>
+      }
+    </div>
+  }
+</section>
+
+@if (ordenOpen()) {
+  <div class="cpr-ov" (click)="ordenOpen.set(false)">
+    <div class="cpr-ov__panel" (click)="$event.stopPropagation()">
+      <div class="cpr-ov__h">
+        <div>
+          <h3>
+            {{
+              ordenTipo() === 'pedido_compra'
+                ? 'Nueva orden de compra'
+                : ordenTipo() === 'remito_compra'
+                  ? 'Cargar remito'
+                  : 'Cargar factura'
+            }}
+          </h3>
+          <p>Las líneas pueden ir por artículo del catálogo o por código del proveedor.</p>
+        </div>
+        <button type="button" class="cpr-ov__x" (click)="ordenOpen.set(false)">×</button>
+      </div>
+      <div class="cpr-ov__b">
+        <div class="cpr-ov__grid">
+          <label>
+            Proveedor
+            <select [ngModel]="ordenProvId()" (ngModelChange)="onOrdenProv($event)">
+              @for (p of proveedores(); track p.id) {
+                <option [value]="p.id">{{ p.nombre }}</option>
+              }
+            </select>
+          </label>
+          @if (ordenTipo() !== 'pedido_compra') {
+            <label>
+              Depósito
+              <select [ngModel]="ordenDepId()" (ngModelChange)="ordenDepId.set($event)">
+                @for (d of depositos(); track d.id) {
+                  <option [value]="d.id">{{ d.nombre }}</option>
+                }
+              </select>
+            </label>
+          }
+        </div>
+        <div class="cpr__sec-lab">Líneas</div>
+        @for (l of ordenLineas(); track $index) {
+          <div class="cpr-ov__linea">
+            <select
+              [ngModel]="l.codigoProveedor"
+              (ngModelChange)="patchLineaOrden($index, 'codigoProveedor', $event)"
+            >
+              <option value="">Código proveedor…</option>
+              @for (it of itemsPedido(); track it.id) {
+                <option [value]="it.codigoProveedor">
+                  {{ it.codigoProveedor }} · {{ it.nombre }}
+                </option>
+              }
+            </select>
+            <input
+              [ngModel]="l.cantidad"
+              (ngModelChange)="patchLineaOrden($index, 'cantidad', $event)"
+              placeholder="Cant."
+            />
+            <button type="button" class="cpr__link" (click)="quitarLineaOrden($index)">
+              Quitar
+            </button>
+          </div>
+        }
+        <button type="button" class="cpr__link" (click)="agregarLineaOrden()">
+          + Agregar línea
         </button>
-        <button
-          type="button"
-          class="lst__cta"
-          [disabled]="guardando()"
-          (click)="guardarProveedor()"
-        >
-          Guardar proveedor
+      </div>
+      <div class="cpr-ov__f">
+        <button type="button" class="cpr__btn" (click)="ordenOpen.set(false)">Cancelar</button>
+        <button type="button" class="cpr__cta" [disabled]="guardando()" (click)="guardarOrden()">
+          Guardar borrador
         </button>
       </div>
     </div>
   </div>
 }
 
-<app-side-drawer
-  [abierto]="drawerAbierto()"
-  [titulo]="
-    form.controls.tipo.value === 'pedido_compra'
-      ? 'Pedido de compra'
-      : origenId()
-        ? 'Recibir remito'
-        : 'Nueva compra'
-  "
-  (cerrar)="drawerAbierto.set(false)"
->
-  <form class="form-drawer" [formGroup]="form">
-    <app-select-input label="Tipo" [options]="tipoOptions" formControlName="tipo" />
-    <app-select-input
-      label="Proveedor"
-      [options]="proveedoresOpts()"
-      formControlName="proveedorId"
-    />
-    <app-select-input label="Depósito" [options]="depositosOpts()" formControlName="depositoId" />
-    @if (form.controls.tipo.value === 'remito_compra' && pedidosEmitidosOpts().length > 0) {
-      <div class="form-drawer__label">Pedido de origen (opcional)</div>
-      <select
-        class="lst__select"
-        [ngModel]="origenId()"
-        (ngModelChange)="origenId.set($event)"
-        [ngModelOptions]="{ standalone: true }"
-      >
-        <option value="">Sin pedido</option>
-        @for (o of pedidosEmitidosOpts(); track o.value) {
-          <option [value]="o.value">{{ o.label }}</option>
-        }
-      </select>
-    }
-    <div class="lst__card-sub">
-      @if (form.controls.tipo.value === 'pedido_compra') {
-        El pedido no mueve stock. En cada línea usá tu artículo y/o el código de la lista del
-        proveedor.
-      } @else {
-        Líneas: artículo de tu catálogo y/o código de la lista del proveedor. El remito ingresa
-        stock al confirmar.
-      }
-    </div>
-    @for (linea of lineasDraft(); track $index) {
-      <div class="lst__mapeo-row lst__mapeo-row--wrap">
-        <select
-          class="lst__select lst__select--flex"
-          [ngModel]="linea.productoId"
-          (ngModelChange)="actualizarLineaDraft($index, 'productoId', $event)"
-          [ngModelOptions]="{ standalone: true }"
-        >
-          <option value="">Artículo (catálogo)</option>
-          @for (p of productosOpts(); track p.value) {
-            <option [value]="p.value">{{ p.label }}</option>
-          }
-        </select>
-        <select
-          class="lst__select lst__select--flex"
-          [ngModel]="linea.codigoProveedor"
-          (ngModelChange)="actualizarLineaDraft($index, 'codigoProveedor', $event)"
-          [ngModelOptions]="{ standalone: true }"
-        >
-          <option value="">Código proveedor</option>
-          @for (p of itemsListaOpts(); track p.value) {
-            <option [value]="p.value">{{ p.label }}</option>
-          }
-        </select>
-        <input
-          class="lst__input lst__input--qty"
-          type="number"
-          min="1"
-          [ngModel]="linea.cantidad"
-          (ngModelChange)="actualizarLineaDraft($index, 'cantidad', $event)"
-          [ngModelOptions]="{ standalone: true }"
-        />
-        <button type="button" class="comp-modal__del" (click)="quitarLineaDraft($index)">✕</button>
+@if (altaOpen()) {
+  <div class="cpr-ov" (click)="altaOpen.set(false)">
+    <div class="cpr-ov__panel cpr-ov__panel--wide" (click)="$event.stopPropagation()">
+      <div class="cpr-ov__h">
+        <div>
+          <h3>Alta de proveedor</h3>
+          <p>
+            {{
+              altaPaso() === 1
+                ? 'Identificación fiscal y contacto'
+                : altaPaso() === 2
+                  ? 'Condiciones comerciales'
+                  : 'Lista de precios (opcional)'
+            }}
+          </p>
+        </div>
+        <button type="button" class="cpr-ov__x" (click)="altaOpen.set(false)">×</button>
       </div>
-    }
-    <button type="button" class="comp-modal__add" (click)="agregarLineaDraft()">+ Línea</button>
-  </form>
-  <div class="form-drawer__actions">
-    <app-button variant="outline" size="md" (clicked)="drawerAbierto.set(false)">
-      Cancelar
-    </app-button>
-    <app-button variant="primary" size="md" [disabled]="guardando()" (clicked)="guardar()">
-      Crear borrador
-    </app-button>
+      <div class="cpr-ov__pasos">
+        <button
+          type="button"
+          class="cpr-ov__paso"
+          [class.cpr-ov__paso--on]="altaPaso() === 1"
+          (click)="altaPaso.set(1)"
+        >
+          <span>1</span> Fiscal
+        </button>
+        <button
+          type="button"
+          class="cpr-ov__paso"
+          [class.cpr-ov__paso--on]="altaPaso() === 2"
+          (click)="altaPaso.set(2)"
+        >
+          <span>2</span> Condiciones
+        </button>
+        <button
+          type="button"
+          class="cpr-ov__paso"
+          [class.cpr-ov__paso--on]="altaPaso() === 3"
+          (click)="altaPaso.set(3)"
+        >
+          <span>3</span> Lista
+        </button>
+      </div>
+      <div class="cpr-ov__b">
+        @if (altaPaso() === 1) {
+          <div class="cpr-ov__grid cpr-ov__grid--3">
+            <label
+              >CUIT <input [ngModel]="altaCuit()" (ngModelChange)="altaCuit.set($event)"
+            /></label>
+            <label
+              >Razón social
+              <input [ngModel]="altaNombre()" (ngModelChange)="altaNombre.set($event)"
+            /></label>
+            <label>
+              Condición IVA
+              <select [ngModel]="altaIva()" (ngModelChange)="altaIva.set($event)">
+                <option value="responsable_inscripto">Responsable inscripto</option>
+                <option value="monotributo">Monotributo</option>
+                <option value="exento">Exento</option>
+              </select>
+            </label>
+            <label
+              >Rubro <input [ngModel]="altaRubro()" (ngModelChange)="altaRubro.set($event)"
+            /></label>
+            <label
+              >Teléfono <input [ngModel]="altaTel()" (ngModelChange)="altaTel.set($event)"
+            /></label>
+            <label
+              >Mail de pedidos
+              <input [ngModel]="altaEmail()" (ngModelChange)="altaEmail.set($event)"
+            /></label>
+            <label
+              >Contacto
+              <input [ngModel]="altaContacto()" (ngModelChange)="altaContacto.set($event)"
+            /></label>
+          </div>
+        }
+        @if (altaPaso() === 2) {
+          <div class="cpr-ov__grid cpr-ov__grid--3">
+            <label
+              >Condición de pago
+              <input [ngModel]="altaCond()" (ngModelChange)="altaCond.set($event)"
+            /></label>
+            <label
+              >Margen / descuento %
+              <input [ngModel]="altaDesc()" (ngModelChange)="altaDesc.set($event)"
+            /></label>
+          </div>
+          <p class="cpr__muted">
+            Plazo, flete y retenciones se anotan en observaciones. El API guarda IVA, CUIT y
+            contacto.
+          </p>
+        }
+        @if (altaPaso() === 3) {
+          <label class="cpr__btn cpr__btn--ia cpr__file">
+            {{ altaArchivo() ? altaArchivo()!.name : 'Elegir Excel / CSV de la lista' }}
+            <input type="file" accept=".xlsx,.xls,.csv" hidden (change)="onAltaArchivo($event)" />
+          </label>
+          <p class="cpr__muted">
+            Podés saltear este paso y cargar la lista después desde la ficha.
+          </p>
+        }
+      </div>
+      <div class="cpr-ov__f">
+        <button type="button" class="cpr__btn" (click)="altaPrev()" [disabled]="altaPaso() === 1">
+          Atrás
+        </button>
+        <div class="cpr__spacer"></div>
+        <button type="button" class="cpr__cta" [disabled]="guardando()" (click)="altaNext()">
+          {{ altaPaso() === 3 ? 'Crear proveedor' : 'Continuar' }}
+        </button>
+      </div>
+    </div>
   </div>
-</app-side-drawer>
+}
+
+@if (iaOpen()) {
+  <div class="cpr-ov" (click)="iaOpen.set(false)">
+    <div class="cpr-ov__panel" (click)="$event.stopPropagation()">
+      <div class="cpr-ov__h">
+        <div>
+          <h3>Cargar remito con IA</h3>
+          <p>Foto o PDF del remito. Las líneas se matchean contra el catálogo.</p>
+        </div>
+        <button type="button" class="cpr-ov__x" (click)="iaOpen.set(false)">×</button>
+      </div>
+      <div class="cpr-ov__b">
+        <div class="cpr-ov__grid">
+          <label>
+            Proveedor
+            <select [ngModel]="iaProvId()" (ngModelChange)="iaProvId.set($event)">
+              @for (p of proveedores(); track p.id) {
+                <option [value]="p.id">{{ p.nombre }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Depósito
+            <select [ngModel]="iaDepId()" (ngModelChange)="iaDepId.set($event)">
+              @for (d of depositos(); track d.id) {
+                <option [value]="d.id">{{ d.nombre }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        <label class="cpr__btn cpr__btn--ia cpr__file">
+          {{ iaArchivo() ? iaArchivo()!.name : 'Elegir foto o PDF' }}
+          <input type="file" accept="image/*,.pdf" hidden (change)="onIaArchivo($event)" />
+        </label>
+      </div>
+      <div class="cpr-ov__f">
+        <button type="button" class="cpr__btn" (click)="iaOpen.set(false)">Cancelar</button>
+        <button type="button" class="cpr__cta" [disabled]="iaParseando()" (click)="parsearIa()">
+          {{ iaParseando() ? 'Leyendo…' : 'Crear borrador' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
