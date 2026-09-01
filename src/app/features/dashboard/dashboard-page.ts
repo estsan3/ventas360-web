@@ -2,332 +2,428 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router } from '@angular/router';
 import { AuthStore } from '../../core/state/auth.store';
 import { IaStore } from '../../ia/state/ia.store';
-import { Icon } from '../../shared/ui/icon/icon';
+import { CajaService, SaldoCajaDto } from '../caja/data-access/caja.service';
+import { ComprasService } from '../compras/data-access/compras.service';
+import { Pedido } from '../ventas/data-access/pedido.model';
+import { VentasService } from '../ventas/data-access/ventas.service';
+import {
+  BadgeTone,
+  diasDesde,
+  formatearCorto,
+  formatearFechaCorta,
+  formatearMoney,
+  haceMinutos,
+  pctBar,
+} from './dashboard-vista';
 import { DashboardService, RemitoCompraDash } from './data-access/dashboard.service';
 import { DashboardStore } from './data-access/dashboard.store';
 import { KPIS_VACIOS } from './data-access/kpi.model';
 
-type SeccionDash = 'asistente' | 'remitos' | 'reposicion' | 'cxc';
-
-function formatearMoneda(valor: number, moneda = 'ARS'): string {
-  return new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: moneda || 'ARS',
-    maximumFractionDigits: 0,
-  })
-    .format(valor)
-    .replace(/\u00a0/g, ' ');
-}
-
-function formatearFechaCorta(iso: string): string {
-  const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
-  if (Number.isNaN(d.getTime())) {
-    return iso.slice(0, 10);
-  }
-  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
-}
-
-function formatearVencimiento(fecha: string | null, vencido: boolean): string {
-  if (!fecha) {
-    return 'Sin fecha de cargo';
-  }
-  const txt = new Date(`${fecha}T00:00:00`).toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-  });
-  return vencido ? `Venció el ${txt}` : `Desde el ${txt}`;
-}
+type FocoDash = 'cobranzas' | 'remitos' | 'stock' | 'pedido' | 'ventas';
 
 @Component({
   selector: 'app-dashboard-page',
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon],
-  host: { class: 'page-scroll' },
+  imports: [],
 })
 export class DashboardPage {
   private readonly store = inject(DashboardStore);
   private readonly dashboardApi = inject(DashboardService);
   private readonly iaStore = inject(IaStore);
+  private readonly cajaApi = inject(CajaService);
+  private readonly comprasApi = inject(ComprasService);
+  private readonly ventasApi = inject(VentasService);
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
 
+  protected readonly foco = signal<FocoDash>('cobranzas');
   protected readonly remitosCompra = signal<RemitoCompraDash[]>([]);
-  protected readonly remitosStatus = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
-  protected readonly seccionesAbiertas = signal<ReadonlySet<SeccionDash>>(new Set());
+  protected readonly caja = signal<SaldoCajaDto | null>(null);
+  protected readonly cxpTotal = signal(0);
+  protected readonly presupuestos = signal<Pedido[]>([]);
 
-  private iaPedida = false;
-  private remitosPedidos = false;
-
-  protected readonly accionesList = computed(() => {
-    const s = this.iaStore.acciones();
-    return s.status === 'ready' ? s.data.acciones : [];
-  });
-
-  protected readonly resumenNarrativa = computed(() => {
-    const s = this.iaStore.resumen();
-    return s.status === 'ready' ? (s.data.narrativa ?? null) : null;
-  });
-
-  protected readonly iaCargando = computed(() => {
-    const a = this.iaStore.acciones().status;
-    const r = this.iaStore.resumen().status;
-    return a === 'loading' || r === 'loading';
-  });
-
-  protected readonly cargando = computed(() => this.store.kpis().status === 'loading');
-
-  protected readonly kpisListos = computed(() => this.store.kpis().status === 'success');
-
+  protected readonly kpis = computed(() => this.store.kpis().data ?? KPIS_VACIOS);
   protected readonly error = computed(() =>
     this.store.kpis().status === 'error' ? this.store.kpis().error : null,
   );
 
-  protected readonly kpis = computed(() => this.store.kpis().data ?? KPIS_VACIOS);
-
-  protected readonly saludo = computed(() => {
-    const nombre = this.auth.user()?.nombre?.trim();
-    if (!nombre) {
-      return '';
+  protected readonly analisisTxt = computed(() => {
+    const s = this.iaStore.resumen();
+    if (s.status === 'ready') {
+      return haceMinutos(s.data.generadoEn);
     }
-    return nombre.split(/\s+/)[0] || '';
+    if (s.status === 'loading') {
+      return 'analizando el día…';
+    }
+    return 'datos del comercio';
   });
 
-  protected readonly fechaHoy = (() => {
-    const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const MESES = [
-      'enero',
-      'febrero',
-      'marzo',
-      'abril',
-      'mayo',
-      'junio',
-      'julio',
-      'agosto',
-      'septiembre',
-      'octubre',
-      'noviembre',
-      'diciembre',
-    ];
-    const hoy = new Date();
-    return `${DIAS[hoy.getDay()]} ${hoy.getDate()} de ${MESES[hoy.getMonth()]}`;
-  })();
-
-  protected readonly kpisVista = computed(() => {
-    const status = this.store.kpis().status;
-    if (status === 'idle') {
-      return {
-        ventasHoy: '—',
-        ventasHoyFoot: 'Expandí una sección para cargar',
-        ventasHoyOk: false,
-        pedidos: '—',
-        pedidosFoot: 'Sin cargar',
-        saldoCobrar: '—',
-        saldoFoot: 'Sin cargar',
-        saldoAlerta: false,
-        bajoStock: '—',
-        bajoStockFoot: 'Sin cargar',
-      };
+  protected readonly titular = computed(() => {
+    const s = this.iaStore.resumen();
+    if (s.status === 'ready' && s.data.narrativa?.trim()) {
+      const partes = s.data.narrativa.trim().split(/\n+/);
+      return partes[0];
     }
     const k = this.kpis();
-    const moneda = k.moneda || 'ARS';
-    const ventasHoy = formatearMoneda(k.montoVentasDia, moneda);
-    const comprobantesHoy = k.ventasDia === 1 ? '1 comprobante' : `${k.ventasDia} comprobantes`;
-    const pendientesRemitos =
-      k.remitosPorFacturar === 0
-        ? 'Sin remitos por facturar'
-        : k.remitosPorFacturar === 1
-          ? '1 remito por facturar'
-          : `${k.remitosPorFacturar} remitos por facturar`;
-    return {
-      ventasHoy,
-      ventasHoyFoot:
-        status === 'loading' ? 'Cargando…' : k.ventasDia === 0 ? 'Sin ventas hoy' : comprobantesHoy,
-      ventasHoyOk: k.ventasDia > 0,
-      pedidos: status === 'loading' ? '—' : String(k.pedidosPendientes),
-      pedidosFoot: status === 'loading' ? 'Cargando…' : pendientesRemitos,
-      saldoCobrar: status === 'loading' ? '—' : formatearMoneda(k.saldoCobrar, moneda),
-      saldoFoot:
-        status === 'loading'
-          ? 'Cargando…'
-          : k.saldoCobrar === 0
-            ? 'Sin deuda'
-            : k.saldoVencido > 0
-              ? `${formatearMoneda(k.saldoVencido, moneda)} vencido`
-              : 'Sin deuda vencida',
-      saldoAlerta: k.saldoVencido > 0,
-      bajoStock:
-        status === 'loading'
-          ? '—'
-          : k.articulosBajoStock === 1
-            ? '1 artículo'
-            : `${k.articulosBajoStock} artículos`,
-      bajoStockFoot:
-        status === 'loading'
-          ? 'Cargando…'
-          : k.productosActivos === 0
-            ? 'Todavía no hay artículos'
-            : k.articulosSinStock === 0
-              ? 'Ninguno sin stock'
-              : k.articulosSinStock === 1
-                ? '1 sin stock'
-                : `${k.articulosSinStock} sin stock`,
-    };
+    if (k.saldoVencido > 0) {
+      return `Lo más urgente son ${formatearMoney(k.saldoVencido)} de cobranzas vencidas. Después, ${k.remitosPorFacturar} remitos entregados sin facturar.`;
+    }
+    if (k.remitosPorFacturar > 0) {
+      return `Hay ${k.remitosPorFacturar} remitos entregados sin facturar. Conviene cerrarlos para que entre el IVA y la deuda del cliente.`;
+    }
+    if (k.articulosBajoStock > 0) {
+      return `Hay ${k.articulosBajoStock} artículos bajo el mínimo. El resto del día está al día.`;
+    }
+    return 'El día está al día: sin cobranzas vencidas ni alertas fuertes de stock.';
   });
 
-  protected readonly remitosVista = computed(() => {
-    const moneda = this.kpis().moneda || 'ARS';
-    return this.remitosCompra()
+  protected readonly subtitular = computed(() => {
+    const s = this.iaStore.resumen();
+    if (s.status === 'ready' && s.data.narrativa?.trim()) {
+      const partes = s.data.narrativa.trim().split(/\n+/);
+      if (partes[1]) {
+        return partes[1];
+      }
+    }
+    const k = this.kpis();
+    const bits: string[] = [];
+    if (k.ventasDia === 0) {
+      bits.push('Todavía no hay ventas cargadas hoy');
+    } else {
+      bits.push(`${k.ventasDia === 1 ? '1 comprobante' : k.ventasDia + ' comprobantes'} hoy`);
+    }
+    if (k.pedidosPendientes) {
+      bits.push(
+        `${k.pedidosPendientes} pedido${k.pedidosPendientes === 1 ? '' : 's'} por confirmar`,
+      );
+    }
+    if (k.articulosSinStock) {
+      bits.push(`${k.articulosSinStock} artículo${k.articulosSinStock === 1 ? '' : 's'} en cero`);
+    }
+    return bits.join('. ') + (bits.length ? '.' : '');
+  });
+
+  protected readonly enJuegoFmt = computed(() => formatearCorto(this.kpis().saldoVencido));
+  protected readonly enJuegoHint = computed(() =>
+    this.kpis().saldoVencido > 0 ? 'cobranzas vencidas' : 'sin deuda vencida',
+  );
+
+  protected readonly acciones = computed(() => {
+    const k = this.kpis();
+    const foco = this.foco();
+    const vencidas = this.ccRows().filter((r) => r.vencidoFlag);
+    const moraMax = vencidas.reduce((n, r) => Math.max(n, r.moraDias), 0);
+    return [
+      {
+        id: 'cobranzas' as FocoDash,
+        prioridad: 'Primero',
+        tone: 'danger' as BadgeTone,
+        value: formatearCorto(k.saldoVencido),
+        titulo: 'Cobranzas vencidas',
+        detalle:
+          k.saldoVencido > 0
+            ? `${vencidas.length} cliente${vencidas.length === 1 ? '' : 's'} en cartera${moraMax ? `, el más atrasado con ${moraMax} días` : ''}`
+            : 'Nadie con deuda vencida',
+        accion: 'Ver quién debe →',
+        ruta: '/cuenta-corriente',
+        on: foco === 'cobranzas',
+      },
+      {
+        id: 'remitos' as FocoDash,
+        prioridad: 'Hoy',
+        tone: 'warn' as BadgeTone,
+        value: String(k.remitosPorFacturar),
+        titulo: 'Remitos esperan facturación',
+        detalle:
+          k.remitosPorFacturar > 0
+            ? 'Entregados sin factura: el IVA y la cuenta del cliente quedan abiertos'
+            : 'No hay remitos de venta pendientes de facturar',
+        accion: 'Facturar →',
+        ruta: '/comprobantes/remitos',
+        on: foco === 'remitos',
+      },
+      {
+        id: 'stock' as FocoDash,
+        prioridad: 'Hoy',
+        tone: 'warn' as BadgeTone,
+        value: String(k.articulosBajoStock),
+        titulo: 'Artículos bajo mínimo',
+        detalle:
+          k.articulosSinStock > 0
+            ? `${k.articulosSinStock} en cero y ${k.articulosBajoStock} bajo el umbral`
+            : k.articulosBajoStock
+              ? 'Conviene armar la reposición'
+              : 'Ninguno bajo el mínimo',
+        accion: 'Armar reposición →',
+        ruta: '/compras',
+        on: foco === 'stock',
+      },
+      {
+        id: 'pedido' as FocoDash,
+        prioridad: 'Rápido',
+        tone: 'accent' as BadgeTone,
+        value: String(k.pedidosPendientes),
+        titulo: 'Pedido por confirmar',
+        detalle:
+          k.pedidosPendientes > 0
+            ? 'Borradores de venta esperando confirmación'
+            : 'No hay pedidos en borrador',
+        accion: 'Confirmar →',
+        ruta: '/comprobantes/pedidos',
+        on: foco === 'pedido',
+      },
+      {
+        id: 'ventas' as FocoDash,
+        prioridad: 'Contexto',
+        tone: (k.montoVentasDia ? 'ink' : 'muted') as BadgeTone,
+        value: formatearMoney(k.montoVentasDia),
+        titulo: 'Facturado hoy',
+        detalle:
+          k.ventasDia === 0
+            ? 'Sin comprobantes emitidos todavía'
+            : k.ventasDia === 1
+              ? '1 comprobante'
+              : `${k.ventasDia} comprobantes`,
+        accion: 'Abrir mostrador →',
+        ruta: '/ventas',
+        on: foco === 'ventas',
+      },
+    ];
+  });
+
+  protected readonly ventasHoyFmt = computed(() => formatearMoney(this.kpis().montoVentasDia));
+  protected readonly ventasHoyHint = computed(() => {
+    const n = this.kpis().ventasDia;
+    if (n === 0) {
+      return 'sin comprobantes emitidos todavía';
+    }
+    return n === 1 ? '1 comprobante' : `${n} comprobantes`;
+  });
+  protected readonly ventasHoyTone = computed((): BadgeTone =>
+    this.kpis().montoVentasDia ? 'ink' : 'warn',
+  );
+
+  protected readonly semana = computed(() => {
+    const serie = this.kpis().serieSemana;
+    const max = Math.max(1, ...serie.map((d) => d.monto));
+    return serie.map((d) => ({
+      dia: d.esHoy ? 'hoy' : d.label.toLowerCase().slice(0, 3),
+      monto: d.monto ? formatearCorto(d.monto) : '—',
+      h: pctBar(d.monto, max),
+      hoy: d.esHoy,
+      vacio: d.monto <= 0,
+    }));
+  });
+
+  protected readonly ventasKpis = computed(() => {
+    const k = this.kpis();
+    const prev = k.serieSemana.filter((d) => !d.esHoy);
+    const avg = prev.length ? prev.reduce((n, d) => n + d.monto, 0) / prev.length : 0;
+    const pres = this.presupuestos().filter(
+      (p) => p.estado === 'vigente' || p.estado === 'borrador' || p.estado === 'aceptado',
+    );
+    const presMonto = pres.reduce((n, p) => n + p.total, 0);
+    const caja = this.caja();
+    const cajaTxt =
+      caja?.estado === 'abierta' ? '1 turno' : caja?.estado === 'cerrada' ? 'cerrada' : 'sin abrir';
+    const cajaHint =
+      caja?.estado === 'abierta' && caja.abierta_en
+        ? `desde ${new Date(caja.abierta_en).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`
+        : caja?.estado === 'cerrada'
+          ? 'cerrá y abrí para el mostrador'
+          : 'abrí caja para vender';
+    return [
+      {
+        label: 'Promedio diario',
+        value: avg ? formatearCorto(avg) : '—',
+        hint: 'días previos de la semana',
+        tone: 'ink' as BadgeTone,
+      },
+      {
+        label: 'Mes en curso',
+        value: formatearCorto(k.montoVentasMes),
+        hint: k.ventasMes ? `${k.ventasMes} comprobantes` : 'sin movimiento',
+        tone: (k.montoVentasMes ? 'ok' : 'muted') as BadgeTone,
+      },
+      {
+        label: 'Presupuestos abiertos',
+        value: pres.length ? `${pres.length} · ${formatearCorto(presMonto)}` : '0',
+        hint: pres.length ? 'vigentes o en borrador' : 'ninguno abierto',
+        tone: 'accent' as BadgeTone,
+      },
+      {
+        label: 'Caja abierta',
+        value: cajaTxt,
+        hint: cajaHint,
+        tone: 'ink' as BadgeTone,
+      },
+    ];
+  });
+
+  protected readonly repoSub = computed(() => {
+    const k = this.kpis();
+    return `${k.articulosBajoStock} bajo mínimo · ${k.articulosSinStock} en cero`;
+  });
+  protected readonly repoRows = computed(() =>
+    this.kpis().reposicion.map((r) => {
+      const cero = r.stock <= 0;
+      const urgente = r.stock > 0 && r.stock <= 2;
+      return {
+        nom: r.nombre,
+        sub: r.detalle || '—',
+        stock: `${r.stock} u`,
+        stockTone: (cero ? 'danger' : urgente ? 'warn' : 'ink') as BadgeTone,
+        min: '—',
+        sug: '—',
+        dias: cero ? 'sin stock' : '—',
+        diasTone: (cero ? 'danger' : 'muted') as BadgeTone,
+        estado: cero ? 'Quiebre' : urgente ? 'Urgente' : 'Reponer',
+        estTone: (cero ? 'danger' : urgente ? 'warn' : 'muted') as BadgeTone,
+        alerta: cero,
+      };
+    }),
+  );
+
+  protected readonly remKpis = computed(() => {
+    const items = this.remitosCompra();
+    const validar = items.filter((r) => r.pendienteStock);
+    const valorizado = validar.reduce((n, r) => n + r.total, 0);
+    const ingresados = items.filter((r) => !r.pendienteStock);
+    return [
+      {
+        value: String(validar.length),
+        label: 'por validar en depósito',
+        tone: (validar.length ? 'warn' : 'ok') as BadgeTone,
+      },
+      {
+        value: valorizado ? formatearCorto(valorizado) : '$ 0',
+        label: 'valorizado pendiente',
+        tone: (valorizado ? 'danger' : 'muted') as BadgeTone,
+      },
+      {
+        value: String(ingresados.length),
+        label: 'ya ingresados',
+        tone: 'ink' as BadgeTone,
+      },
+    ];
+  });
+
+  protected readonly remRows = computed(() =>
+    this.remitosCompra()
       .slice(0, 8)
-      .map((r) => ({
-        ...r,
-        fechaFmt: formatearFechaCorta(r.fecha),
-        totalFmt: formatearMoneda(r.total, moneda),
-        estadoLabel: r.pendienteStock
-          ? 'Pendiente de stock'
-          : r.estado === 'confirmado'
-            ? 'Stock actualizado'
-            : r.estado === 'facturado'
-              ? 'Facturado'
-              : r.estado,
-        badge: r.pendienteStock ? ('warning' as const) : ('success' as const),
-      }));
+      .map((r) => {
+        const dias = diasDesde(r.fecha);
+        return {
+          id: r.id,
+          num: r.comprobante,
+          prov: r.proveedor,
+          sub:
+            formatearFechaCorta(r.fecha) +
+            ' · ' +
+            (dias === 0 ? 'llegó hoy' : dias === 1 ? 'hace 1 día' : `hace ${dias} días`),
+          lineas: String(r.renglones),
+          total: formatearMoney(r.total),
+          estado: r.pendienteStock
+            ? 'Pendiente de validar'
+            : r.estado === 'confirmado'
+              ? 'Ingresado, sin factura'
+              : r.estado === 'facturado'
+                ? 'Facturado'
+                : r.estado,
+          estTone: (r.pendienteStock
+            ? 'warn'
+            : r.estado === 'confirmado'
+              ? 'accent'
+              : 'ok') as BadgeTone,
+          alerta: r.pendienteStock && dias >= 3,
+        };
+      }),
+  );
+
+  protected readonly ccSub = 'cobrar y pagar';
+  protected readonly vencidoFmt = computed(() => formatearMoney(this.kpis().saldoVencido));
+  protected readonly ccTotalFmt = computed(() => formatearMoney(this.kpis().saldoCobrar));
+  protected readonly pagarFmt = computed(() => formatearMoney(this.cxpTotal()));
+
+  protected readonly tramos = computed(() => {
+    const alDia = Math.max(0, this.kpis().saldoCobrar - this.kpis().saldoVencido);
+    const venc = this.kpis().saldoVencido;
+    const tot = alDia + venc || 1;
+    return [
+      { w: `${Math.round((alDia / tot) * 100)}%`, tone: 'ok' as const, on: alDia > 0 },
+      { w: `${Math.round((venc / tot) * 100)}%`, tone: 'danger' as const, on: venc > 0 },
+    ].filter((t) => t.on);
   });
 
-  protected readonly remitosPendientesCount = computed(
-    () => this.remitosCompra().filter((r) => r.pendienteStock).length,
-  );
-
-  protected readonly stockUrgente = computed(() =>
-    this.kpis().reposicion.map((item) => ({
-      ...item,
-      stockFmt: `${item.stock} un.`,
-      tono: item.stock <= 0 ? ('danger' as const) : ('warning' as const),
-    })),
-  );
-
-  /** CxC de mayor a menor importe */
-  protected readonly cuentasCorrientes = computed(() =>
+  protected readonly ccRows = computed(() =>
     [...this.kpis().vencimientos]
       .sort((a, b) => b.monto - a.monto)
-      .map((v) => ({
-        ...v,
-        fechaFmt: formatearVencimiento(v.fecha, v.vencido),
-        montoFmt: formatearMoneda(v.monto, this.kpis().moneda),
-      })),
+      .map((v) => {
+        const mora = diasDesde(v.fecha);
+        return {
+          nom: v.cliente,
+          sub: v.vencido
+            ? mora > 60
+              ? 'para gestión de cobro'
+              : 'llamar hoy'
+            : 'al día en el corte de 30 días',
+          mora: mora ? `${mora} d` : '—',
+          moraDias: mora,
+          moraTone: (mora > 60 ? 'danger' : mora > 30 ? 'warn' : 'muted') as BadgeTone,
+          vencido: v.vencido ? formatearMoney(v.monto) : '—',
+          vencidoFlag: v.vencido,
+          saldo: formatearMoney(v.monto),
+          accion: 'Ver cuenta',
+          alerta: mora > 60,
+        };
+      }),
   );
 
-  protected abierta(id: SeccionDash): boolean {
-    return this.seccionesAbiertas().has(id);
-  }
-
-  protected toggleSeccion(id: SeccionDash): void {
-    const actual = this.seccionesAbiertas();
-    const siguiente = new Set(actual);
-    if (siguiente.has(id)) {
-      siguiente.delete(id);
-      this.seccionesAbiertas.set(siguiente);
-      return;
-    }
-    siguiente.add(id);
-    this.seccionesAbiertas.set(siguiente);
-    this.cargarSeccion(id);
-  }
-
-  private cargarSeccion(id: SeccionDash): void {
-    if (id === 'asistente') {
-      this.asegurarIa();
-      return;
-    }
-    if (id === 'remitos') {
-      this.asegurarRemitos();
-      return;
-    }
-    // Reposición y CxC salen de /reporteria/kpis
-    this.asegurarKpis();
-  }
-
-  private asegurarKpis(): void {
-    const status = this.store.kpis().status;
-    if (status === 'success' || status === 'loading') {
-      return;
-    }
+  constructor() {
     this.store.cargar();
-  }
-
-  /** Cabecera de KPIs: se pide al tocar las cards o al abrir reposición/CxC. */
-  protected cargarKpisCabecera(): void {
-    this.asegurarKpis();
-  }
-
-  private asegurarIa(): void {
-    if (this.iaPedida) {
-      return;
-    }
-    this.iaPedida = true;
     this.iaStore.cargarDashboard();
-  }
-
-  private asegurarRemitos(): void {
-    if (this.remitosPedidos) {
-      return;
-    }
-    this.remitosPedidos = true;
-    this.remitosStatus.set('loading');
     this.dashboardApi.listarRemitosCompra().subscribe({
-      next: (items) => {
-        this.remitosCompra.set(items);
-        this.remitosStatus.set('ready');
-      },
-      error: () => {
-        this.remitosCompra.set([]);
-        this.remitosStatus.set('error');
-      },
+      next: (items) => this.remitosCompra.set(items),
+      error: () => this.remitosCompra.set([]),
+    });
+    this.cajaApi.saldo().subscribe({
+      next: (s) => this.caja.set(s),
+      error: () => this.caja.set(null),
+    });
+    this.comprasApi.listarSaldosCxp().subscribe({
+      next: (map) => this.cxpTotal.set(Object.values(map).reduce((n, s) => n + Math.max(0, s), 0)),
+      error: () => this.cxpTotal.set(0),
+    });
+    this.ventasApi.listar('presupuesto').subscribe({
+      next: (items) => this.presupuestos.set(items),
+      error: () => this.presupuestos.set([]),
     });
   }
 
-  protected irAFacturacion(): void {
-    this.router.navigate(['/ventas']);
+  protected pickAccion(id: FocoDash, ruta: string): void {
+    this.foco.set(id);
+    void this.router.navigateByUrl(ruta);
   }
 
-  protected irARecepcion(): void {
-    if (this.auth.puedeRuta('inventario')) {
-      void this.router.navigate(['/inventario'], { queryParams: { tab: 'recepcion' } });
-      return;
-    }
-    void this.router.navigate(['/compras']);
+  protected irMostrador(): void {
+    void this.router.navigate(['/ventas']);
   }
 
-  protected irAStock(): void {
-    if (this.auth.puedeRuta('inventario')) {
-      void this.router.navigate(['/inventario'], { queryParams: { tab: 'alertas' } });
-      return;
-    }
-    void this.router.navigate(['/productos']);
+  protected irCompras(tab?: string): void {
+    void this.router.navigate(['/compras'], tab ? { queryParams: { tab } } : {});
   }
 
-  protected irACtacte(): void {
+  protected irCtaCte(): void {
     void this.router.navigate(['/cuenta-corriente']);
   }
 
-  protected irAccion(ruta: string): void {
-    const [path, query] = ruta.split('?');
-    if (query) {
-      const params = Object.fromEntries(new URLSearchParams(query).entries());
-      void this.router.navigate([path], { queryParams: params });
+  protected irStock(): void {
+    if (this.auth.puedeRuta('inventario')) {
+      void this.router.navigate(['/inventario']);
       return;
     }
-    void this.router.navigateByUrl(ruta.startsWith('/') ? ruta : `/${ruta}`);
-  }
-
-  protected prioridadLabel(prioridad: string): string {
-    if (prioridad === 'alta') {
-      return 'Alta';
-    }
-    if (prioridad === 'media') {
-      return 'Media';
-    }
-    return 'Baja';
+    void this.router.navigate(['/productos']);
   }
 }

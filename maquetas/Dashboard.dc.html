@@ -1,0 +1,1286 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <meta name="design_doc_mode" content="canvas" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: oklch(0.955 0.008 80);
+            font-family: 'Instrument Sans', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+          }
+          a {
+            color: oklch(0.52 0.15 255);
+            text-decoration: none;
+          }
+          a:hover {
+            color: oklch(0.42 0.15 255);
+            text-decoration: underline;
+          }
+          input,
+          select,
+          button {
+            font-family: inherit;
+          }
+          input:focus,
+          select:focus {
+            outline: 2px solid oklch(0.52 0.15 255);
+            outline-offset: -1px;
+          }
+        </style>
+      </helmet>
+
+      <section style="display: flex; flex-direction: column; gap: 28px; padding: 56px 56px 90px">
+        <div style="display: flex; flex-direction: column; gap: 6px; max-width: 880px">
+          <div
+            style="
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              color: oklch(0.55 0.01 60);
+            "
+          >
+            Turno 9 · pantalla inicial
+          </div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 30px;
+              font-weight: 600;
+              letter-spacing: -0.02em;
+              color: oklch(0.25 0.01 60);
+            "
+          >
+            Dashboard
+          </h1>
+          <p
+            style="
+              margin: 4px 0 0;
+              font-size: 15px;
+              line-height: 1.55;
+              color: oklch(0.48 0.01 60);
+              text-wrap: pretty;
+            "
+          >
+            La asistencia del día deja de ser un párrafo corrido: la IA escribe una línea de
+            contexto y abajo ordena los mismos datos por plata en riesgo, cada uno con su acción.
+            Después, tres bloques operativos: remitos de compra pendientes de ingresar a stock,
+            reposiciones urgentes y cuentas corrientes.
+          </p>
+        </div>
+
+        <div id="9a" style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <span
+              style="
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                font-weight: 600;
+                color: oklch(0.99 0 0);
+                background: oklch(0.3 0.01 60);
+                padding: 4px 9px;
+                border-radius: 5px;
+              "
+              >9a</span
+            >
+            <span style="font-size: 15px; font-weight: 600; color: oklch(0.3 0.01 60)"
+              >Dashboard — asistencia del día y pendientes</span
+            >
+          </div>
+
+          <div
+            style="
+              width: 1600px;
+              height: 1000px;
+              background: oklch(0.985 0.006 80);
+              border: 1px solid oklch(0.885 0.01 80);
+              border-radius: 12px;
+              overflow: hidden;
+              display: flex;
+              flex-direction: column;
+              box-shadow:
+                0 1px 2px oklch(0.3 0.02 60 / 0.05),
+                0 12px 32px oklch(0.3 0.02 60 / 0.07);
+            "
+          >
+            <div
+              style="
+                height: 54px;
+                flex: none;
+                background: oklch(0.995 0.004 80);
+                border-bottom: 1px solid oklch(0.9 0.01 80);
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                padding: 0 18px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 9px">
+                <div
+                  style="
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 6px;
+                    background: oklch(0.52 0.15 255);
+                  "
+                ></div>
+                <span style="font-size: 14px; font-weight: 600; color: oklch(0.28 0.01 60)"
+                  >Inicio</span
+                >
+              </div>
+              <div style="display: flex; gap: 2px">
+                <span
+                  style="
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    color: oklch(0.36 0.13 255);
+                    background: oklch(0.955 0.028 255);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Inicio</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Mostrador</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Ventas</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Compras</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Stock</span
+                >
+                <span
+                  style="
+                    font-size: 13.5px;
+                    color: oklch(0.5 0.01 60);
+                    padding: 6px 11px;
+                    border-radius: 7px;
+                  "
+                  >Tesorería</span
+                >
+              </div>
+              <div style="flex: 1"></div>
+              <select
+                value="{{ sucursal }}"
+                onChange="{{ setSucursal }}"
+                style="
+                  height: 32px;
+                  border-radius: 8px;
+                  border: 1px solid oklch(0.88 0.01 80);
+                  font-size: 12.5px;
+                  padding: 0 8px;
+                  color: oklch(0.3 0.01 60);
+                  background: oklch(1 0 0);
+                "
+              >
+                <sc-for list="{{ sucursales }}" as="s" hint-placeholder-count="3"
+                  ><option value="{{ s }}">{{ s }}</option></sc-for
+                >
+              </select>
+              <div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: oklch(0.55 0.01 60);
+                "
+              >
+                {{ fechaTxt }}
+              </div>
+              <div
+                style="
+                  width: 28px;
+                  height: 28px;
+                  border-radius: 50%;
+                  background: oklch(0.88 0.03 255);
+                  color: oklch(0.36 0.13 255);
+                  font-size: 11.5px;
+                  font-weight: 700;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                EA
+              </div>
+            </div>
+
+            <div
+              style="
+                flex: 1;
+                min-height: 0;
+                padding: 16px 22px 20px;
+                display: grid;
+                grid-template-rows: auto 1fr 1fr;
+                gap: 14px;
+              "
+            >
+              <!-- ===== ASISTENCIA DEL DÍA ===== -->
+              <div
+                style="
+                  flex: none;
+                  border: 1px solid oklch(0.87 0.03 300);
+                  border-radius: 12px;
+                  background: oklch(0.995 0.008 300);
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="padding: 15px 18px 14px; display: flex; align-items: flex-start; gap: 16px"
+                >
+                  <span
+                    style="
+                      flex: none;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: oklch(0.45 0.16 300);
+                      background: oklch(0.94 0.045 300);
+                      padding: 5px 9px;
+                      border-radius: 6px;
+                    "
+                    >IA</span
+                  >
+                  <div style="flex: 1; min-width: 0">
+                    <div style="display: flex; align-items: baseline; gap: 10px">
+                      <span style="font-size: 15px; font-weight: 600; color: oklch(0.24 0.01 60)"
+                        >Asistencia del día</span
+                      >
+                      <span
+                        style="
+                          font-family: 'IBM Plex Mono', monospace;
+                          font-size: 11.5px;
+                          color: oklch(0.58 0.01 60);
+                        "
+                        >{{ analisisTxt }}</span
+                      >
+                    </div>
+                    <p
+                      style="
+                        margin: 7px 0 0;
+                        font-size: 15.5px;
+                        line-height: 1.5;
+                        color: oklch(0.28 0.01 60);
+                        text-wrap: pretty;
+                        max-width: 1180px;
+                      "
+                    >
+                      {{ titular }}
+                    </p>
+                    <p
+                      style="
+                        margin: 6px 0 0;
+                        font-size: 13.5px;
+                        line-height: 1.5;
+                        color: oklch(0.47 0.01 60);
+                        text-wrap: pretty;
+                        max-width: 1180px;
+                      "
+                    >
+                      {{ subtitular }}
+                    </p>
+                  </div>
+                  <div
+                    style="
+                      flex: none;
+                      display: flex;
+                      flex-direction: column;
+                      align-items: flex-end;
+                      gap: 6px;
+                    "
+                  >
+                    <div
+                      style="
+                        font-size: 10.5px;
+                        letter-spacing: 0.04em;
+                        text-transform: uppercase;
+                        color: oklch(0.55 0.01 60);
+                      "
+                    >
+                      Plata en juego hoy
+                    </div>
+                    <div
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 27px;
+                        font-weight: 600;
+                        letter-spacing: -0.02em;
+                        color: oklch(0.5 0.17 25);
+                      "
+                    >
+                      {{ enJuegoFmt }}
+                    </div>
+                    <div style="font-size: 11.5px; color: oklch(0.55 0.01 60)">
+                      {{ enJuegoHint }}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    border-top: 1px solid oklch(0.91 0.02 300);
+                    background: oklch(1 0 0);
+                    display: grid;
+                    grid-template-columns: repeat(5, 1fr);
+                  "
+                >
+                  <sc-for list="{{ acciones }}" as="a" hint-placeholder-count="5">
+                    <div
+                      onClick="{{ a.pick }}"
+                      style="border-right: 1px solid oklch(0.94 0.008 80); padding: 13px 15px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 7px; background: {{
+                        a.bg
+                      }};"
+                      style-hover="background: oklch(0.972 0.008 80);"
+                    >
+                      <div style="display: flex; align-items: center; gap: 7px">
+                        <div
+                          style="width: 7px; height: 7px; border-radius: 50%; flex: none; background: {{
+                            a.dot
+                          }};"
+                        ></div>
+                        <span
+                          style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: {{
+                            a.dot
+                          }};"
+                          >{{ a.prioridad }}</span
+                        >
+                      </div>
+                      <div
+                        style="font-family: 'IBM Plex Mono', monospace; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; color: {{
+                          a.valueColor
+                        }};"
+                      >
+                        {{ a.value }}
+                      </div>
+                      <div
+                        style="
+                          font-size: 13px;
+                          font-weight: 500;
+                          color: oklch(0.26 0.01 60);
+                          line-height: 1.35;
+                        "
+                      >
+                        {{ a.titulo }}
+                      </div>
+                      <div style="font-size: 11.5px; line-height: 1.4; color: oklch(0.55 0.01 60)">
+                        {{ a.detalle }}
+                      </div>
+                      <div
+                        style="
+                          margin-top: auto;
+                          padding-top: 4px;
+                          font-size: 12.5px;
+                          font-weight: 500;
+                          color: oklch(0.52 0.15 255);
+                        "
+                      >
+                        {{ a.accion }}
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <!-- ===== VENTAS DEL DÍA + REPOSICIONES ===== -->
+              <div style="min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
+                <div
+                  style="
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 12px;
+                    background: oklch(1 0 0);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 12px 15px;
+                      background: oklch(0.975 0.005 80);
+                      border-bottom: 1px solid oklch(0.92 0.01 80);
+                      display: flex;
+                      align-items: baseline;
+                      gap: 10px;
+                    "
+                  >
+                    <span style="font-size: 13.5px; font-weight: 600; color: oklch(0.24 0.01 60)"
+                      >Ventas del día</span
+                    >
+                    <span style="font-size: 11.5px; color: oklch(0.57 0.01 60)">{{
+                      ventasSub
+                    }}</span>
+                    <div style="flex: 1"></div>
+                    <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Abrir Mostrador</span
+                    >
+                  </div>
+
+                  <div
+                    style="padding: 14px 15px 4px; display: flex; align-items: flex-end; gap: 20px"
+                  >
+                    <div style="flex: none">
+                      <div
+                        style="
+                          font-size: 10.5px;
+                          letter-spacing: 0.04em;
+                          text-transform: uppercase;
+                          color: oklch(0.58 0.01 60);
+                        "
+                      >
+                        Facturado hoy
+                      </div>
+                      <div
+                        style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; color: {{
+                          ventasHoyColor
+                        }};"
+                      >
+                        {{ ventasHoyFmt }}
+                      </div>
+                      <div style="margin-top: 2px; font-size: 12px; color: {{ ventasHoyColor }};">
+                        {{ ventasHoyHint }}
+                      </div>
+                    </div>
+                    <div
+                      style="flex: 1; display: flex; align-items: flex-end; gap: 5px; height: 92px"
+                    >
+                      <sc-for list="{{ semana }}" as="d" hint-placeholder-count="7">
+                        <div
+                          style="
+                            flex: 1;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 5px;
+                          "
+                        >
+                          <span
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: {{
+                              d.labelColor
+                            }};"
+                            >{{ d.monto }}</span
+                          >
+                          <div
+                            style="width: 100%; height: {{
+                              d.h
+                            }}; border-radius: 4px 4px 0 0; background: {{ d.color }};"
+                          ></div>
+                          <span style="font-size: 10.5px; color: {{ d.labelColor }};">{{
+                            d.dia
+                          }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      margin-top: 10px;
+                      border-top: 1px solid oklch(0.94 0.008 80);
+                      display: grid;
+                      grid-template-columns: repeat(4, 1fr);
+                    "
+                  >
+                    <sc-for list="{{ ventasKpis }}" as="k" hint-placeholder-count="4">
+                      <div
+                        style="
+                          padding: 11px 15px 13px;
+                          border-right: 1px solid oklch(0.955 0.006 80);
+                        "
+                      >
+                        <div
+                          style="
+                            font-size: 10.5px;
+                            letter-spacing: 0.04em;
+                            text-transform: uppercase;
+                            color: oklch(0.58 0.01 60);
+                          "
+                        >
+                          {{ k.label }}
+                        </div>
+                        <div
+                          style="margin-top: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; color: {{
+                            k.color
+                          }};"
+                        >
+                          {{ k.value }}
+                        </div>
+                        <div style="margin-top: 1px; font-size: 11px; color: oklch(0.6 0.01 60)">
+                          {{ k.hint }}
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 12px;
+                    background: oklch(1 0 0);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 12px 15px;
+                      background: oklch(0.975 0.005 80);
+                      border-bottom: 1px solid oklch(0.92 0.01 80);
+                      display: flex;
+                      align-items: baseline;
+                      gap: 10px;
+                    "
+                  >
+                    <span style="font-size: 13.5px; font-weight: 600; color: oklch(0.24 0.01 60)"
+                      >Reposiciones urgentes</span
+                    >
+                    <span style="font-size: 11.5px; color: oklch(0.57 0.01 60)">{{ repoSub }}</span>
+                    <div style="flex: 1"></div>
+                    <span style="font-size: 11.5px; color: oklch(0.55 0.01 60)">sugerido</span>
+                    <span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: oklch(0.23 0.01 60);
+                      "
+                      >{{ repoTotal }}</span
+                    >
+                    <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Armar orden →</span
+                    >
+                  </div>
+                  <div
+                    style="
+                      flex: none;
+                      display: grid;
+                      grid-template-columns: 1fr 92px 78px 92px 96px 138px;
+                      padding: 9px 15px;
+                      border-bottom: 1px solid oklch(0.93 0.01 80);
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 10.5px;
+                      letter-spacing: 0.05em;
+                      text-transform: uppercase;
+                      color: oklch(0.5 0.01 60);
+                    "
+                  >
+                    <div>Artículo</div>
+                    <div style="text-align: right">Stock</div>
+                    <div style="text-align: right">Mín.</div>
+                    <div style="text-align: right">Sugerido</div>
+                    <div style="text-align: right">Días</div>
+                    <div style="text-align: center">Situación</div>
+                  </div>
+                  <div style="flex: 1; min-height: 0; overflow: auto">
+                    <sc-for list="{{ repoRows }}" as="r" hint-placeholder-count="7">
+                      <div
+                        style="display: grid; grid-template-columns: 1fr 92px 78px 92px 96px 138px; align-items: center; padding: 9px 15px; border-bottom: 1px solid oklch(0.955 0.006 80); background: {{
+                          r.bg
+                        }};"
+                        style-hover="background: oklch(0.968 0.008 80);"
+                      >
+                        <div style="min-width: 0; padding-right: 10px">
+                          <div
+                            style="
+                              font-size: 13px;
+                              color: oklch(0.26 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.nom }}
+                          </div>
+                          <div
+                            style="
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 10.5px;
+                              color: oklch(0.58 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.sub }}
+                          </div>
+                        </div>
+                        <div
+                          style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: {{
+                            r.stockColor
+                          }};"
+                        >
+                          {{ r.stock }}
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            color: oklch(0.5 0.01 60);
+                          "
+                        >
+                          {{ r.min }}
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            font-weight: 600;
+                            color: oklch(0.28 0.01 60);
+                          "
+                        >
+                          {{ r.sug }}
+                        </div>
+                        <div
+                          style="text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: {{
+                            r.diasColor
+                          }};"
+                        >
+                          {{ r.dias }}
+                        </div>
+                        <div style="display: flex; justify-content: center">
+                          <span
+                            style="font-size: 10.5px; font-weight: 600; white-space: nowrap; color: {{
+                              r.estColor
+                            }}; background: {{ r.estBg }}; padding: 3px 7px; border-radius: 5px;"
+                            >{{ r.estado }}</span
+                          >
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== REMITOS DE COMPRA + CUENTAS CORRIENTES ===== -->
+              <div style="min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
+                <div
+                  style="
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 12px;
+                    background: oklch(1 0 0);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 12px 15px;
+                      background: oklch(0.975 0.005 80);
+                      border-bottom: 1px solid oklch(0.92 0.01 80);
+                      display: flex;
+                      align-items: baseline;
+                      gap: 10px;
+                    "
+                  >
+                    <span style="font-size: 13.5px; font-weight: 600; color: oklch(0.24 0.01 60)"
+                      >Remitos de compra</span
+                    >
+                    <span style="font-size: 11.5px; color: oklch(0.57 0.01 60)"
+                      >recepción y stock</span
+                    >
+                    <div style="flex: 1"></div>
+                    <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Ingresar a stock →</span
+                    >
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      padding: 10px 15px;
+                      border-bottom: 1px solid oklch(0.94 0.008 80);
+                      display: flex;
+                      align-items: baseline;
+                      gap: 20px;
+                    "
+                  >
+                    <sc-for list="{{ remKpis }}" as="k" hint-placeholder-count="3">
+                      <div style="display: flex; align-items: baseline; gap: 7px; min-width: 0">
+                        <span
+                          style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600; color: {{
+                            k.color
+                          }};"
+                          >{{ k.value }}</span
+                        >
+                        <span
+                          style="font-size: 11.5px; color: oklch(0.55 0.01 60); white-space: nowrap"
+                          >{{ k.label }}</span
+                        >
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      display: grid;
+                      grid-template-columns: 132px 1fr 88px 118px 148px;
+                      padding: 9px 15px;
+                      border-bottom: 1px solid oklch(0.93 0.01 80);
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 10.5px;
+                      letter-spacing: 0.05em;
+                      text-transform: uppercase;
+                      color: oklch(0.5 0.01 60);
+                    "
+                  >
+                    <div>Remito</div>
+                    <div>Proveedor</div>
+                    <div style="text-align: right">Líneas</div>
+                    <div style="text-align: right">Valorizado</div>
+                    <div style="text-align: center">Situación</div>
+                  </div>
+                  <div style="flex: 1; min-height: 0; overflow: auto">
+                    <sc-for list="{{ remRows }}" as="r" hint-placeholder-count="6">
+                      <div
+                        style="display: grid; grid-template-columns: 132px 1fr 88px 118px 148px; align-items: center; padding: 9px 15px; border-bottom: 1px solid oklch(0.955 0.006 80); background: {{
+                          r.bg
+                        }};"
+                        style-hover="background: oklch(0.968 0.008 80);"
+                      >
+                        <div
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            font-weight: 600;
+                            color: oklch(0.24 0.01 60);
+                          "
+                        >
+                          {{ r.num }}
+                        </div>
+                        <div style="min-width: 0; padding-right: 10px">
+                          <div
+                            style="
+                              font-size: 13px;
+                              color: oklch(0.26 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.prov }}
+                          </div>
+                          <div
+                            style="
+                              font-size: 11px;
+                              color: oklch(0.58 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.sub }}
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            color: oklch(0.45 0.01 60);
+                          "
+                        >
+                          {{ r.lineas }}
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: oklch(0.23 0.01 60);
+                          "
+                        >
+                          {{ r.total }}
+                        </div>
+                        <div style="display: flex; justify-content: center">
+                          <span
+                            style="font-size: 10.5px; font-weight: 600; white-space: nowrap; color: {{
+                              r.estColor
+                            }}; background: {{ r.estBg }}; padding: 3px 7px; border-radius: 5px;"
+                            >{{ r.estado }}</span
+                          >
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    border: 1px solid oklch(0.9 0.01 80);
+                    border-radius: 12px;
+                    background: oklch(1 0 0);
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 0;
+                  "
+                >
+                  <div
+                    style="
+                      padding: 12px 15px;
+                      background: oklch(0.975 0.005 80);
+                      border-bottom: 1px solid oklch(0.92 0.01 80);
+                      display: flex;
+                      align-items: baseline;
+                      gap: 10px;
+                    "
+                  >
+                    <span style="font-size: 13.5px; font-weight: 600; color: oklch(0.24 0.01 60)"
+                      >Cuentas corrientes</span
+                    >
+                    <span style="font-size: 11.5px; color: oklch(0.57 0.01 60)">{{ ccSub }}</span>
+                    <div style="flex: 1"></div>
+                    <span style="font-size: 12.5px; color: oklch(0.52 0.15 255); cursor: pointer"
+                      >Enviar recordatorios →</span
+                    >
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      padding: 10px 15px 11px;
+                      border-bottom: 1px solid oklch(0.94 0.008 80);
+                    "
+                  >
+                    <div style="display: flex; align-items: baseline; gap: 18px; flex-wrap: nowrap">
+                      <div
+                        style="
+                          flex: none;
+                          display: flex;
+                          align-items: baseline;
+                          gap: 7px;
+                          white-space: nowrap;
+                        "
+                      >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 21px;
+                            font-weight: 600;
+                            letter-spacing: -0.01em;
+                            color: oklch(0.5 0.17 25);
+                          "
+                          >{{ vencidoFmt }}</span
+                        >
+                        <span style="font-size: 11.5px; color: oklch(0.55 0.01 60)"
+                          >vencido a cobrar</span
+                        >
+                      </div>
+                      <div
+                        style="
+                          flex: none;
+                          display: flex;
+                          align-items: baseline;
+                          gap: 6px;
+                          white-space: nowrap;
+                        "
+                      >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: oklch(0.24 0.01 60);
+                          "
+                          >{{ ccTotalFmt }}</span
+                        >
+                        <span style="font-size: 11.5px; color: oklch(0.55 0.01 60)">en cuenta</span>
+                      </div>
+                      <div
+                        style="
+                          flex: none;
+                          display: flex;
+                          align-items: baseline;
+                          gap: 6px;
+                          white-space: nowrap;
+                        "
+                      >
+                        <span
+                          style="
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: oklch(0.52 0.12 70);
+                          "
+                          >{{ pagarFmt }}</span
+                        >
+                        <span style="font-size: 11.5px; color: oklch(0.55 0.01 60)"
+                          >a proveedores</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      style="
+                        margin-top: 8px;
+                        height: 7px;
+                        border-radius: 4px;
+                        overflow: hidden;
+                        display: flex;
+                        background: oklch(0.94 0.01 80);
+                      "
+                    >
+                      <sc-for list="{{ tramos }}" as="t" hint-placeholder-count="4">
+                        <div style="width: {{ t.w }}; background: {{ t.color }};"></div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      flex: none;
+                      display: grid;
+                      grid-template-columns: 1fr 96px 128px 118px 128px;
+                      padding: 9px 15px;
+                      border-bottom: 1px solid oklch(0.93 0.01 80);
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 10.5px;
+                      letter-spacing: 0.05em;
+                      text-transform: uppercase;
+                      color: oklch(0.5 0.01 60);
+                    "
+                  >
+                    <div>Cliente</div>
+                    <div style="text-align: right">Mora</div>
+                    <div style="text-align: right">Vencido</div>
+                    <div style="text-align: right">Saldo</div>
+                    <div style="text-align: center">Acción</div>
+                  </div>
+                  <div style="flex: 1; min-height: 0; overflow: auto">
+                    <sc-for list="{{ ccRows }}" as="r" hint-placeholder-count="6">
+                      <div
+                        style="display: grid; grid-template-columns: 1fr 96px 128px 118px 128px; align-items: center; padding: 9px 15px; border-bottom: 1px solid oklch(0.955 0.006 80); background: {{
+                          r.bg
+                        }};"
+                        style-hover="background: oklch(0.968 0.008 80);"
+                      >
+                        <div style="min-width: 0; padding-right: 10px">
+                          <div
+                            style="
+                              font-size: 13px;
+                              color: oklch(0.26 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.nom }}
+                          </div>
+                          <div
+                            style="
+                              font-size: 11px;
+                              color: oklch(0.58 0.01 60);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                          >
+                            {{ r.sub }}
+                          </div>
+                        </div>
+                        <div style="text-align: right">
+                          <span
+                            style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600; color: {{
+                              r.moraColor
+                            }}; background: {{ r.moraBg }}; padding: 3px 6px; border-radius: 4px;"
+                            >{{ r.mora }}</span
+                          >
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: oklch(0.5 0.17 25);
+                          "
+                        >
+                          {{ r.vencido }}
+                        </div>
+                        <div
+                          style="
+                            text-align: right;
+                            font-family: 'IBM Plex Mono', monospace;
+                            font-size: 12.5px;
+                            color: oklch(0.4 0.01 60);
+                          "
+                        >
+                          {{ r.saldo }}
+                        </div>
+                        <div
+                          style="
+                            text-align: center;
+                            font-size: 12px;
+                            color: oklch(0.52 0.15 255);
+                            cursor: pointer;
+                          "
+                        >
+                          {{ r.accion }}
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"horaCorte":{"editor":"int","default":10,"min":7,"max":21,"unit":"h","tsType":"number","section":"Asistencia"},"diasAvisoFacturacion":{"editor":"int","default":3,"min":1,"max":15,"unit":"d","tsType":"number","section":"Remitos"}}'
+    >
+      const ACCENT = "oklch(0.52 0.15 255)";
+      const ACCENT_BG = "oklch(0.955 0.028 255)";
+      const RED = "oklch(0.5 0.17 25)";
+      const RED_BG = "oklch(0.955 0.03 25)";
+      const AMBER = "oklch(0.52 0.12 70)";
+      const AMBER_BG = "oklch(0.96 0.035 80)";
+      const GREEN = "oklch(0.44 0.11 155)";
+      const GREEN_BG = "oklch(0.955 0.03 155)";
+      const PURPLE = "oklch(0.45 0.16 300)";
+      const PURPLE_BG = "oklch(0.96 0.03 300)";
+      const GREY = "oklch(0.48 0.01 60)";
+      const GREY_BG = "oklch(0.955 0.006 80)";
+      const INK = "oklch(0.24 0.01 60)";
+
+      function money(n) { return (n < 0 ? "-$ " : "$ ") + Math.round(Math.abs(n)).toLocaleString("es-AR"); }
+      function corto(n) {
+        const a = Math.abs(n);
+        if (a >= 1000000) return "$ " + (n / 1000000).toFixed(1).replace(".", ",") + " M";
+        if (a >= 1000) return "$ " + Math.round(n / 1000) + " k";
+        return "$ " + n;
+      }
+
+      const VENCIDO = 5964905;
+      const REMITOS_PEND = 57;
+      const PEDIDOS_CONF = 1;
+      const BAJO_MINIMO = 12;
+      const VENTAS_HOY = 0;
+
+      const SEMANA = [
+        { dia: "mar", monto: 1840000 }, { dia: "mié", monto: 2260000 }, { dia: "jue", monto: 1610000 },
+        { dia: "vie", monto: 3120000 }, { dia: "sáb", monto: 2480000 }, { dia: "lun", monto: 1970000 },
+        { dia: "hoy", monto: VENTAS_HOY }
+      ];
+
+      const REPO = [
+        { nom: "Lámpara LED 12 W luz cálida", prov: "Luz Norte SRL", stock: 0, min: 40, sug: 120, dias: 0, costo: 3100, pedido: false },
+        { nom: "Teclado USB Redragon Kumara", prov: "Tecno Pampa SA", stock: 2, min: 8, sug: 18, dias: 1, costo: 31200, pedido: true },
+        { nom: "Mouse inalámbrico Logitech M170", prov: "Tecno Pampa SA", stock: 4, min: 12, sug: 30, dias: 2, costo: 11954, pedido: true },
+        { nom: "Guantes de trabajo talle L", prov: "Insumos del Sur SRL", stock: 5, min: 24, sug: 60, dias: 3, costo: 2806, pedido: false },
+        { nom: "Cerradura doble paleta reforzada", prov: "Insumos del Sur SRL", stock: 8, min: 10, sug: 20, dias: 6, costo: 27508, pedido: false },
+        { nom: "Resma A4 75 g (500 hojas)", prov: "Papelera Central SRL", stock: 19, min: 30, sug: 60, dias: 8, costo: 9090, pedido: false },
+        { nom: "Manguera reforzada 1/2\" x 25 m", prov: "Insumos del Sur SRL", stock: 14, min: 16, sug: 24, dias: 11, costo: 17112, pedido: false },
+        { nom: "Cable HDMI 2.0 · 1,5 m", prov: "Tecno Pampa SA", stock: 27, min: 30, sug: 40, dias: 14, costo: 3956, pedido: false }
+      ];
+
+      const REMS = [
+        { num: "R-0004-19822", prov: "Insumos del Sur SRL", fecha: "28/08", lineas: 5, total: 812400, estado: "Con diferencias", dias: 4 },
+        { num: "R-0011-04417", prov: "Luz Norte SRL", fecha: "27/08", lineas: 2, total: 203900, estado: "Sin orden asociada", dias: 5 },
+        { num: "R-0007-01188", prov: "Tecno Pampa SA", fecha: "29/08", lineas: 7, total: 1284600, estado: "Pendiente de validar", dias: 3 },
+        { num: "R-0002-33021", prov: "Papelera Central SRL", fecha: "30/08", lineas: 3, total: 386200, estado: "Pendiente de validar", dias: 2 },
+        { num: "R-0009-01126", prov: "Bebidas Alvear", fecha: "31/08", lineas: 4, total: 214600, estado: "Ingresado, sin factura", dias: 1 },
+        { num: "R-0004-19840", prov: "Insumos del Sur SRL", fecha: "01/09", lineas: 6, total: 640500, estado: "Pendiente de validar", dias: 0 }
+      ];
+
+      const REM_EST = {
+        "Pendiente de validar": [ AMBER, AMBER_BG ],
+        "Sin orden asociada": [ PURPLE, PURPLE_BG ],
+        "Con diferencias": [ RED, RED_BG ],
+        "Ingresado, sin factura": [ PURPLE, PURPLE_BG ]
+      };
+
+      const CC = [
+        { nom: "Corralón Los Álamos", vend: "Marina Paz", mora: 121, vencido: 812000, saldo: 987250 },
+        { nom: "Supermercado Norte SRL", vend: "Marina Paz", mora: 62, vencido: 1980000, saldo: 2115400 },
+        { nom: "Distribuidora San Martín SRL", vend: "Laura Gómez", mora: 42, vencido: 1640500, saldo: 1284500 },
+        { nom: "Ferretería El Torno SA", vend: "Laura Gómez", mora: 78, vencido: 914000, saldo: 742980 },
+        { nom: "Hotel Plaza Alvear SRL", vend: "Marina Paz", mora: 22, vencido: 431600, saldo: 431600 },
+        { nom: "Almacén Doña Rosa", vend: "Diego Ruiz", mora: 18, vencido: 186805, saldo: 186300 }
+      ];
+
+      class Component extends DCLogic {
+        state = { sucursal: "Todas las sucursales", foco: "cobranzas" };
+
+        renderVals() {
+          const st = this.state;
+          const hora = this.props.horaCorte ?? 10;
+          const diasFact = this.props.diasAvisoFacturacion ?? 3;
+
+          const remValorizado = 18420600;
+          const pedidoMonto = 486000;
+          const repoMonto = REPO.filter(r => !r.pedido).reduce((n, r) => n + r.sug * r.costo, 0);
+          const enJuego = VENCIDO + remValorizado * 0.21;
+
+          const accionDefs = [
+            { id: "cobranzas", prioridad: "Primero", dot: RED, value: corto(VENCIDO), valueColor: RED,
+              titulo: "Cobranzas vencidas", detalle: CC.length + " clientes, el más atrasado con " + CC[0].mora + " días", accion: "Ver quién debe →" },
+            { id: "remitos", prioridad: "Hoy", dot: AMBER, value: String(REMITOS_PEND), valueColor: AMBER,
+              titulo: "Remitos esperan facturación", detalle: money(remValorizado) + " entregado sin factura, IVA sin declarar", accion: "Facturar en lote →" },
+            { id: "stock", prioridad: "Hoy", dot: AMBER, value: String(BAJO_MINIMO), valueColor: AMBER,
+              titulo: "Artículos bajo mínimo", detalle: "3 en cero y 2 se agotan esta semana", accion: "Armar reposición →" },
+            { id: "pedido", prioridad: "Rápido", dot: ACCENT, value: String(PEDIDOS_CONF), valueColor: ACCENT,
+              titulo: "Pedido por confirmar", detalle: money(pedidoMonto) + " de Distribuidora San Martín, entrega el 03/09", accion: "Confirmar →" },
+            { id: "ventas", prioridad: "Contexto", dot: GREY, value: money(VENTAS_HOY), valueColor: VENTAS_HOY ? INK : GREY,
+              titulo: "Facturado hoy", detalle: "Son las " + hora + ":00; un martes normal a esta hora ya lleva " + corto(520000), accion: "Abrir mostrador →" }
+          ];
+
+          const acciones = accionDefs.map(a => ({
+            prioridad: a.prioridad, dot: a.dot, value: a.value, valueColor: a.valueColor,
+            titulo: a.titulo, detalle: a.detalle, accion: a.accion,
+            bg: st.foco === a.id ? "oklch(0.975 0.014 255)" : "oklch(1 0 0)",
+            pick: () => this.setState({ foco: a.id })
+          }));
+
+          const maxSem = Math.max.apply(null, SEMANA.map(d => d.monto)) || 1;
+          const semana = SEMANA.map(d => {
+            const hoy = d.dia === "hoy";
+            return { dia: d.dia, monto: d.monto ? corto(d.monto) : "—",
+              h: Math.max(3, Math.round(d.monto / maxSem * 68)) + "px",
+              color: hoy ? (d.monto ? ACCENT : "oklch(0.88 0.01 80)") : "oklch(0.82 0.05 255)",
+              labelColor: hoy ? INK : "oklch(0.62 0.01 60)" };
+          });
+
+          const repoRows = REPO.map(r => {
+            const cero = r.stock === 0;
+            const critico = r.dias <= 3;
+            return { nom: r.nom, sub: r.prov + (r.pedido ? " · ya pedido" : ""),
+              stock: r.stock + " u", stockColor: cero ? RED : critico ? AMBER : INK,
+              min: r.min + " u", sug: r.sug + " u",
+              dias: cero ? "sin stock" : r.dias + " d",
+              diasColor: cero ? RED : critico ? AMBER : "oklch(0.5 0.01 60)",
+              estado: r.pedido ? "En camino" : cero ? "Quiebre" : critico ? "Urgente" : "Reponer",
+              estColor: r.pedido ? ACCENT : cero ? RED : critico ? AMBER : GREY,
+              estBg: r.pedido ? ACCENT_BG : cero ? RED_BG : critico ? AMBER_BG : GREY_BG,
+              bg: cero ? "oklch(0.99 0.008 30)" : "oklch(1 0 0)" };
+          });
+
+          const remRows = REMS.map(r => {
+            const [ ec, eb ] = REM_EST[r.estado] || [ GREY, GREY_BG ];
+            return { num: r.num, prov: r.prov,
+              sub: r.fecha + " · " + (r.dias === 0 ? "llegó hoy" : "hace " + r.dias + " días"),
+              lineas: String(r.lineas), total: money(r.total),
+              estado: r.estado, estColor: ec, estBg: eb,
+              bg: r.dias >= diasFact ? "oklch(0.992 0.008 80)" : "oklch(1 0 0)" };
+          });
+
+          const ccOrden = CC.slice().sort((a, b) => b.vencido - a.vencido);
+          const ccRows = ccOrden.map(c => {
+            const tone = c.mora > 60 ? [ RED, RED_BG ] : c.mora > 30 ? [ AMBER, AMBER_BG ] : [ GREY, GREY_BG ];
+            return { nom: c.nom, sub: c.vend + " · " + (c.mora > 60 ? "para gestión judicial" : c.mora > 30 ? "llamar hoy" : "recordatorio automático"),
+              mora: c.mora + " d", moraColor: tone[0], moraBg: tone[1],
+              vencido: money(c.vencido), saldo: money(c.saldo),
+              accion: c.mora > 60 ? "Bloquear" : "Reclamar",
+              bg: c.mora > 60 ? "oklch(0.99 0.008 30)" : "oklch(1 0 0)" };
+          });
+
+          const tramoDefs = [
+            { label: "Al día", monto: 2140000, color: GREEN },
+            { label: "1 a 30 d", monto: 618405, color: AMBER },
+            { label: "31 a 60 d", monto: 2411600, color: "oklch(0.58 0.15 40)" },
+            { label: "+60 d", monto: 2934900, color: RED }
+          ];
+          const tramoTotal = tramoDefs.reduce((n, t) => n + t.monto, 0);
+          const tramos = tramoDefs.map(t => ({ label: t.label, monto: corto(t.monto), color: t.color,
+            w: Math.round(t.monto / tramoTotal * 100) + "%" }));
+
+          return {
+            sucursales: [ "Todas las sucursales", "Alvear · casa central", "Gral. Pico", "Realicó" ],
+            sucursal: st.sucursal, setSucursal: e => this.setState({ sucursal: e.target.value }),
+            fechaTxt: "mar 01/09/26 · " + hora + ":00",
+            analisisTxt: "procesado hace 6 min · datos al " + hora + ":00",
+
+            titular: "Lo más urgente son " + money(VENCIDO) + " de cobranzas vencidas, con " + CC.filter(c => c.mora > 60).length + " clientes arriba de los 60 días. Después, " + REMITOS_PEND + " remitos entregados sin facturar por " + money(remValorizado) + ".",
+            subtitular: "Todavía no hay ventas cargadas hoy y hay " + PEDIDOS_CONF + " pedido por confirmar. En stock, " + BAJO_MINIMO + " artículos están bajo el mínimo y 3 quedaron en cero: la reposición sugerida son " + money(repoMonto) + ".",
+            enJuegoFmt: corto(enJuego),
+            enJuegoHint: "vencido + IVA de lo no facturado",
+            acciones,
+
+            ventasSub: "comparado con los últimos 6 días hábiles",
+            ventasHoyFmt: money(VENTAS_HOY),
+            ventasHoyColor: VENTAS_HOY ? INK : AMBER,
+            ventasHoyHint: VENTAS_HOY ? "0 comprobantes" : "sin comprobantes emitidos todavía",
+            semana,
+            ventasKpis: [
+              { label: "Promedio diario", value: corto(2213000), hint: "últimos 6 días hábiles", color: INK },
+              { label: "Mes en curso", value: corto(38420000), hint: "13 % arriba de agosto", color: GREEN },
+              { label: "Presupuestos abiertos", value: "9 · " + corto(4180000), hint: "3 vencen esta semana", color: ACCENT },
+              { label: "Caja abierta", value: "1 turno", hint: "mostrador 1 desde 08:02", color: INK }
+            ],
+
+            repoSub: BAJO_MINIMO + " bajo mínimo · 3 en cero",
+            repoRows,
+            repoNota: "El sugerido cubre el consumo de 30 días según la venta de los últimos 90. Los que dicen “En camino” ya están en una orden de compra.",
+            repoTotal: money(repoMonto),
+
+            remKpis: [
+              { label: "Esperan facturación", value: String(REMITOS_PEND), hint: "entregados y sin factura", color: AMBER },
+              { label: "Valorizado sin facturar", value: corto(remValorizado), hint: money(remValorizado * 0.21) + " de IVA sin declarar", color: RED },
+              { label: "Por validar en depósito", value: "4", hint: "no impactaron stock todavía", color: PURPLE }
+            ],
+            remRows,
+            remNota: "Los remitos por validar no mueven stock: hasta confirmarlos, el sistema muestra menos mercadería de la que hay en el depósito.",
+
+            ccSub: "cobrar y pagar",
+            vencidoFmt: money(VENCIDO),
+            ccTotalFmt: money(CC.reduce((n, c) => n + c.saldo, 0)),
+            pagarFmt: money(4953900),
+            tramos, ccRows,
+            ccNota: "Los de más de 60 días quedan bloqueados para venta en cuenta corriente hasta que cubran el vencido."
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

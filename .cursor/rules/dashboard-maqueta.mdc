@@ -1,0 +1,29 @@
+---
+description: El inicio se implementa desde la maqueta DC Dashboard, igual que Compras, Ventas y Clientes.
+globs: "**/dashboard/**,**/maquetas/**Dashboard*"
+alwaysApply: false
+---
+
+# Dashboard — maqueta DC
+
+Fuente: `maquetas/Dashboard.dc.html`. Código: `src/app/features/dashboard/` (ruta `/dashboard`, menú Inicio).
+
+Hacer **el mismo trabajo que Compras / Clientes**: un workspace a pantalla completa, no acordeones ni un resumen mínimo.
+
+## Qué tiene la maqueta (no recortar)
+
+- Una sola pantalla viewport (sin topbar duplicada: el shell ya tiene menú)
+- **Asistencia del día**: línea de contexto de IA, plata en juego, 5 acciones con monto y CTA
+- **Ventas del día**: facturado, barras de la semana, 4 KPIs
+- **Reposiciones urgentes**: grilla artículo/stock/mín/sugerido/días/situación
+- **Remitos de compra**: KPIs de recepción + grilla
+- **Cuentas corrientes**: vencido, barra de tramos, grilla con mora y acción
+- Tokens **naranja** Ventas360 (IA en naranja suave, no violeta)
+
+## Cómo
+
+- UI en español; commits en inglés
+- Dashboard ya es excepción de listados: cargar KPIs, remitos de compra, caja y CxP al entrar
+- Lo que el API no trae (días de cobertura, NC, sucursal) se muestra derivado o vacío, no inventado
+- Verificar en el browser el viewport completo
+- No tocar agro360 salvo pedido explícito
