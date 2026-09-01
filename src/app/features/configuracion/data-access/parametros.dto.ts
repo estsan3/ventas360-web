@@ -9,16 +9,18 @@ export interface ParametrosOperativosDto {
   condiciones_pago: string[];
 }
 
+export type TipoComprobanteTalonarioDto = 'presupuesto' | 'pedido' | 'remito' | 'factura';
+
 export interface TalonarioDto {
   id: string;
-  tipo_comprobante: 'pedido' | 'remito' | 'factura';
+  tipo_comprobante: TipoComprobanteTalonarioDto;
   prefijo: string;
   proximo_numero: number;
   activo: boolean;
 }
 
 export interface UpsertTalonarioDto {
-  tipo_comprobante: 'pedido' | 'remito' | 'factura';
+  tipo_comprobante: TipoComprobanteTalonarioDto;
   prefijo: string;
   proximo_numero: number;
   activo: boolean;
