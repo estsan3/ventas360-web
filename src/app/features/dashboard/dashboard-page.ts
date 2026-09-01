@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../core/state/auth.store';
-import { IaStore } from '../../ia/state/ia.store';
 import { CajaService, SaldoCajaDto } from '../caja/data-access/caja.service';
 import { ComprasService } from '../compras/data-access/compras.service';
 import { Pedido } from '../ventas/data-access/pedido.model';
@@ -12,7 +18,6 @@ import {
   formatearCorto,
   formatearFechaCorta,
   formatearMoney,
-  haceMinutos,
   pctBar,
 } from './dashboard-vista';
 import { DashboardService, RemitoCompraDash } from './data-access/dashboard.service';
@@ -31,7 +36,6 @@ type FocoDash = 'cobranzas' | 'remitos' | 'stock' | 'pedido' | 'ventas';
 export class DashboardPage {
   private readonly store = inject(DashboardStore);
   private readonly dashboardApi = inject(DashboardService);
-  private readonly iaStore = inject(IaStore);
   private readonly cajaApi = inject(CajaService);
   private readonly comprasApi = inject(ComprasService);
   private readonly ventasApi = inject(VentasService);
@@ -50,22 +54,14 @@ export class DashboardPage {
   );
 
   protected readonly analisisTxt = computed(() => {
-    const s = this.iaStore.resumen();
-    if (s.status === 'ready') {
-      return haceMinutos(s.data.generadoEn);
-    }
+    const s = this.store.kpis();
     if (s.status === 'loading') {
-      return 'analizando el día…';
+      return 'cargando datos…';
     }
     return 'datos del comercio';
   });
 
   protected readonly titular = computed(() => {
-    const s = this.iaStore.resumen();
-    if (s.status === 'ready' && s.data.narrativa?.trim()) {
-      const partes = s.data.narrativa.trim().split(/\n+/);
-      return partes[0];
-    }
     const k = this.kpis();
     if (k.saldoVencido > 0) {
       return `Lo más urgente son ${formatearMoney(k.saldoVencido)} de cobranzas vencidas. Después, ${k.remitosPorFacturar} remitos entregados sin facturar.`;
@@ -80,13 +76,6 @@ export class DashboardPage {
   });
 
   protected readonly subtitular = computed(() => {
-    const s = this.iaStore.resumen();
-    if (s.status === 'ready' && s.data.narrativa?.trim()) {
-      const partes = s.data.narrativa.trim().split(/\n+/);
-      if (partes[1]) {
-        return partes[1];
-      }
-    }
     const k = this.kpis();
     const bits: string[] = [];
     if (k.ventasDia === 0) {
@@ -381,9 +370,26 @@ export class DashboardPage {
       }),
   );
 
+  private secundariosCargados = false;
+
   constructor() {
     this.store.cargar();
-    this.iaStore.cargarDashboard();
+    afterNextRender(() => {
+      const cargar = () => this.cargarDatosSecundarios();
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(cargar, { timeout: 1500 });
+      } else {
+        setTimeout(cargar, 150);
+      }
+    });
+  }
+
+  private cargarDatosSecundarios(): void {
+    if (this.secundariosCargados) {
+      return;
+    }
+    this.secundariosCargados = true;
+
     this.dashboardApi.listarRemitosCompra().subscribe({
       next: (items) => this.remitosCompra.set(items),
       error: () => this.remitosCompra.set([]),
