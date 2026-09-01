@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   flex: none;
+  width: t.$sidebar-width-collapsed;
   height: 100vh;
   position: sticky;
   top: 0;
@@ -15,6 +16,10 @@
   transition: width 0.15s ease;
   font-family: ty.$font-family-base;
   box-sizing: border-box;
+
+  &--expandida {
+    width: t.$sidebar-width-expanded;
+  }
 
   &__brand {
     display: flex;
