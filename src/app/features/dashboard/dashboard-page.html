@@ -50,7 +50,7 @@
         <button type="button" class="dash__link" (click)="irMostrador()">Abrir Mostrador</button>
       </div>
       <div class="dash__ventas-hero">
-        <div>
+        <div class="dash__ventas-kpi">
           <div class="dash__kpi-lab">Facturado hoy</div>
           <div class="dash__hero-val" [attr.data-tono]="ventasHoyTone()">{{ ventasHoyFmt() }}</div>
           <div class="dash__muted" [attr.data-tono]="ventasHoyTone()">{{ ventasHoyHint() }}</div>
@@ -59,12 +59,14 @@
           @for (d of semana(); track $index) {
             <div class="dash__bar">
               <span class="dash__mono dash__bar-lab">{{ d.monto }}</span>
-              <div
-                class="dash__bar-fill"
-                [class.dash__bar-fill--hoy]="d.hoy"
-                [class.dash__bar-fill--vacio]="d.vacio"
-                [style.height]="d.h"
-              ></div>
+              <div class="dash__bar-track">
+                <div
+                  class="dash__bar-fill"
+                  [class.dash__bar-fill--hoy]="d.hoy"
+                  [class.dash__bar-fill--vacio]="d.vacio"
+                  [style.height]="d.h"
+                ></div>
+              </div>
               <span class="dash__bar-dia" [class.dash__bar-dia--hoy]="d.hoy">{{ d.dia }}</span>
             </div>
           }
