@@ -1,0 +1,121 @@
+From 8a6d13f15f4d381d498b960dfddbcccb871ce155 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Tue, 1 Sep 2026 23:29:18 +0000
+Subject: [PATCH] fix(parametros): accept presupuesto as talonario type
+
+The casuistica seed inserts a presupuesto numbering series, and VentasService.crear assigns numbers for every comprobante type. The Pydantic contract and BO only allowed pedido/remito/factura, so GET /parametros/talonarios returned 500.
+
+Keep the seed row; align the schema. Also import Talonario in seed_casuistica so the demo row actually persists.
+---
+ app/modulos/parametros/bo.py        |  2 +-
+ app/modulos/parametros/schemas.py   |  2 +-
+ scripts/seed_casuistica.py          |  1 +
+ tests/test_api_reporteria_fase_a.py | 38 +++++++++++++++++++++++++++++
+ tests/test_bo_parametros.py         |  4 +++
+ 5 files changed, 45 insertions(+), 2 deletions(-)
+
+diff --git a/app/modulos/parametros/bo.py b/app/modulos/parametros/bo.py
+index d3201c6..024b572 100644
+--- a/app/modulos/parametros/bo.py
++++ b/app/modulos/parametros/bo.py
+@@ -4,7 +4,7 @@ import re
+ 
+ from app.core.excepciones import ReglaDeNegocioViolada
+ 
+-TIPOS_TALONARIO = {"pedido", "remito", "factura"}
++TIPOS_TALONARIO = {"presupuesto", "pedido", "remito", "factura"}
+ CONDICIONES_IVA_EMISOR = {"responsable_inscripto", "monotributo", "exento"}
+ _CUIT_DIGITOS = re.compile(r"^\d{11}$")
+ 
+diff --git a/app/modulos/parametros/schemas.py b/app/modulos/parametros/schemas.py
+index 3aedd9a..05bfeb4 100644
+--- a/app/modulos/parametros/schemas.py
++++ b/app/modulos/parametros/schemas.py
+@@ -4,7 +4,7 @@ from typing import Literal
+ 
+ from pydantic import BaseModel, Field
+ 
+-TipoComprobanteTalonario = Literal["pedido", "remito", "factura"]
++TipoComprobanteTalonario = Literal["presupuesto", "pedido", "remito", "factura"]
+ CondicionIvaEmisor = Literal["responsable_inscripto", "monotributo", "exento"]
+ 
+ 
+diff --git a/scripts/seed_casuistica.py b/scripts/seed_casuistica.py
+index 5818cba..12683ab 100644
+--- a/scripts/seed_casuistica.py
++++ b/scripts/seed_casuistica.py
+@@ -18,6 +18,7 @@ from app.modulos.compras.models import Compra, LineaCompra
+ from app.modulos.cxc.models import MovimientoCxc
+ from app.modulos.cxp.models import MovimientoCxp
+ from app.modulos.pagos.models import LineaPago, PagoProveedor
++from app.modulos.parametros.models import Talonario
+ from app.modulos.precios.models import ListaPrecio, PrecioArticulo
+ from app.modulos.productos.models import Producto
+ from app.modulos.proveedores.models import Proveedor
+diff --git a/tests/test_api_reporteria_fase_a.py b/tests/test_api_reporteria_fase_a.py
+index 7d86acd..09a12c8 100644
+--- a/tests/test_api_reporteria_fase_a.py
++++ b/tests/test_api_reporteria_fase_a.py
+@@ -35,6 +35,44 @@ async def test_operativos_y_talonarios(cliente, auth_headers) -> None:
+     assert any(t["tipo_comprobante"] == "remito" for t in lista.json())
+ 
+ 
++@pytest.mark.asyncio
++async def test_listar_talonarios_acepta_presupuesto_sembrado(cliente, auth_headers) -> None:
++    """El seed de casuística inserta tipo presupuesto; el GET no debe 500."""
++    from app.core.database import fabrica_sesiones
++    from app.core.tenant_ctx import usando_tenant
++    from app.modulos.parametros.models import Talonario
++    from app.modulos.tenants.ids import ID_TENANT_DEMO
++
++    async with fabrica_sesiones() as sesion:
++        with usando_tenant(ID_TENANT_DEMO):
++            sesion.add(
++                Talonario(
++                    id="tal-presupuesto",
++                    tipo_comprobante="presupuesto",
++                    prefijo="PRE-",
++                    proximo_numero=100,
++                )
++            )
++            await sesion.commit()
++
++    lista = await cliente.get("/api/v1/parametros/talonarios", headers=auth_headers)
++    assert lista.status_code == 200, lista.text
++    assert any(t["tipo_comprobante"] == "presupuesto" for t in lista.json())
++
++    tal = await cliente.put(
++        "/api/v1/parametros/talonarios",
++        headers=auth_headers,
++        json={
++            "tipo_comprobante": "presupuesto",
++            "prefijo": "PRE-",
++            "proximo_numero": 101,
++            "activo": True,
++        },
++    )
++    assert tal.status_code == 200, tal.text
++    assert tal.json()["proximo_numero"] == 101
++
++
+ @pytest.mark.asyncio
+ async def test_kpis_incluye_campos_fase_a(cliente, auth_headers) -> None:
+     # Seed mínimo vía alta cliente/producto para tener conteos > 0
+diff --git a/tests/test_bo_parametros.py b/tests/test_bo_parametros.py
+index ebd7281..0ab7fac 100644
+--- a/tests/test_bo_parametros.py
++++ b/tests/test_bo_parametros.py
+@@ -15,6 +15,10 @@ def test_talonario_tipo_invalido() -> None:
+         ParametrosBO().validar_talonario("nota", 1)
+ 
+ 
++def test_talonario_presupuesto_ok() -> None:
++    ParametrosBO().validar_talonario("presupuesto", 1)
++
++
+ def test_afip_requiere_cuit_si_habilita() -> None:
+     with pytest.raises(ReglaDeNegocioViolada, match="CUIT"):
+         ParametrosBO().validar_afip(
+-- 
+2.43.0
+

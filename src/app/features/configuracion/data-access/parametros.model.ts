@@ -9,9 +9,19 @@ export interface ParametrosOperativos {
   condicionesPago: string[];
 }
 
+/** Tipos de comprobante que tienen numerador (alineado a ventas). */
+export type TipoTalonario = 'presupuesto' | 'pedido' | 'remito' | 'factura';
+
+export const TIPOS_TALONARIO: readonly TipoTalonario[] = [
+  'presupuesto',
+  'pedido',
+  'remito',
+  'factura',
+];
+
 export interface Talonario {
   id: string;
-  tipoComprobante: 'pedido' | 'remito' | 'factura';
+  tipoComprobante: TipoTalonario;
   prefijo: string;
   proximoNumero: number;
   activo: boolean;

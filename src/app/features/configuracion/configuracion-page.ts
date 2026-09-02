@@ -1,8 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+import {
+  AsyncState,
+  asyncError,
+  asyncIdle,
+  asyncLoading,
+  asyncSuccess,
+} from '../../core/models/async-state';
 import { etiquetaRol } from '../../core/models/modulos';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { AuthStore } from '../../core/state/auth.store';
 import { NotificationStore } from '../../notifications/state/notification.store';
 import { Badge } from '../../shared/ui/badge/badge';
@@ -10,6 +17,7 @@ import { Button } from '../../shared/ui/button/button';
 import { Icon } from '../../shared/ui/icon/icon';
 import { TextInput } from '../../shared/ui/input/text-input';
 import { SelectInput, SelectOption } from '../../shared/ui/select/select-input';
+import { StateWrapper } from '../../shared/ui/state-wrapper/state-wrapper';
 import { Table, TableColumn } from '../../shared/ui/table/table';
 import { TableCellDef } from '../../shared/ui/table/table-cell-def';
 import { ZonasStore } from '../zonas/data-access/zonas.store';
@@ -19,7 +27,7 @@ import {
   VendedorCatalogo,
 } from './data-access/catalogos.models';
 import { ConfiguracionService } from './data-access/configuracion.service';
-import { Talonario } from './data-access/parametros.model';
+import { TIPOS_TALONARIO, Talonario, TipoTalonario } from './data-access/parametros.model';
 import { CeldaPermiso, RolEditable } from './data-access/permisos.model';
 import { Usuario } from './data-access/usuario.model';
 import { UsuariosStore } from './data-access/usuarios.store';
@@ -35,11 +43,19 @@ type SeccionConfig =
   | 'listas'
   | 'usuarios';
 
-type TipoTalonario = Talonario['tipoComprobante'];
-
 @Component({
   selector: 'app-configuracion-page',
-  imports: [Badge, Button, Icon, ReactiveFormsModule, TextInput, SelectInput, Table, TableCellDef],
+  imports: [
+    Badge,
+    Button,
+    Icon,
+    ReactiveFormsModule,
+    StateWrapper,
+    TextInput,
+    SelectInput,
+    Table,
+    TableCellDef,
+  ],
   templateUrl: './configuracion-page.html',
   styleUrl: './configuracion-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,7 +74,8 @@ export class ConfiguracionPage {
   protected readonly etiquetaRol = etiquetaRol;
   protected readonly seccion = signal<SeccionConfig>('negocio');
   protected readonly guardando = signal(false);
-  protected readonly talonarios = signal<Talonario[]>([]);
+  protected readonly talonariosEstado = signal<AsyncState<Talonario[]>>(asyncIdle());
+  protected readonly talonarios = computed(() => this.talonariosEstado().data ?? []);
   protected readonly editandoTipo = signal<TipoTalonario | null>(null);
   protected readonly vendedores = signal<VendedorCatalogo[]>([]);
   protected readonly depositos = signal<DepositoCatalogo[]>([]);
@@ -94,6 +111,7 @@ export class ConfiguracionPage {
   ];
 
   protected readonly tipoTalonarioOptions: SelectOption[] = [
+    { value: 'presupuesto', label: 'Presupuesto' },
     { value: 'pedido', label: 'Pedido' },
     { value: 'remito', label: 'Remito' },
     { value: 'factura', label: 'Factura' },
@@ -311,6 +329,8 @@ export class ConfiguracionPage {
       this.usuariosStore.cargar();
     } else if (id === 'permisos') {
       this.cargarMatriz();
+    } else if (id === 'talonarios') {
+      this.cargarTalonarios();
     }
   }
 
@@ -342,6 +362,7 @@ export class ConfiguracionPage {
 
   protected etiquetaTipo(tipo: TipoTalonario): string {
     const map: Record<TipoTalonario, string> = {
+      presupuesto: 'Presupuesto',
       pedido: 'Pedido',
       remito: 'Remito',
       factura: 'Factura',
@@ -363,7 +384,7 @@ export class ConfiguracionPage {
         condicionesPago: o.condicionesPago.join(','),
       });
     });
-    this.api.listarTalonarios().subscribe((items) => this.talonarios.set(items));
+    this.cargarTalonarios();
     this.api.obtenerAfip().subscribe((a) => {
       this.formAfip.reset({
         habilitada: a.habilitada,
@@ -378,6 +399,14 @@ export class ConfiguracionPage {
         homologacion: a.homologacion,
         certificadoConfigurado: a.certificadoConfigurado,
       });
+    });
+  }
+
+  protected cargarTalonarios(): void {
+    this.talonariosEstado.set(asyncLoading());
+    this.api.listarTalonarios().subscribe({
+      next: (items) => this.talonariosEstado.set(asyncSuccess(items)),
+      error: (err: Error) => this.talonariosEstado.set(asyncError(err.message)),
     });
   }
 
@@ -479,7 +508,7 @@ export class ConfiguracionPage {
 
   protected nuevoTalonario(): void {
     const usados = new Set(this.talonarios().map((t) => t.tipoComprobante));
-    const libre = (['pedido', 'remito', 'factura'] as TipoTalonario[]).find((t) => !usados.has(t));
+    const libre = TIPOS_TALONARIO.find((t) => !usados.has(t));
     this.editandoTipo.set(libre ?? 'pedido');
     this.formTalonario.reset({
       tipoComprobante: libre ?? 'pedido',
@@ -516,15 +545,11 @@ export class ConfiguracionPage {
       })
       .subscribe({
         next: (guardado) => {
-          this.talonarios.update((lista) => {
-            const idx = lista.findIndex((t) => t.tipoComprobante === guardado.tipoComprobante);
-            if (idx === -1) {
-              return [...lista, guardado];
-            }
-            const copia = [...lista];
-            copia[idx] = guardado;
-            return copia;
-          });
+          const lista = this.talonarios();
+          const idx = lista.findIndex((t) => t.tipoComprobante === guardado.tipoComprobante);
+          const actualizada =
+            idx === -1 ? [...lista, guardado] : lista.map((t, i) => (i === idx ? guardado : t));
+          this.talonariosEstado.set(asyncSuccess(actualizada));
           this.notifications.success('Talonario guardado', 'Numerador actualizado');
           this.editandoTipo.set(null);
           this.guardando.set(false);

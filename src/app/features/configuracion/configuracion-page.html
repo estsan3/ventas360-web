@@ -183,9 +183,12 @@
             </app-button>
           </div>
 
-          @if (talonarios().length === 0) {
-            <p class="config__hint">No hay talonarios. Creá uno o ejecutá el seed de demo.</p>
-          } @else {
+          <app-state-wrapper
+            [status]="talonariosEstado().status"
+            [error]="talonariosEstado().error ?? ''"
+            [empty]="talonarios().length === 0"
+            emptyMessage="No hay talonarios. Creá uno o ejecutá el seed de demo."
+          >
             <div class="tabla-scroll">
               <app-table
                 [columns]="columnasTalonarios"
@@ -213,6 +216,13 @@
                   </button>
                 </ng-template>
               </app-table>
+            </div>
+          </app-state-wrapper>
+          @if (talonariosEstado().status === 'error') {
+            <div class="config__acciones">
+              <app-button variant="outline" size="sm" (clicked)="cargarTalonarios()">
+                Reintentar
+              </app-button>
             </div>
           }
 
