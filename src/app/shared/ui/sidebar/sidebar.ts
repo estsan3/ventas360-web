@@ -1,6 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { Icon, IconName } from '../icon/icon';
 import { Logo } from '../logo/logo';
+import {
+  leerBreakpointTablet,
+  querySidebarCompacta,
+  sidebarExpandidaPorDefecto,
+} from './sidebar-viewport';
 
 export interface SidebarItem {
   id: string;
@@ -13,6 +26,7 @@ export interface SidebarItem {
 /**
  * Sidebar vertical colapsable (mock DC): hamburguesa + logo + nav + pie.
  * Expandida ~224px (con etiquetas); colapsada ~68px (solo iconos).
+ * En tablet/mobile (≤ `--breakpoint-tablet`) arranca colapsada; el hamburguesa sigue siendo override.
  */
 @Component({
   selector: 'app-sidebar',
@@ -22,6 +36,8 @@ export interface SidebarItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Sidebar {
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly items = input.required<SidebarItem[]>();
   readonly activeId = input('');
   /** Iniciales del avatar del pie */
@@ -34,7 +50,18 @@ export class Sidebar {
 
   protected readonly expandida = signal(true);
 
-  protected readonly widthPx = computed(() => (this.expandida() ? '224px' : '68px'));
+  constructor() {
+    const mq = this.mediaQueryCompacta();
+    if (!mq) {
+      return;
+    }
+    this.expandida.set(sidebarExpandidaPorDefecto(mq.matches));
+    const onChange = (): void => {
+      this.expandida.set(sidebarExpandidaPorDefecto(mq.matches));
+    };
+    mq.addEventListener('change', onChange);
+    this.destroyRef.onDestroy(() => mq.removeEventListener('change', onChange));
+  }
 
   protected itemsIn(section: 'top' | 'bottom'): SidebarItem[] {
     return this.items().filter((item) => (item.section ?? 'top') === section);
@@ -42,5 +69,12 @@ export class Sidebar {
 
   protected toggle(): void {
     this.expandida.update((v) => !v);
+  }
+
+  private mediaQueryCompacta(): MediaQueryList | null {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return null;
+    }
+    return window.matchMedia(querySidebarCompacta(leerBreakpointTablet()));
   }
 }

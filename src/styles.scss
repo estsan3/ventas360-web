@@ -4,6 +4,10 @@
 @use './styles/form-drawer';
 @use './styles/config-modal';
 
+:root {
+  --breakpoint-tablet: #{t.$breakpoint-tablet};
+}
+
 * {
   box-sizing: border-box;
 }

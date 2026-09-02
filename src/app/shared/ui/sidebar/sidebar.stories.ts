@@ -43,6 +43,13 @@ type Story = StoryObj<Sidebar>;
 
 export const Default: Story = {};
 
+/** En viewports ≤ tablet el menú arranca colapsado (solo iconos). */
+export const Compacta: Story = {
+  parameters: {
+    viewport: { defaultViewport: 'mobile1' },
+  },
+};
+
 /** Réplica de Bars del kit de Figma: las 6 variantes de item activo */
 export const Estados: Story = {
   render: (args) => ({
