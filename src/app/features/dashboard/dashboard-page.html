@@ -88,39 +88,41 @@
         <div class="dash__spacer"></div>
         <button type="button" class="dash__link" (click)="irCompras()">Armar orden →</button>
       </div>
-      <div class="dash__thead dash__thead--repo">
-        <div>Artículo</div>
-        <div class="dash__right">Stock</div>
-        <div class="dash__right">Mín.</div>
-        <div class="dash__right">Sugerido</div>
-        <div class="dash__right">Días</div>
-        <div class="dash__center">Situación</div>
-      </div>
-      <div class="dash__body">
-        @for (r of repoRows(); track r.nom) {
-          <button
-            type="button"
-            class="dash__row-item dash__row-item--repo"
-            [class.dash__row-item--alerta]="r.alerta"
-            (click)="irStock()"
-          >
-            <div class="dash__clip">
-              <div>{{ r.nom }}</div>
-              <div class="dash__muted dash__mono">{{ r.sub }}</div>
-            </div>
-            <div class="dash__right dash__mono dash__strong" [attr.data-tono]="r.stockTone">
-              {{ r.stock }}
-            </div>
-            <div class="dash__right dash__mono">{{ r.min }}</div>
-            <div class="dash__right dash__mono dash__strong">{{ r.sug }}</div>
-            <div class="dash__right dash__mono" [attr.data-tono]="r.diasTone">{{ r.dias }}</div>
-            <div class="dash__center">
-              <span class="dash__pill" [attr.data-tono]="r.estTone">{{ r.estado }}</span>
-            </div>
-          </button>
-        } @empty {
-          <div class="dash__empty">No hay artículos bajo mínimo.</div>
-        }
+      <div class="dash__table-scroll">
+        <div class="dash__thead dash__thead--repo">
+          <div>Artículo</div>
+          <div class="dash__right">Stock</div>
+          <div class="dash__right">Mín.</div>
+          <div class="dash__right">Sugerido</div>
+          <div class="dash__right">Días</div>
+          <div class="dash__center">Situación</div>
+        </div>
+        <div class="dash__body">
+          @for (r of repoRows(); track r.nom) {
+            <button
+              type="button"
+              class="dash__row-item dash__row-item--repo"
+              [class.dash__row-item--alerta]="r.alerta"
+              (click)="irStock()"
+            >
+              <div class="dash__clip">
+                <div>{{ r.nom }}</div>
+                <div class="dash__muted dash__mono">{{ r.sub }}</div>
+              </div>
+              <div class="dash__right dash__mono dash__strong" [attr.data-tono]="r.stockTone">
+                {{ r.stock }}
+              </div>
+              <div class="dash__right dash__mono">{{ r.min }}</div>
+              <div class="dash__right dash__mono dash__strong">{{ r.sug }}</div>
+              <div class="dash__right dash__mono" [attr.data-tono]="r.diasTone">{{ r.dias }}</div>
+              <div class="dash__center">
+                <span class="dash__pill" [attr.data-tono]="r.estTone">{{ r.estado }}</span>
+              </div>
+            </button>
+          } @empty {
+            <div class="dash__empty">No hay artículos bajo mínimo.</div>
+          }
+        </div>
       </div>
     </div>
   </div>
@@ -143,35 +145,37 @@
           </div>
         }
       </div>
-      <div class="dash__thead dash__thead--rem">
-        <div>Remito</div>
-        <div>Proveedor</div>
-        <div class="dash__right">Líneas</div>
-        <div class="dash__right">Valorizado</div>
-        <div class="dash__center">Situación</div>
-      </div>
-      <div class="dash__body">
-        @for (r of remRows(); track r.id) {
-          <button
-            type="button"
-            class="dash__row-item dash__row-item--rem"
-            [class.dash__row-item--alerta]="r.alerta"
-            (click)="irCompras('rec')"
-          >
-            <div class="dash__mono dash__strong">{{ r.num }}</div>
-            <div class="dash__clip">
-              <div>{{ r.prov }}</div>
-              <div class="dash__muted">{{ r.sub }}</div>
-            </div>
-            <div class="dash__right dash__mono">{{ r.lineas }}</div>
-            <div class="dash__right dash__mono dash__strong">{{ r.total }}</div>
-            <div class="dash__center">
-              <span class="dash__pill" [attr.data-tono]="r.estTone">{{ r.estado }}</span>
-            </div>
-          </button>
-        } @empty {
-          <div class="dash__empty">No hay remitos de compra cargados.</div>
-        }
+      <div class="dash__table-scroll">
+        <div class="dash__thead dash__thead--rem">
+          <div>Remito</div>
+          <div>Proveedor</div>
+          <div class="dash__right">Líneas</div>
+          <div class="dash__right">Valorizado</div>
+          <div class="dash__center">Situación</div>
+        </div>
+        <div class="dash__body">
+          @for (r of remRows(); track r.id) {
+            <button
+              type="button"
+              class="dash__row-item dash__row-item--rem"
+              [class.dash__row-item--alerta]="r.alerta"
+              (click)="irCompras('rec')"
+            >
+              <div class="dash__mono dash__strong">{{ r.num }}</div>
+              <div class="dash__clip">
+                <div>{{ r.prov }}</div>
+                <div class="dash__muted">{{ r.sub }}</div>
+              </div>
+              <div class="dash__right dash__mono">{{ r.lineas }}</div>
+              <div class="dash__right dash__mono dash__strong">{{ r.total }}</div>
+              <div class="dash__center">
+                <span class="dash__pill" [attr.data-tono]="r.estTone">{{ r.estado }}</span>
+              </div>
+            </button>
+          } @empty {
+            <div class="dash__empty">No hay remitos de compra cargados.</div>
+          }
+        </div>
       </div>
     </div>
 
@@ -201,37 +205,39 @@
           <div class="dash__tramo" [attr.data-tono]="t.tone" [style.width]="t.w"></div>
         }
       </div>
-      <div class="dash__thead dash__thead--cc">
-        <div>Cliente</div>
-        <div class="dash__right">Mora</div>
-        <div class="dash__right">Vencido</div>
-        <div class="dash__right">Saldo</div>
-        <div class="dash__center">Acción</div>
-      </div>
-      <div class="dash__body">
-        @for (r of ccRows(); track r.nom) {
-          <button
-            type="button"
-            class="dash__row-item dash__row-item--cc"
-            [class.dash__row-item--alerta]="r.alerta"
-            (click)="irCtaCte()"
-          >
-            <div class="dash__clip">
-              <div>{{ r.nom }}</div>
-              <div class="dash__muted">{{ r.sub }}</div>
-            </div>
-            <div class="dash__right">
-              <span class="dash__pill" [attr.data-tono]="r.moraTone">{{ r.mora }}</span>
-            </div>
-            <div class="dash__right dash__mono dash__strong" data-tono="danger">
-              {{ r.vencido }}
-            </div>
-            <div class="dash__right dash__mono">{{ r.saldo }}</div>
-            <div class="dash__center dash__link">{{ r.accion }}</div>
-          </button>
-        } @empty {
-          <div class="dash__empty">Nadie debe en cuenta corriente.</div>
-        }
+      <div class="dash__table-scroll">
+        <div class="dash__thead dash__thead--cc">
+          <div>Cliente</div>
+          <div class="dash__right">Mora</div>
+          <div class="dash__right">Vencido</div>
+          <div class="dash__right">Saldo</div>
+          <div class="dash__center">Acción</div>
+        </div>
+        <div class="dash__body">
+          @for (r of ccRows(); track r.nom) {
+            <button
+              type="button"
+              class="dash__row-item dash__row-item--cc"
+              [class.dash__row-item--alerta]="r.alerta"
+              (click)="irCtaCte()"
+            >
+              <div class="dash__clip">
+                <div>{{ r.nom }}</div>
+                <div class="dash__muted">{{ r.sub }}</div>
+              </div>
+              <div class="dash__right">
+                <span class="dash__pill" [attr.data-tono]="r.moraTone">{{ r.mora }}</span>
+              </div>
+              <div class="dash__right dash__mono dash__strong" data-tono="danger">
+                {{ r.vencido }}
+              </div>
+              <div class="dash__right dash__mono">{{ r.saldo }}</div>
+              <div class="dash__center dash__link">{{ r.accion }}</div>
+            </button>
+          } @empty {
+            <div class="dash__empty">Nadie debe en cuenta corriente.</div>
+          }
+        </div>
       </div>
     </div>
   </div>

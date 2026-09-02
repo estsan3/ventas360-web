@@ -1,4 +1,6 @@
+@use 'sass:color';
 @use 'dc-list' as dc;
+@use 'tokens' as t;
 @use 'typography' as ty;
 
 :host {
@@ -245,6 +247,7 @@
   }
 
   &__row {
+    min-width: 0;
     min-height: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -258,6 +261,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    min-width: 0;
     min-height: 0;
   }
 
@@ -367,15 +371,40 @@
     text-overflow: ellipsis;
   }
 
+  &__table-scroll {
+    @include dc.dc-list-body-scroll;
+    min-width: 0;
+    overscroll-behavior-x: contain;
+    background-color: t.$color-surface;
+    background-image:
+      linear-gradient(t.$color-surface, t.$color-surface),
+      linear-gradient(t.$color-surface, t.$color-surface),
+      linear-gradient(to right, color.change(t.$color-text, $alpha: 0.14), transparent),
+      linear-gradient(to left, color.change(t.$color-text, $alpha: 0.14), transparent);
+    background-repeat: no-repeat;
+    background-size:
+      12px 100%,
+      12px 100%,
+      18px 100%,
+      18px 100%;
+    background-position: left, right, left, right;
+    background-attachment: local, local, scroll, scroll;
+  }
+
   &__thead,
   &__row-item {
     display: grid;
     align-items: center;
     padding: 9px 15px;
     gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   &__thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     flex: none;
     border-bottom: 1px solid dc.$dc-border;
     font-family: ui-monospace, Menlo, monospace;
@@ -383,28 +412,29 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: dc.$dc-muted;
+    background: t.$color-surface;
 
     &--repo {
-      grid-template-columns: 1fr 92px 78px 92px 96px 138px;
+      grid-template-columns: minmax(10rem, 1fr) 92px 78px 92px 96px 138px;
+      min-width: 46rem;
     }
 
     &--rem {
-      grid-template-columns: 132px 1fr 88px 118px 148px;
+      grid-template-columns: 132px minmax(10rem, 1fr) 88px 118px 148px;
+      min-width: 44rem;
     }
 
     &--cc {
-      grid-template-columns: 1fr 96px 128px 118px 128px;
+      grid-template-columns: minmax(10rem, 1fr) 96px 128px 118px 128px;
+      min-width: 43rem;
     }
   }
 
   &__body {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
+    min-width: min-content;
   }
 
   &__row-item {
-    width: 100%;
     border: none;
     border-bottom: 1px solid #f3efe9;
     background: #fff;
@@ -422,15 +452,18 @@
     }
 
     &--repo {
-      grid-template-columns: 1fr 92px 78px 92px 96px 138px;
+      grid-template-columns: minmax(10rem, 1fr) 92px 78px 92px 96px 138px;
+      min-width: 46rem;
     }
 
     &--rem {
-      grid-template-columns: 132px 1fr 88px 118px 148px;
+      grid-template-columns: 132px minmax(10rem, 1fr) 88px 118px 148px;
+      min-width: 44rem;
     }
 
     &--cc {
-      grid-template-columns: 1fr 96px 128px 118px 128px;
+      grid-template-columns: minmax(10rem, 1fr) 96px 128px 118px 128px;
+      min-width: 43rem;
     }
   }
 
