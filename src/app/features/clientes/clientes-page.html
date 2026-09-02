@@ -113,7 +113,7 @@
               [class.cli__row--on]="r.sel"
               (click)="abrirFicha(r.id)"
             >
-              <div class="cli__clip">
+              <div class="cli__clip cli__clip--nombre">
                 <div class="cli__strong">{{ r.nombre }}</div>
                 <div class="cli__muted cli__mono">
                   {{ r.cuit || '—' }} · {{ r.telefono || r.email || '—' }}
