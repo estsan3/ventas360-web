@@ -46,23 +46,23 @@ Crear un epic o milestone **“Launch Render multi-tenant”** y estos issues
 
 ## Fase 1 — PRs en `ventas360-api` (bloqueantes)
 
-### PR-A — Bootstrap Flyway (sin cambiar lógica de negocio)
+### PR-A — Bootstrap Flyway (sin cambiar lógica de negocio) ✅ listo (patch)
 
-**Issue:** `infra: Flyway + schema ventas + roles…`
+**Issue:** `infra: Flyway + schema ventas + roles…`  
+**Patch:** [`docs/patches/ventas360-api-flyway-bootstrap-66f9.patch`](./patches/ventas360-api-flyway-bootstrap-66f9.patch)  
+(aplicar con `git am` — el bot no tiene push a `ventas360-api`; ver
+[`docs/patches/README.md`](./patches/README.md))
 
-- Carpeta `flyway/` + `flyway/ventas.conf` (`flyway.schemas=ventas`)
-- SQL inicial: `CREATE SCHEMA` solo si hace falta; **tablas sin prefijo de
-  schema** en el SQL (`CREATE TABLE pedido`, no `ventas.pedido`)
-- Decisión de naming documentada en el PR:
-  - **Opción recomendada:** renombrar `ventas_pedido` → `pedido` dentro del
-    schema `ventas` (search_path), **o**
-  - Mantener nombres prefijados `ventas_pedido` *dentro* de schema `ventas`
-    (menos churn ORM; menos “limpio”)
+- Carpeta `flyway/` + `flyway/conf/flyway.conf` (`flyway.schemas=ventas`)
+- SQL inicial: baseline en schema `ventas` (**sin** DDL de negocio aún)
+- Naming: se **conservan** prefijos de módulo (`ventas_pedido`, …) dentro
+  del schema `ventas` → `ventas.ventas_pedido` (cero churn ORM en este PR)
 - Script/docs de bootstrap de roles `ventas_migrator` / `ventas_app`
-- CI o job local: `flyway migrate` contra Postgres de prueba
-- **No** apagar aún `crear_tablas()` (conviven en esta PR)
+- `scripts/flyway-migrate.sh` (Docker o `FLYWAY_CMD` local)
+- **No** apaga `crear_tablas()` (conviven)
 
 **Done when:** `flyway_schema_history` aparece en schema `ventas` en un PG local.
+**(Verificado en el entorno del agente.)**
 
 ---
 
