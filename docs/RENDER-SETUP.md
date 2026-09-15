@@ -312,7 +312,7 @@ Por cada celda de la matriz producto × ambiente:
 | Health Check Path | `/health` | `/health` |
 | Autodeploy | on (branch stage) | on (`main`) o manual si preferís |
 
-4. **Environment** → linkear solo grupos del **mismo** ambientе.
+4. **Environment** → linkear solo grupos del **mismo** ambiente.
 5. `DATABASE_URL` = Internal `*_app` de **esa** Postgres.
 6. **Create Web Service**.
 
