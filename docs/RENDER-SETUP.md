@@ -29,6 +29,67 @@ servicios ×2 → Flyway pre-deploy → smoke test stage → promover a prod.
 
 ---
 
+## Modo día 1 (recomendado): solo Ventas + stage on-demand
+
+Salís solo con **Ventas** (el producto más listo). **Prod siempre prendido**.
+**Stage apagado** la mayor parte del tiempo; lo prendés solo cuando querés
+probar antes de tocar prod.
+
+### Qué significa “stage on-demand”
+
+No es un plan distinto de Render. Es un **hábito operativo**:
+
+1. Los servicios de stage (`ventas-api-stage`, `ia-worker-stage`) existen, pero
+   están **Suspended**.
+2. Suspendido = no corre, no cobra compute (Starter se prorratea por segundo).
+3. Cuando vas a probar: Dashboard → seleccionás los servicios stage →
+   **Resume** → esperás el deploy → probás → **Suspend** de nuevo.
+4. La Postgres `appdb-stage` **sí sigue cobrando** (~USD 6/mes) mientras exista:
+   así no perdés schemas, roles ni datos de prueba cada vez. Si un mes no
+   vas a usar stage en absoluto, podés borrar esa DB y recrearla después
+   (más barato, más laburo).
+
+Flujo típico de un cambio:
+
+```text
+código → Resume stage → deploy branch develop → probar → Suspend stage
+       → merge a main → deploy prod (siempre on)
+```
+
+### Topología día 1 (solo Ventas)
+
+| Recurso | Estado | ~USD/mes |
+| --- | --- | --- |
+| Workspace Pro | siempre | 25 |
+| Postgres `appdb-prod` | siempre on | 6 + storage |
+| Web `ventas-api-prod` | siempre on | 7 |
+| Worker `ia-worker-prod` | siempre on (si el bot ya va) | 7 |
+| Postgres `appdb-stage` | siempre on (datos de prueba) | 6 + storage |
+| Web `ventas-api-stage` | **Suspended** salvo al probar | ~0 si apagado; 7 prorrateado los días on |
+| Worker `ia-worker-stage` | opcional; Suspended o ni crearlo aún | 0–7 |
+| Agro / RRHH (stage y prod) | **no crear todavía** | 0 |
+
+**Piso fijo típico día 1:** ~USD **44–51** (Pro + 2 Postgres + ventas-prod
+[+ worker-prod]). Stage web casi gratis si está suspendido la mayor parte del mes.
+
+### Qué crear día 1 (checklist corto)
+
+1. [ ] Workspace Pro + Project con envs `stage` / `prod`
+2. [ ] `appdb-prod` + `appdb-stage` (Basic-256mb, DB `appdb`)
+3. [ ] En **cada** DB: solo schema `ventas` + roles `ventas_migrator` /
+   `ventas_app` (agro/rrhh después)
+4. [ ] R2 (prod + stage o prefijos) + Anthropic
+5. [ ] Env groups `ventas-secrets-prod` / `ventas-secrets-stage` (+ R2/IA)
+6. [ ] `ventas-api-prod` (branch `main`, siempre on) + Flyway pre-deploy
+7. [ ] `ventas-api-stage` (branch `develop`, **Suspend** al terminar la 1ª prueba)
+8. [ ] `ia-worker-prod` si el bot ya está; worker-stage solo si lo necesitás
+9. [ ] Smoke stage → Suspend stage → smoke prod
+
+Agro/RRHH: repetir el mismo patrón cuando cada producto esté listo (schema +
+roles + web prod + web stage suspendible).
+
+---
+
 ## 0. Checklist previo (antes de pagar)
 
 - [ ] Cuenta de GitHub con los repos de cada producto (API + front si aplica)
@@ -334,7 +395,20 @@ SELECT * FROM ventas.flyway_schema_history ORDER BY installed_rank;
 
 ---
 
-## 12. Coste mensual aproximado (stage + prod)
+## 12. Coste mensual aproximado
+
+### Día 1 — solo Ventas + stage on-demand (recomendado)
+
+| Ítem | ~USD/mes |
+| --- | --- |
+| Workspace Pro | 25 |
+| Postgres prod + stage | 12 + storage |
+| `ventas-api-prod` Starter | 7 |
+| `ia-worker-prod` Starter (si aplica) | 7 |
+| `ventas-api-stage` Suspended | ~0 (solo días Resume) |
+| **Piso fijo** | **~44–51** + storage/bandwidth |
+
+### Full — 3 productos × stage+prod siempre on
 
 | Ítem | ~USD/mes |
 | --- | --- |
@@ -342,11 +416,9 @@ SELECT * FROM ventas.flyway_schema_history ORDER BY installed_rank;
 | 2 × Postgres Basic-256mb + storage | 12 + storage |
 | 6 × Web Starter | 42 |
 | 2 × Worker Starter | 14 |
-| R2 + Anthropic | uso (stage suele gastar menos) |
 | **Piso fijo Render** | **~93** + storage/bandwidth |
 
-Si más adelante stage se usa poco, se puede apagar el worker-stage o bajar
-frecuencia de deploys; no mezclar DBs para “ahorrar”.
+No mezclar stage y prod en la misma Postgres para “ahorrar 6 dólares”.
 
 ---
 
@@ -366,6 +438,9 @@ frecuencia de deploys; no mezclar DBs para “ahorrar”.
 
 ## 14. Orden resumido (copiar y tachar)
 
+**Preferí la checklist “Modo día 1” al inicio del doc** si salís solo con
+Ventas. Versión full (3 productos, stage siempre disponible):
+
 1. [ ] Cuenta Render + workspace **Pro** + pago
 2. [ ] Project `saas-agencia` con environments **`stage`** y **`prod`**
 3. [ ] Postgres `appdb-stage` y `appdb-prod` (Basic-256mb, DB `appdb`, misma región)
@@ -374,10 +449,10 @@ frecuencia de deploys; no mezclar DBs para “ahorrar”.
 6. [ ] R2 stage + R2 prod (o prefijos) + tokens
 7. [ ] API keys Anthropic stage + prod (Haiku)
 8. [ ] Env groups scoped por ambiente (producto + R2 + IA)
-9. [ ] 3 webs Starter en stage (branch stage) + 3 en prod (`main`)
+9. [ ] Webs Starter: prod siempre on; stage **Suspended** salvo al probar
 10. [ ] Pre-Deploy = Flyway (`flyway.schemas=<producto>`, user migrator del ambiente)
-11. [ ] Worker IA Starter en stage + en prod
-12. [ ] Smoke test **stage** completo
+11. [ ] Worker IA: prod on; stage on-demand o diferido
+12. [ ] Smoke test **stage** → **Suspend** stage
 13. [ ] Promote a **prod** + smoke test prod
 14. [ ] Custom domains (opcional) stage vs prod
 
