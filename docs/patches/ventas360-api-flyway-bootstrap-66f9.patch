@@ -1,0 +1,406 @@
+From 1443942806c26a2821bb89228b7fdf4a74864ab1 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Tue, 15 Sep 2026 04:01:20 +0000
+Subject: [PATCH] feat(db): bootstrap Flyway schema ventas + roles migrator/app
+
+Agrega Flyway (V1 baseline), script de roles ventas_migrator/ventas_app
+con search_path, profile compose opcional y docs. create_all sigue
+activo; el cutover DDL queda para PRs siguientes.
+---
+ .env.example                                  |  9 +-
+ README.md                                     | 12 +++
+ docker-compose.yml                            | 20 +++++
+ docs/FLYWAY.md                                | 85 +++++++++++++++++++
+ flyway/conf/flyway.conf                       | 22 +++++
+ flyway/sql/V1__baseline.sql                   | 23 +++++
+ scripts/bootstrap-roles.sh                    | 30 +++++++
+ scripts/flyway-migrate.sh                     | 47 ++++++++++
+ .../01_bootstrap_roles_ventas.sql.template    | 61 +++++++++++++
+ 9 files changed, 308 insertions(+), 1 deletion(-)
+ create mode 100644 docs/FLYWAY.md
+ create mode 100644 flyway/conf/flyway.conf
+ create mode 100644 flyway/sql/V1__baseline.sql
+ create mode 100755 scripts/bootstrap-roles.sh
+ create mode 100755 scripts/flyway-migrate.sh
+ create mode 100644 scripts/sql/01_bootstrap_roles_ventas.sql.template
+
+diff --git a/.env.example b/.env.example
+index 279021d..0e8e2e5 100644
+--- a/.env.example
++++ b/.env.example
+@@ -7,7 +7,14 @@ VENTAS360_ENTORNO=dev
+ # SQLite (default para desarrollo):
+ VENTAS360_DATABASE_URL=sqlite+aiosqlite:///./data/ventas360.db
+ # PostgreSQL (producción / cuando el sistema escale):
+-# VENTAS360_DATABASE_URL=postgresql+asyncpg://ventas360:ventas360@db:5432/ventas360
++# Runtime API → rol ventas_app (DML). Flyway → rol ventas_migrator (DDL).
++# VENTAS360_DATABASE_URL=postgresql+asyncpg://ventas_app:CAMBIAR@HOST:5432/appdb
++#
++# Flyway (pre-deploy; no usar en el proceso HTTP):
++# FLYWAY_URL=jdbc:postgresql://HOST:5432/appdb
++# FLYWAY_USER=ventas_migrator
++# FLYWAY_PASSWORD=CAMBIAR
++# Ver docs/FLYWAY.md y scripts/bootstrap-roles.sh
+ 
+ # Secreto para firmar los JWT. CAMBIAR en producción (ej: openssl rand -hex 32).
+ VENTAS360_JWT_SECRETO=cambiar-este-secreto-en-produccion
+diff --git a/README.md b/README.md
+index 09f8255..7c3da29 100644
+--- a/README.md
++++ b/README.md
+@@ -40,6 +40,18 @@ Reglas clave: commit solo en service, IDs débiles entre módulos, tablas con pr
+ 
+ Ver `AGENTS.md` para la guía completa de convenciones.
+ 
++## Migraciones (Flyway)
++
++Schema Postgres `ventas`, roles `ventas_migrator` / `ventas_app`. Guía: [docs/FLYWAY.md](docs/FLYWAY.md).
++
++```bash
++# Postgres de docker compose en :5433
++./scripts/bootstrap-roles.sh
++./scripts/flyway-migrate.sh
++```
++
++En este PR el DDL de negocio sigue en `create_all`; Flyway deja el baseline y el historial en `ventas.flyway_schema_history`.
++
+ Diagramas de secuencia por módulo (Mermaid): [docs/diagramas/README.md](docs/diagramas/README.md). Compras (pedido → remito → factura): [docs/diagramas/compras.md](docs/diagramas/compras.md).
+ 
+ ## Análisis WinSales → módulos
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 7e6b245..a1d8055 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -54,5 +54,25 @@ services:
+       retries: 10
+     restart: unless-stopped
+ 
++  # Opcional: migrate Flyway (schema ventas). Uso:
++  #   docker compose up -d db
++  #   ./scripts/bootstrap-roles.sh
++  #   docker compose --profile flyway run --rm flyway
++  flyway:
++    image: flyway/flyway:11.8.2
++    profiles: ["flyway"]
++    depends_on:
++      db:
++        condition: service_healthy
++    volumes:
++      - ./flyway/sql:/flyway/sql:ro
++      - ./flyway/conf:/flyway/conf:ro
++    command:
++      - -configFiles=/flyway/conf/flyway.conf
++      - -url=jdbc:postgresql://db:5432/ventas360
++      - -user=ventas_migrator
++      - -password=ventas_migrator_dev
++      - migrate
++
+ volumes:
+   ventas360-pgdata:
+diff --git a/docs/FLYWAY.md b/docs/FLYWAY.md
+new file mode 100644
+index 0000000..743cd9c
+--- /dev/null
++++ b/docs/FLYWAY.md
+@@ -0,0 +1,85 @@
++# Flyway — producto Ventas (schema `ventas`)
++
++Bootstrap de migraciones para Render / Postgres compartido multi-producto.
++La app **aún** usa `create_all` en arranque (dev); este PR solo pone el
++riel Flyway. El cutover DDL (tablas de negocio en migraciones + apagar
++`crear_tablas` en prod) es PR-B / siguientes.
++
++## Decisiones (fijas)
++
++| Tema | Valor |
++| --- | --- |
++| Schema | `ventas` |
++| Historial | `ventas.flyway_schema_history` (`flyway.schemas=ventas`) |
++| Roles | `ventas_migrator` (DDL) · `ventas_app` (DML) |
++| `search_path` | `ventas` (el schema **no** va en la URL) |
++| SQL | sin prefijo `ventas.` en los `CREATE TABLE` |
++| Naming tablas | se **conservan** prefijos de módulo (`ventas_pedido`, …) → `ventas.ventas_pedido` |
++| Undo | no (feature paga) |
++
++## Layout
++
++```text
++flyway/
++  conf/flyway.conf
++  sql/V1__baseline.sql
++scripts/
++  sql/01_bootstrap_roles_ventas.sql.template
++  bootstrap-roles.sh
++  flyway-migrate.sh
++docker-compose.yml          # profile `flyway` opcional
++```
++
++## Local (Docker Compose)
++
++```bash
++docker compose up -d db
++
++# 1) Roles + schema (idempotente; default DB ventas360 @ localhost:5433)
++./scripts/bootstrap-roles.sh
++
++# 2) Migrate — Docker (default) o CLI local:
++./scripts/flyway-migrate.sh
++# o:
++# FLYWAY_CMD=/ruta/flyway FLYWAY_URL=jdbc:postgresql://127.0.0.1:5433/ventas360 \
++#   ./scripts/flyway-migrate.sh
++
++# equivalente compose:
++# docker compose --profile flyway run --rm flyway
++```
++
++Verificación:
++
++```bash
++psql postgresql://ventas_migrator:ventas_migrator_dev@localhost:5433/ventas360 -c \
++  "SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;"
++```
++
++(Con `search_path=ventas` no hace falta calificar el historial.) Debe listar `1 | baseline | t`.
++
++## Render (prod / stage)
++
++1. Como admin de la instancia, una vez:
++   ```bash
++   DB_NAME=appdb \
++   ADMIN_DATABASE_URL='postgresql://ADMIN:…@HOST/appdb' \
++   VENTAS_MIGRATOR_PASSWORD='…' \
++   VENTAS_APP_PASSWORD='…' \
++   ./scripts/bootstrap-roles.sh
++   ```
++2. Pre-Deploy del web service:
++   ```bash
++   flyway -configFiles=flyway/conf/flyway.conf \
++     -url=$FLYWAY_URL -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD migrate
++   ```
++3. Runtime API: `VENTAS360_DATABASE_URL` con user **`ventas_app`** (Internal
++   URL). Flyway **nunca** usa ese user.
++
++## Qué no hace este PR
++
++- No mueve el DDL de negocio fuera de SQLAlchemy `create_all`
++- No activa RLS ni `set_config`
++- No cambia tipos de `tenant_id`
++- No apaga seed en prod
++
++Siguiente: PR-B del checklist de lanzamiento (pool + apagar DDL en prod).
+diff --git a/flyway/conf/flyway.conf b/flyway/conf/flyway.conf
+new file mode 100644
+index 0000000..885d247
+--- /dev/null
++++ b/flyway/conf/flyway.conf
+@@ -0,0 +1,22 @@
++# Flyway — producto Ventas360 (schema Postgres `ventas`)
++#
++# Se ejecuta con WORKDIR de la imagen oficial (/flyway): sql montado en
++# /flyway/sql → locations=filesystem:sql
++#
++# Reglas:
++# - flyway.schemas=ventas → flyway_schema_history vive DENTRO del schema
++# - SQL sin prefijo de schema (CREATE TABLE foo, no ventas.foo)
++# - Corre en pre-deploy (Render), no dentro del proceso HTTP de la app
++# - Sin undo (feature paga)
++
++flyway.locations=filesystem:sql
++flyway.schemas=ventas
++flyway.defaultSchema=ventas
++flyway.createSchemas=true
++flyway.baselineOnMigrate=false
++flyway.validateOnMigrate=true
++
++# Defaults locales (docker compose db en :5433). Override con -url/-user/-password.
++flyway.url=jdbc:postgresql://localhost:5433/ventas360
++flyway.user=ventas_migrator
++flyway.password=ventas_migrator_dev
+diff --git a/flyway/sql/V1__baseline.sql b/flyway/sql/V1__baseline.sql
+new file mode 100644
+index 0000000..101d243
+--- /dev/null
++++ b/flyway/sql/V1__baseline.sql
+@@ -0,0 +1,23 @@
++-- V1__baseline.sql
++--
++-- Baseline Flyway del producto Ventas (schema `ventas`).
++--
++-- Decisión de naming (PR-A):
++--   Las tablas de negocio CONSERVAN el prefijo de módulo
++--   (`ventas_pedido`, `productos_producto`, …) y vivirán DENTRO del
++--   schema Postgres `ventas` (queda `ventas.ventas_pedido`).
++--   Motivo: cero churn de ORM/`__tablename__`/seeds en este PR.
++--   Cutover DDL: PRs siguientes mueven CREATE TABLE desde
++--   SQLAlchemy create_all hacia migraciones Flyway.
++--
++-- Este V1 solo marca el schema como gestionado por Flyway.
++-- create_all de la app SIGUE activo en dev; no se apaga aquí.
++
++CREATE TABLE _flyway_baseline (
++    id          smallint PRIMARY KEY DEFAULT 1 CHECK (id = 1),
++    nota        text        NOT NULL DEFAULT 'baseline ventas — DDL de negocio pendiente de cutover',
++    aplicado_en timestamptz NOT NULL DEFAULT now()
++);
++
++COMMENT ON TABLE _flyway_baseline IS
++  'Marcador de baseline Flyway. No usar en la app. Eliminar en el cutover DDL.';
+diff --git a/scripts/bootstrap-roles.sh b/scripts/bootstrap-roles.sh
+new file mode 100755
+index 0000000..b2fbfb2
+--- /dev/null
++++ b/scripts/bootstrap-roles.sh
+@@ -0,0 +1,30 @@
++#!/usr/bin/env bash
++# Crea schema `ventas` + roles ventas_migrator / ventas_app (idempotente).
++set -euo pipefail
++
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++TEMPLATE="${ROOT}/scripts/sql/01_bootstrap_roles_ventas.sql.template"
++
++DB_NAME="${DB_NAME:-ventas360}"
++ADMIN_URL="${ADMIN_DATABASE_URL:-postgresql://ventas360:ventas360@localhost:5433/${DB_NAME}}"
++VENTAS_MIGRATOR_PASSWORD="${VENTAS_MIGRATOR_PASSWORD:-ventas_migrator_dev}"
++VENTAS_APP_PASSWORD="${VENTAS_APP_PASSWORD:-ventas_app_dev}"
++
++if [[ ! -f "${TEMPLATE}" ]]; then
++  echo "No encuentro ${TEMPLATE}" >&2
++  exit 1
++fi
++
++TMP_SQL="$(mktemp)"
++trap 'rm -f "${TMP_SQL}"' EXIT
++
++# Sustituye placeholders sin tocar otras partes del SQL
++sed \
++  -e "s/__DB_NAME__/${DB_NAME}/g" \
++  -e "s/__VENTAS_MIGRATOR_PASSWORD__/${VENTAS_MIGRATOR_PASSWORD}/g" \
++  -e "s/__VENTAS_APP_PASSWORD__/${VENTAS_APP_PASSWORD}/g" \
++  "${TEMPLATE}" > "${TMP_SQL}"
++
++echo "→ Bootstrap roles en ${DB_NAME} (${ADMIN_URL%%@*}@…)"
++psql "${ADMIN_URL}" -v ON_ERROR_STOP=1 -f "${TMP_SQL}"
++echo "✓ Roles ventas_migrator / ventas_app listos (search_path=ventas)"
+diff --git a/scripts/flyway-migrate.sh b/scripts/flyway-migrate.sh
+new file mode 100755
+index 0000000..19aa18c
+--- /dev/null
++++ b/scripts/flyway-migrate.sh
+@@ -0,0 +1,47 @@
++#!/usr/bin/env bash
++# Corre Flyway migrate contra el schema `ventas`.
++# Preferencia: FLYWAY_CMD (CLI local) → si no, imagen Docker flyway/flyway.
++set -euo pipefail
++
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++
++FLYWAY_URL="${FLYWAY_URL:-jdbc:postgresql://localhost:5433/ventas360}"
++FLYWAY_USER="${FLYWAY_USER:-ventas_migrator}"
++FLYWAY_PASSWORD="${FLYWAY_PASSWORD:-ventas_migrator_dev}"
++FLYWAY_IMAGE="${FLYWAY_IMAGE:-flyway/flyway:11.8.2}"
++
++echo "→ Flyway migrate (${FLYWAY_USER} → schema ventas)"
++
++if [[ -n "${FLYWAY_CMD:-}" ]]; then
++  # CLI local: locations relativos al dir flyway/
++  (
++    cd "${ROOT}/flyway"
++    "${FLYWAY_CMD}" \
++      -configFiles=conf/flyway.conf \
++      -url="${FLYWAY_URL}" \
++      -user="${FLYWAY_USER}" \
++      -password="${FLYWAY_PASSWORD}" \
++      migrate
++  )
++elif command -v docker >/dev/null 2>&1; then
++  DOCKER_OPTS=(--rm)
++  URL="${FLYWAY_URL}"
++  if docker info 2>/dev/null | grep -qi linux; then
++    DOCKER_OPTS+=(--network host)
++    URL="${FLYWAY_URL_LINUX:-jdbc:postgresql://localhost:5433/ventas360}"
++  fi
++  docker run "${DOCKER_OPTS[@]}" \
++    -v "${ROOT}/flyway/sql:/flyway/sql:ro" \
++    -v "${ROOT}/flyway/conf:/flyway/conf:ro" \
++    "${FLYWAY_IMAGE}" \
++    -configFiles=/flyway/conf/flyway.conf \
++    -url="${URL}" \
++    -user="${FLYWAY_USER}" \
++    -password="${FLYWAY_PASSWORD}" \
++    migrate
++else
++  echo "Definí FLYWAY_CMD=/ruta/a/flyway o instalá Docker." >&2
++  exit 1
++fi
++
++echo "✓ Flyway OK — historial en ventas.flyway_schema_history"
+diff --git a/scripts/sql/01_bootstrap_roles_ventas.sql.template b/scripts/sql/01_bootstrap_roles_ventas.sql.template
+new file mode 100644
+index 0000000..8b7eeea
+--- /dev/null
++++ b/scripts/sql/01_bootstrap_roles_ventas.sql.template
+@@ -0,0 +1,61 @@
++-- Bootstrap de roles Postgres para el producto Ventas.
++--
++-- Ejecutar UNA VEZ por instancia (stage / prod / local), conectado como
++-- superuser o dueño de la DB (en Docker local: user `ventas360`).
++--
++-- Uso típico (vía scripts/bootstrap-roles.sh, que sustituye placeholders):
++--   DB_NAME=ventas360 \
++--   VENTAS_MIGRATOR_PASSWORD='...' \
++--   VENTAS_APP_PASSWORD='...' \
++--   ./scripts/bootstrap-roles.sh
++--
++-- Placeholders (no editar a mano en Render; usar el script):
++--   __DB_NAME__
++--   __VENTAS_MIGRATOR_PASSWORD__
++--   __VENTAS_APP_PASSWORD__
++--
++-- Alineado a la arquitectura multi-producto:
++--   - schema `ventas`
++--   - rol `ventas_migrator` (DDL / Flyway)
++--   - rol `ventas_app` (DML / API)
++--   - search_path = ventas (el schema NO va en la URL de conexión)
++
++CREATE SCHEMA IF NOT EXISTS ventas;
++
++DO $$
++BEGIN
++  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ventas_migrator') THEN
++    CREATE ROLE ventas_migrator LOGIN PASSWORD '__VENTAS_MIGRATOR_PASSWORD__';
++  ELSE
++    ALTER ROLE ventas_migrator LOGIN PASSWORD '__VENTAS_MIGRATOR_PASSWORD__';
++  END IF;
++
++  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ventas_app') THEN
++    CREATE ROLE ventas_app LOGIN PASSWORD '__VENTAS_APP_PASSWORD__';
++  ELSE
++    ALTER ROLE ventas_app LOGIN PASSWORD '__VENTAS_APP_PASSWORD__';
++  END IF;
++END
++$$;
++
++GRANT CONNECT ON DATABASE __DB_NAME__ TO ventas_migrator, ventas_app;
++
++GRANT USAGE, CREATE ON SCHEMA ventas TO ventas_migrator;
++GRANT USAGE ON SCHEMA ventas TO ventas_app;
++
++ALTER ROLE ventas_migrator SET search_path = ventas;
++ALTER ROLE ventas_app      SET search_path = ventas;
++
++-- Tablas/secuencias futuras creadas por el migrator → usables por la app
++ALTER DEFAULT PRIVILEGES FOR ROLE ventas_migrator IN SCHEMA ventas
++  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ventas_app;
++
++ALTER DEFAULT PRIVILEGES FOR ROLE ventas_migrator IN SCHEMA ventas
++  GRANT USAGE, SELECT ON SEQUENCES TO ventas_app;
++
++-- Por si ya existían objetos en el schema (re-runs)
++GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ventas TO ventas_app;
++GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA ventas TO ventas_app;
++
++-- El migrator es dueño lógico del schema
++ALTER SCHEMA ventas OWNER TO ventas_migrator;
+-- 
+2.43.0
+

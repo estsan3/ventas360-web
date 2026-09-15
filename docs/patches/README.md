@@ -1,3 +1,54 @@
+# Patch API · Flyway bootstrap (`cursor/flyway-bootstrap-ventas-66f9`)
+
+El bot de Cursor **no tiene permiso de push** a `ventas360-api`.
+Aplicá este patch en tu máquina y abrí el PR de la API.
+
+## Contenido (PR-A del checklist de lanzamiento)
+
+- `flyway/conf/flyway.conf` + `flyway/sql/V1__baseline.sql` (schema `ventas`)
+- Roles `ventas_migrator` / `ventas_app` + `search_path=ventas`
+- Scripts `bootstrap-roles.sh` / `flyway-migrate.sh`
+- Profile compose `flyway` + `docs/FLYWAY.md`
+- `create_all` **sigue activo** (cutover DDL = PR-B)
+
+Verificado localmente: `flyway_schema_history` en schema `ventas` tras migrate.
+
+## Aplicar y abrir PR
+
+```bash
+cd ventas360-api
+git fetch origin
+git checkout main
+git pull origin main
+git checkout -b cursor/flyway-bootstrap-ventas-66f9
+
+git am /ruta/a/ventas360-web/docs/patches/ventas360-api-flyway-bootstrap-66f9.patch
+
+# Smoke (Postgres arriba en :5433 o local):
+./scripts/bootstrap-roles.sh
+./scripts/flyway-migrate.sh   # o FLYWAY_CMD=… si no hay Docker
+
+git push -u origin cursor/flyway-bootstrap-ventas-66f9
+gh pr create --base main --head cursor/flyway-bootstrap-ventas-66f9 \
+  --title "feat(db): bootstrap Flyway schema ventas + roles migrator/app" \
+  --body "$(cat <<'EOF'
+## PR-A — Flyway bootstrap
+
+- Schema \`ventas\` + historial Flyway adentro
+- Roles \`ventas_migrator\` / \`ventas_app\` con \`search_path\`
+- V1 baseline (DDL de negocio sigue en create_all)
+- Docs: \`docs/FLYWAY.md\`
+
+Siguiente: PR-B (pool + apagar create_all en prod).
+EOF
+)"
+```
+
+Orden: mergear **este PR en la API** antes de seguir con PR-B del
+[checklist](../VENTAS-LAUNCH-CHECKLIST.md).
+
+---
+
 # Patch API · Talonario presupuesto (`cursor/talonarios-presupuesto-aa66`)
 
 El bot de Cursor **no tiene permiso de push** a `ventas360-api`.
