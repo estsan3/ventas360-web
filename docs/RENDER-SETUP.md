@@ -456,6 +456,6 @@ Ventas. Versión full (3 productos, stage siempre disponible):
 13. [ ] Promote a **prod** + smoke test prod
 14. [ ] Custom domains (opcional) stage vs prod
 
-Cuando esto esté verde, el siguiente trabajo es código de app (RLS,
-`set_config` en el pool, tablas con `tenant_id`, índices que empiezan por
-`tenant_id`) — fuera del alcance de “contratar y poner Render”.
+Cuando la cuenta Render esté verde, el trabajo de código para **sacar
+Ventas360** está en [VENTAS-LAUNCH-CHECKLIST.md](./VENTAS-LAUNCH-CHECKLIST.md)
+(PRs ordenados en `ventas360-api`: Flyway → uuid → RLS → R2 → worker IA → front).
